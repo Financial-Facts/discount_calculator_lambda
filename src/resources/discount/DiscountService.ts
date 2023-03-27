@@ -19,7 +19,7 @@ class DiscountService {
                 return response.text();
             })
         } catch (err: any) {
-            throw new HttpException(400, err.message);   
+            throw new HttpException(400, 'Failure during discount creation request: ' + err.message);   
         }
     }
 
@@ -27,9 +27,19 @@ class DiscountService {
     public async update(discount: Discount): Promise<Discount> {
         try {
             const url = `${process.env.FINANCIAL_FACTS_SERVICE_BASE_URL}/v1/discount`;
-            return fetch(url, { method: 'PUT', body: JSON.stringify(discount) });
-        } catch (err) {
-            throw new HttpException(400, 'Failure during discount update request');   
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(discount)
+            }).then((response: any) => {
+                return response.text();
+            }).then((body: string) => {
+                return JSON.parse(body);
+            });
+        } catch (err: any) {
+            throw new HttpException(400, 'Failure during discount update request: ' + err.message);   
         }
     }
 
@@ -40,11 +50,11 @@ class DiscountService {
             return fetch(url)
                 .then((response: any) => {
                     return response.text();
-                }).then((body: Discount) => {
-                    return body;
+                }).then((body: string) => {
+                    return JSON.parse(body);
                 });
-        } catch (err) {
-            throw new HttpException(400, 'Failure during discount get request')
+        } catch (err: any) {
+            throw new HttpException(400, 'Failure during discount get request: ' + err.message);
         }
     }
 }
