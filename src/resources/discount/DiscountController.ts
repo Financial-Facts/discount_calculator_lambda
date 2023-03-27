@@ -5,8 +5,6 @@ import validationMiddleware from '@/middleware/Validation.middleware';
 import validation from '@/resources/discount/DiscountValidation';
 import DiscountService from './DiscountService';
 import Discount from './IDiscount';
-import xContentTypeOptions from 'helmet/dist/types/middlewares/x-content-type-options';
-import { json } from 'envalid';
 
 
 class DiscountController implements Controller {
@@ -49,7 +47,7 @@ class DiscountController implements Controller {
 
             response.status(201).json({ createdCik });
         } catch (err: any) {
-            next(new HttpException(400, err.message));
+            next(new HttpException(err.status, err.message));
         }
     }
 
@@ -64,7 +62,7 @@ class DiscountController implements Controller {
 
             response.status(200).type('json').json({ updatedDiscount });
         } catch (err: any) {
-            next(new HttpException(400, err.message));
+            next(new HttpException(err.status, err.message));
         }
     }
 
@@ -76,10 +74,9 @@ class DiscountController implements Controller {
         const cik = request.params.cik;
         try {
             const fetchedDiscount: Discount = await this.DiscountService.get(cik);
-            console.log(fetchedDiscount);
             response.status(200).type('json').json(fetchedDiscount);
         } catch (err: any) {
-            next(new HttpException(400, err.message));
+            next(new HttpException(err.status, err.message));
         }
     }
 

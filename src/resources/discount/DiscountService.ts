@@ -48,7 +48,10 @@ class DiscountService {
         try {
             const url = `${process.env.FINANCIAL_FACTS_SERVICE_BASE_URL}/v1/discount/${cik}`;
             return fetch(url)
-                .then((response: any) => {
+                .then(async (response: any) => {
+                    if (response.status != 200) {
+                        throw new HttpException(response.status, 'Failure during discount get request: ' + await response.text());
+                    }
                     return response.text();
                 }).then((body: string) => {
                     return JSON.parse(body);
