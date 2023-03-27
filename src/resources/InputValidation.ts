@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const create = Joi.object({
+const create_discount = Joi.object({
     
     cik: Joi.string().required(),
 
@@ -28,6 +28,12 @@ const create = Joi.object({
 
 });
 
-const update = create;
+const update_discount = create_discount;
 
-export default { create, update };
+const check_for_discounts = Joi.object({
+
+    cikList: Joi.array().required()
+
+});
+
+export default { create_discount, update_discount, check_for_discounts };

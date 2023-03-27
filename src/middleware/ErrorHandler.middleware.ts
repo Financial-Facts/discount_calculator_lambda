@@ -3,7 +3,7 @@ import HttpException from '@/utils/exceptions/HttpException';
 
 function errorMiddleware(
     error: HttpException,
-    req: Request,
+    request: Request,
     response: Response,
     next: NextFunction
 ): void {

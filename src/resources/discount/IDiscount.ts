@@ -27,6 +27,4 @@ export default interface Discount {
 
     quarterlyROIC: QuarterlyData[]
     
-
 }
-
