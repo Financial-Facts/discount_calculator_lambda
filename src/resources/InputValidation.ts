@@ -32,7 +32,7 @@ const update_discount = create_discount;
 
 const check_for_discounts = Joi.object({
 
-    cikList: Joi.array().required()
+    facts: Joi.object().optional()
 
 });
 

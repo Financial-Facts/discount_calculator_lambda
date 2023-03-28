@@ -24,8 +24,9 @@ class FactsController implements Controller {
             this.get
         )
         this.router.post(
-            `${this.path}`,
-            validationMiddleware(validation.check_for_discounts)
+            `${this.path}/:cik(${CONSTANTS.GLOBAL.CIK_REGEX})`,
+            validationMiddleware(validation.check_for_discounts),
+            this.checkForDiscount
         )
     }
 
@@ -43,14 +44,16 @@ class FactsController implements Controller {
         }
     }
 
-    private checkForDiscounts = async (
+    private checkForDiscount = async (
         request: Request,
         response: Response,
         next: NextFunction
     ): Promise<Response | void> => {
-        const cikList: string[] = request.body;
+        const cik = request.params.cik;
+        const providedFacts: any = request.body;
+        
         try {
-            const status = await this.FactsService.checkForDiscounts(cikList);
+            const status = await this.FactsService.checkForDiscount(cik, providedFacts);
             response.status(200).json(status);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
