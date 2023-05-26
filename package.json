@@ -45,7 +45,7 @@
     "module-alias": "^2.2.2",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.9",
-    "yahoo-stock-api": "^2.1.3"
+    "yahoo-finance": "^0.3.8"
   },
   "_moduleAliases": {
     "@/resources": "dist/resources",

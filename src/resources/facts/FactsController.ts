@@ -37,7 +37,7 @@ class FactsController implements Controller {
     ): Promise<Response | void> => {
         const cik = request.params.cik;
         try {
-            const facts: any = await this.FactsService.get(cik);
+            const facts: any = await this.FactsService.getFacts(cik);
             response.status(200).json(facts);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
@@ -53,7 +53,7 @@ class FactsController implements Controller {
         const providedFacts: any = request.body;
         
         try {
-            const status = await this.FactsService.checkForDiscount(cik, providedFacts);
+            // const status = await this.FactsService.checkForDiscount(cik, providedFacts);
             response.status(200).json(status);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
