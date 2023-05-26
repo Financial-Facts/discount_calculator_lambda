@@ -13,10 +13,12 @@ class Parser {
     public retrieve_quarterly_data(
         factsKeys: string[],
         taxonomyType: TaxonomyType,
-        deiFactsKeys: string[]
+        deiFactsKeys: string[] = []
     ): any[] {
         const data = this.parse_facts_for_data(factsKeys, taxonomyType, deiFactsKeys);
         const hasStartDate = this.checkHasStartDate(data);
+
+        return [data];
     }
 
     private parse_facts_for_data(
