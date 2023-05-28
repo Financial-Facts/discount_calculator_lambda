@@ -6,12 +6,15 @@ import HistoricalPriceInput from "../HistoricalPriceService/models/HistoricalPri
 import PriceData from "../HistoricalPriceService/models/PriceData";
 import { Frequency } from "../HistoricalPriceService/models/Frequency";
 import StickerPriceData from "./models/StickerPriceData";
+import Calculator from "./helpers/calculator/calculator";
+import CONSTANTS from "../../Services/ServiceConstants";
 
 class StickerPriceService {
 
     private factsService: FactsService;
     private identityService: IdentityService;
     private historicalPriceService: HistoricalPriceService
+    private symbol: string = CONSTANTS.GLOBAL.EMPTY;
 
     constructor() {
         this.factsService = new FactsService();
@@ -22,6 +25,8 @@ class StickerPriceService {
     public async getStickerPrice(cik: string): Promise<number> {
         return this.fetchStickerPriceData(cik)
             .then((data: StickerPriceData) => {
+                const calculator: Calculator = new Calculator(this.symbol, data.h_data, data.facts);
+                calculator.calculateStickerPriceData();
                 return 0;
             });
     }
@@ -39,6 +44,7 @@ class StickerPriceService {
     private async fetchHistoricalPrices(cik: string): Promise<PriceData[]> {
         return this.identityService.getIdentityWithCik(cik)
             .then((identity: Identity) => {
+                this.symbol = identity.symbol;
                 const input: HistoricalPriceInput = this.buildHistoricalPriceInput(identity);
                 return this.historicalPriceService.getHistoricalPrices(input)
             });

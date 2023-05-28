@@ -1,8 +1,12 @@
 const CONSTANTS = {
+    GLOBAL: {
+        EMPTY: '',
+    },
     STICKER_PRICE: {
         DEI: 'dei',
         UNITS: 'units',
-        FACTS: 'facts'
+        FACTS: 'facts',
+        SLASH_SHARES: '/shares'
     },
 }
 

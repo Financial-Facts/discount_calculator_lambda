@@ -1,4 +1,4 @@
-import PriceData from "Services/HistoricalPriceService/models/PriceData";
+import PriceData from "../../../HistoricalPriceService/models/PriceData";
 import CalculatedData from "./models/CalculatedData";
 import AbstractFunction from "./functions/AbstractFunction";
 import BvpsFunction from "./functions/BvpsFunction";

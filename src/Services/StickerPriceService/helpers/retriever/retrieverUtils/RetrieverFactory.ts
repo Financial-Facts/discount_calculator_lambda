@@ -1,7 +1,7 @@
-import CONSTANTS from "Services/ServiceConstants";
-import { TaxonomyType } from "Services/StickerPriceService/models/TaxonomyType";
+import CONSTANTS from "../../../../ServiceConstants";
+import { TaxonomyType } from "../../../models/TaxonomyType";
 import GaapRetriever from "../GaapRetriever";
-import InsufficientDataException from "exceptions/InsufficientDataException";
+import InsufficientDataException from "../../../../../exceptions/InsufficientDataException";
 
 class RetrieverFactory {
 
@@ -9,7 +9,7 @@ class RetrieverFactory {
 
     public getRetriever(facts: any) {
         if (facts[CONSTANTS.STICKER_PRICE.FACTS][TaxonomyType.GAAP]) {
-            return new GaapRetriever(facts);
+            return new GaapRetriever(facts[CONSTANTS.STICKER_PRICE.FACTS]);
         }
         if (facts[CONSTANTS.STICKER_PRICE.FACTS][TaxonomyType.IFRS]) {
             // ToDo: return new IFRS Retriever

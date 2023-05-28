@@ -1,4 +1,5 @@
-import { TaxonomyType } from "Services/StickerPriceService/models/TaxonomyType";
+import { TaxonomyType } from "../../models/TaxonomyType";
+import UnitData from "../calculator/models/UnitData";
 import Parser from "../parser/Parser";
 import AbstractRetriever from "./AbstractRetriever";
 import FACTS_KEYS from "./retrieverUtils/FactsKeys";
@@ -12,8 +13,8 @@ class GaapRetriever extends AbstractRetriever {
         this.parser = new Parser(facts);
     }
 
-    retrieve_quarterly_shareholder_equity(): any[] {
-        const factsKeys: string[] = Object.keys(FACTS_KEYS.SHAREHOLDER_EQUITY);
+    retrieve_quarterly_shareholder_equity(): UnitData[] {
+        const factsKeys: string[] = Object.values(FACTS_KEYS.SHAREHOLDER_EQUITY);
         return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP);
     }
 

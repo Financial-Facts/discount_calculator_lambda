@@ -2,15 +2,18 @@ import Discount from "./IDiscount";
 import fetch from 'node-fetch';
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
+import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 
 
 class DiscountService {
 
     private financialFactServiceDiscountV1Url: string;
+    private stickerPriceService: StickerPriceService;
 
     constructor() {
         this.financialFactServiceDiscountV1Url 
             = process.env.FINANCIAL_FACTS_SERVICE_BASE_URL + CONSTANTS.DISCOUNT.V1_ENDPOINT;
+        this.stickerPriceService = new StickerPriceService();
     }
 
     // Create a new discount 
@@ -65,6 +68,12 @@ class DiscountService {
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.FETCH_ERROR + err.message);
         }
+    }
+
+    public async checkForDiscount(cik: string): Promise<Discount | null> {
+        return this.stickerPriceService.getStickerPrice(cik).then(response => {
+            return null;
+        })
     }
 }
 

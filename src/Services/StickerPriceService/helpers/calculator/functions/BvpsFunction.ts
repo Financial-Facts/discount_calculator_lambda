@@ -7,10 +7,10 @@ class BvpsFunction extends AbstractFunction {
     private retriever: AbstractRetriever;
     private retrieverFactory: RetrieverFactory;
     
-    constructor(symol: string, facts: any) {
+    constructor(symbol: string, facts: any) {
         super();
         this.retrieverFactory = new RetrieverFactory();
-        this.retriever = this.retrieverFactory.getRetriever(facts)
+        this.retriever = this.retrieverFactory.getRetriever(facts);
     }
 
     calculate(): number[] {
@@ -18,7 +18,6 @@ class BvpsFunction extends AbstractFunction {
     }
     setVariables(): void {
         const a = this.retriever.retrieve_quarterly_shareholder_equity();
-        console.log(a);
     }
     annualize(): { firstQuarter: number[]; annualBVPS: number[]; } {
         throw new Error("Method not implemented.");

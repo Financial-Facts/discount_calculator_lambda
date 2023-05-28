@@ -36,6 +36,11 @@ class DiscountController implements Controller {
             `${this.path}/:cik(${CONSTANTS.GLOBAL.CIK_REGEX})`,
             this.get
         )
+
+        this.router.post(
+            `${this.path}/:cik(${CONSTANTS.GLOBAL.CIK_REGEX})`,
+            this.checkForDiscount
+        )
     }
 
     private create = async (
@@ -77,6 +82,20 @@ class DiscountController implements Controller {
         try {
             const fetchedDiscount: Discount = await this.DiscountService.get(cik);
             response.status(200).json(fetchedDiscount);
+        } catch (err: any) {
+            next(new HttpException(err.status, err.message));
+        }
+    }
+
+    private checkForDiscount = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ): Promise<Response | void> => {
+        const cik = request.params.cik;
+        try {
+            const checkedDiscount: Discount | null = await this.DiscountService.checkForDiscount(cik);
+            response.status(200).json(checkedDiscount);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
         }
