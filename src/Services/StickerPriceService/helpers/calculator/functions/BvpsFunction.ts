@@ -21,7 +21,7 @@ class BvpsFunction extends AbstractFunction {
     setVariables(): void {
         const quarterly_shareholder_equity: QuarterlyData[] = this.retriever.retrieve_quarterly_shareholder_equity();
         const quarterly_outstanding_shares: QuarterlyData[] = this.retriever.retrieve_quarterly_outstanding_shares();
-        console.log(quarterly_outstanding_shares);
+        console.log(quarterly_shareholder_equity);
     }
     annualize(): { firstQuarter: number[]; annualBVPS: number[]; } {
         throw new Error("Method not implemented.");

@@ -4,27 +4,29 @@ import DataRetrievalException from "../../../../exceptions/DataRetrievalExceptio
 import { days_between } from "../../../../Services/StickerPriceService/utils/StickerPriceUtils";
 import QuarterlyData from "@/resources/discount/models/QuarterlyData";
 import UnitsData from "./models/UnitsData";
+import Period from "./models/Period";
 
 class Parser {
 
+    private cik: string;
     private facts: any;
 
-    constructor(facts: any) {
+    constructor(cik: string, facts: any) {
         this.facts = facts;
+        this.cik = cik;
     }
 
     public retrieve_quarterly_data(
-        cik: string,
         factsKeys: string[],
         taxonomyType: TaxonomyType,
         deiFactsKeys: string[] = []
     ): QuarterlyData[] {
         const data = this.parse_facts_for_data(factsKeys, taxonomyType, deiFactsKeys);
         const hasStartDate = this.checkHasStartDate(data);
-
+        
         return hasStartDate ?
-            this.populate_quarterly_data_with_start_date(cik, data) :
-            this.populate_quarterly_data_without_start_date(cik, data);
+            this.populate_quarterly_data_with_start_date(this.cik, data) :
+            this.populate_quarterly_data_without_start_date(this.cik, data);
     }
 
     private parse_facts_for_data(
@@ -34,11 +36,11 @@ class Parser {
     ): UnitsData {
         let data: UnitsData | null;
         data = this.parse(factsKeys, taxonomyType);
-        if (data === null) {
+        if (data === null && deiFactsKeys.length !== 0) {
             data = this.parse(deiFactsKeys);
-            if (data === null) {
-                throw new DataRetrievalException(`Keys ${factsKeys} invalid`);
-            }
+        }
+        if (data === null) {
+            throw new DataRetrievalException(`Keys ${factsKeys} invalid for cik ${this.cik}`);
         }
         return data;
     }
@@ -47,24 +49,31 @@ class Parser {
         keys: string[],
         taxonomyType?: TaxonomyType
     ): UnitsData | null {
+        let result: UnitsData | null;
         if (taxonomyType) {
-            const key: string | undefined = keys.find(key => {
-                if (this.facts[taxonomyType][key]) {
-                    return true;
-                }
-            });
-            if (key) {
-                return this.facts[taxonomyType][key];
-            }
+            result = this.processKeys(keys, taxonomyType);
         } else {
-            const key: string | undefined = keys.find(key => {
-                if (this.facts[CONSTANTS.STICKER_PRICE.DEI][key]) {
-                    return true;
+            result = this.processKeys(keys, CONSTANTS.STICKER_PRICE.DEI)
+        }
+        return result;
+    }
+
+    private processKeys(keys: string[], taxonomyType: TaxonomyType | string): UnitsData | null {
+        const lengthMap: Record<number, string> = {};
+        let max = 0;
+        keys.forEach(key => {
+            if (this.facts[taxonomyType][key]) {
+                const unitsData: UnitsData = this.facts[taxonomyType][key];
+                const unitsKey: string = Object.keys(unitsData.units)[0];
+                const unitsLength: number = unitsData.units[unitsKey].length;
+                if (unitsLength > max) {
+                    max = unitsLength;
                 }
-            });
-            if (key) {
-                return this.facts[CONSTANTS.STICKER_PRICE.DEI][key];
+                lengthMap[unitsLength] = key;
             }
+        });
+        if  (max !== 0) {
+            return this.facts[taxonomyType][lengthMap[max]];
         }
         return null;
     }
@@ -75,19 +84,20 @@ class Parser {
         return quarter.start !== undefined && quarter.start !== null;
     }
 
-    private populate_quarterly_data_with_start_date(cik: string, data: any): QuarterlyData[] {
-        const quarterly_data: any[] = [];
+    private populate_quarterly_data_with_start_date(cik: string, data: UnitsData): QuarterlyData[] {
+        const quarterly_data: QuarterlyData[] = [];
         const processed_end_dates: string[] = []
-        const key: string = data[CONSTANTS.STICKER_PRICE.UNITS].keys()[0];
-        data[CONSTANTS.STICKER_PRICE.UNITS][key].array
-            .forEach((period: any) => {
-                if (period.end && 
+        const key: string = Object.keys(data.units)[0];
+        data.units[key]
+            .forEach((period: Period) => {
+                if (period.end &&
+                    period.start &&
                     !processed_end_dates.includes(period.end) &&
                     days_between(new Date(period.start), new Date(period.end)) < 105) {
                         // ToDo: Convert other currencies to USD
                         const val: QuarterlyData = {
                             cik: cik,
-                            announcedDate: period.end,
+                            announcedDate: new Date(period.end),
                             value: period.val
                         }
                         quarterly_data.push(val);
@@ -98,15 +108,16 @@ class Parser {
     }
 
     private populate_quarterly_data_without_start_date(cik: string, data: any): QuarterlyData[] {
-        const quarterly_data: any[] = [];
+        const quarterly_data: QuarterlyData[] = [];
         const key = Object.keys(data.units)[0];
         const processed_end_dates: string[] = []
         data.units[key]
-            .forEach((period: any) => {
-                if (!processed_end_dates.includes(period.end)) {
+            .forEach((period: Period) => {
+                if (!processed_end_dates.includes(period.end) &&
+                        (period.fp.includes('Q') || period.frame && period.frame.includes('Q'))) {
                     const val: QuarterlyData = {
                         cik: cik,
-                        announcedDate: period.end,
+                        announcedDate: new Date(period.end),
                         value: period.val
                     }
                     quarterly_data.push(val);
