@@ -2,6 +2,8 @@ import CONSTANTS from "../../../ServiceConstants";
 import { TaxonomyType } from "../../models/TaxonomyType";
 import DataRetrievalException from "../../../../exceptions/DataRetrievalException";
 import { days_between } from "../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import QuarterlyData from "@/resources/discount/models/QuarterlyData";
+import UnitsData from "./models/UnitsData";
 
 class Parser {
 
@@ -12,33 +14,30 @@ class Parser {
     }
 
     public retrieve_quarterly_data(
+        cik: string,
         factsKeys: string[],
         taxonomyType: TaxonomyType,
         deiFactsKeys: string[] = []
-    ): any[] {
+    ): QuarterlyData[] {
         const data = this.parse_facts_for_data(factsKeys, taxonomyType, deiFactsKeys);
         const hasStartDate = this.checkHasStartDate(data);
-        let quarterly_data: any;
 
-        quarterly_data = hasStartDate ?
-            this.populate_quarterly_data_with_start_date(data) :
-            this.populate_quarterly_data_without_start_date(data);
-
-        console.log(quarterly_data);
-        return [data];
+        return hasStartDate ?
+            this.populate_quarterly_data_with_start_date(cik, data) :
+            this.populate_quarterly_data_without_start_date(cik, data);
     }
 
     private parse_facts_for_data(
         factsKeys: string[],
         taxonomyType: TaxonomyType,
         deiFactsKeys: string[]
-    ): any {
-        let data: any;
+    ): UnitsData {
+        let data: UnitsData | null;
         data = this.parse(factsKeys, taxonomyType);
         if (data === null) {
             data = this.parse(deiFactsKeys);
             if (data === null) {
-                throw new DataRetrievalException('type not provided');
+                throw new DataRetrievalException(`Keys ${factsKeys} invalid`);
             }
         }
         return data;
@@ -47,7 +46,7 @@ class Parser {
     private parse(
         keys: string[],
         taxonomyType?: TaxonomyType
-    ): any {
+    ): UnitsData | null {
         if (taxonomyType) {
             const key: string | undefined = keys.find(key => {
                 if (this.facts[taxonomyType][key]) {
@@ -76,7 +75,7 @@ class Parser {
         return quarter.start !== undefined && quarter.start !== null;
     }
 
-    private populate_quarterly_data_with_start_date(data: any): any[] {
+    private populate_quarterly_data_with_start_date(cik: string, data: any): QuarterlyData[] {
         const quarterly_data: any[] = [];
         const processed_end_dates: string[] = []
         const key: string = data[CONSTANTS.STICKER_PRICE.UNITS].keys()[0];
@@ -86,8 +85,10 @@ class Parser {
                     !processed_end_dates.includes(period.end) &&
                     days_between(new Date(period.start), new Date(period.end)) < 105) {
                         // ToDo: Convert other currencies to USD
-                        const val = {
-                            [period.end as string]: period.val
+                        const val: QuarterlyData = {
+                            cik: cik,
+                            announcedDate: period.end,
+                            value: period.val
                         }
                         quarterly_data.push(val);
                         processed_end_dates.push(period.end);
@@ -96,18 +97,21 @@ class Parser {
         return quarterly_data;
     }
 
-    private populate_quarterly_data_without_start_date(data: any): any[] {
+    private populate_quarterly_data_without_start_date(cik: string, data: any): QuarterlyData[] {
         const quarterly_data: any[] = [];
-        let isShares = false;
         const key = Object.keys(data.units)[0];
-        console.log(data.units[key])
+        const processed_end_dates: string[] = []
         data.units[key]
             .forEach((period: any) => {
-                let amount: number = period.val;
-                const val = {
-                    [period.end]: amount
+                if (!processed_end_dates.includes(period.end)) {
+                    const val: QuarterlyData = {
+                        cik: cik,
+                        announcedDate: period.end,
+                        value: period.val
+                    }
+                    quarterly_data.push(val);
+                    processed_end_dates.push(period.end);
                 }
-                quarterly_data.push(val);
             });
         return quarterly_data;
     }

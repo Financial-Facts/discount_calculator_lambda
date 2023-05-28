@@ -1,26 +1,31 @@
+import QuarterlyData from "@/resources/discount/models/QuarterlyData";
 import { TaxonomyType } from "../../models/TaxonomyType";
-import UnitData from "../calculator/models/UnitData";
 import Parser from "../parser/Parser";
 import AbstractRetriever from "./AbstractRetriever";
 import FACTS_KEYS from "./retrieverUtils/FactsKeys";
 
 class GaapRetriever extends AbstractRetriever {
 
+    private cik: string;
     private parser: Parser;
 
-    constructor(facts: string) {
+    constructor(cik: string, facts: string) {
         super();
+        this.cik = cik;
         this.parser = new Parser(facts);
     }
 
-    retrieve_quarterly_shareholder_equity(): UnitData[] {
+    retrieve_quarterly_shareholder_equity(): QuarterlyData[] {
         const factsKeys: string[] = Object.values(FACTS_KEYS.SHAREHOLDER_EQUITY);
-        return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP);
+        return this.parser.retrieve_quarterly_data(this.cik, factsKeys, TaxonomyType.GAAP);
     }
 
-    retrieve_quarterly_outstanding_shares(facts: any): any[] {
-        throw new Error("Method not implemented.");
+    retrieve_quarterly_outstanding_shares(): QuarterlyData[] {
+        const factsKeys: string[] = Object.values(FACTS_KEYS.OUTSTANDING_SHARES);
+        const deiFactsKeys: string[] = Object.values(FACTS_KEYS.DEI.OUTSTANDING_SHARES);
+        return this.parser.retrieve_quarterly_data(this.cik, factsKeys, TaxonomyType.GAAP, deiFactsKeys);
     }
+    
     retrieve_quarterly_EPS(facts: any): any[] {
         throw new Error("Method not implemented.");
     }

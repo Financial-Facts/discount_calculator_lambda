@@ -7,9 +7,9 @@ class RetrieverFactory {
 
     constructor() {}
 
-    public getRetriever(facts: any) {
+    public getRetriever(cik: string, facts: any) {
         if (facts[CONSTANTS.STICKER_PRICE.FACTS][TaxonomyType.GAAP]) {
-            return new GaapRetriever(facts[CONSTANTS.STICKER_PRICE.FACTS]);
+            return new GaapRetriever(cik, facts[CONSTANTS.STICKER_PRICE.FACTS]);
         }
         if (facts[CONSTANTS.STICKER_PRICE.FACTS][TaxonomyType.IFRS]) {
             // ToDo: return new IFRS Retriever

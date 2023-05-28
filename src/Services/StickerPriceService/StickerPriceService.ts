@@ -14,7 +14,7 @@ class StickerPriceService {
     private factsService: FactsService;
     private identityService: IdentityService;
     private historicalPriceService: HistoricalPriceService
-    private symbol: string = CONSTANTS.GLOBAL.EMPTY;
+    private cik: string = CONSTANTS.GLOBAL.EMPTY;
 
     constructor() {
         this.factsService = new FactsService();
@@ -25,7 +25,7 @@ class StickerPriceService {
     public async getStickerPrice(cik: string): Promise<number> {
         return this.fetchStickerPriceData(cik)
             .then((data: StickerPriceData) => {
-                const calculator: Calculator = new Calculator(this.symbol, data.h_data, data.facts);
+                const calculator: Calculator = new Calculator(this.cik, data.h_data, data.facts);
                 calculator.calculateStickerPriceData();
                 return 0;
             });
@@ -44,7 +44,7 @@ class StickerPriceService {
     private async fetchHistoricalPrices(cik: string): Promise<PriceData[]> {
         return this.identityService.getIdentityWithCik(cik)
             .then((identity: Identity) => {
-                this.symbol = identity.symbol;
+                this.cik = identity.cik;
                 const input: HistoricalPriceInput = this.buildHistoricalPriceInput(identity);
                 return this.historicalPriceService.getHistoricalPrices(input)
             });

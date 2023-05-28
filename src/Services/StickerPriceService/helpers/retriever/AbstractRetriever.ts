@@ -1,9 +1,10 @@
+import QuarterlyData from "@/resources/discount/models/QuarterlyData";
 import UnitData from "../calculator/models/UnitData";
 
 abstract class AbstractRetriever {
 
-    abstract retrieve_quarterly_shareholder_equity(): UnitData[];
-    abstract retrieve_quarterly_outstanding_shares(facts: any): any[];
+    abstract retrieve_quarterly_shareholder_equity(): QuarterlyData[];
+    abstract retrieve_quarterly_outstanding_shares(): QuarterlyData[];
     abstract retrieve_quarterly_EPS(facts: any): any[];
     abstract retrieve_benchmark_ratio_price(facts: any, benchmark: number): number;
     abstract retrieve_quarterly_net_income(facts: any): any[];

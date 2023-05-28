@@ -5,19 +5,19 @@ import BvpsFunction from "./functions/BvpsFunction";
 
 class Calculator {
 
-    private symbol: string;
+    private cik: string;
     private h_data: PriceData[];
     private facts: any;
     private function: AbstractFunction | undefined;
 
-    constructor(symbol: string, h_data: PriceData[], facts: any) {
-        this.symbol = symbol;
+    constructor(cik: string, h_data: PriceData[], facts: any) {
+        this.cik = cik;
         this.h_data = h_data;
         this.facts = facts;
     }
 
     public calculateStickerPriceData(): CalculatedData {
-        this.function = new BvpsFunction(this.symbol, this.facts);
+        this.function = new BvpsFunction(this.cik, this.facts);
         this.function.setVariables();
         return {
             trailing_years: [],
