@@ -15,12 +15,12 @@ class GaapRetriever extends AbstractRetriever {
         this.parser = new Parser(cik, facts);
     }
 
-    retrieve_quarterly_shareholder_equity(): QuarterlyData[] {
+    async retrieve_quarterly_shareholder_equity(): Promise<QuarterlyData[]> {
         const factsKeys: string[] = Object.values(FACTS_KEYS.SHAREHOLDER_EQUITY);
         return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP);
     }
 
-    retrieve_quarterly_outstanding_shares(): QuarterlyData[] {
+    async retrieve_quarterly_outstanding_shares(): Promise<QuarterlyData[]> {
         const factsKeys: string[] = Object.values(FACTS_KEYS.OUTSTANDING_SHARES);
         const deiFactsKeys: string[] = Object.values(FACTS_KEYS.DEI.OUTSTANDING_SHARES);
         return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP, deiFactsKeys);

@@ -16,11 +16,11 @@ class Parser {
         this.cik = cik;
     }
 
-    public retrieve_quarterly_data(
+    public async retrieve_quarterly_data(
         factsKeys: string[],
         taxonomyType: TaxonomyType,
         deiFactsKeys: string[] = []
-    ): QuarterlyData[] {
+    ): Promise<QuarterlyData[]> {
         const data = this.parse_facts_for_data(factsKeys, taxonomyType, deiFactsKeys);
         const hasStartDate = this.checkHasStartDate(data);
         

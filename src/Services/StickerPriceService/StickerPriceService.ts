@@ -8,6 +8,7 @@ import { Frequency } from "../HistoricalPriceService/models/Frequency";
 import StickerPriceData from "./models/StickerPriceData";
 import Calculator from "./helpers/calculator/calculator";
 import CONSTANTS from "../../Services/ServiceConstants";
+import Discount from "@/resources/discount/IDiscount";
 
 class StickerPriceService {
 
@@ -22,31 +23,34 @@ class StickerPriceService {
         this.historicalPriceService = new HistoricalPriceService;
     }
 
-    public async getStickerPrice(cik: string): Promise<number> {
+    public async getStickerPriceDiscount(cik: string): Promise<Discount> {
         return this.fetchStickerPriceData(cik)
             .then((data: StickerPriceData) => {
-                const calculator: Calculator = new Calculator(this.cik, data.h_data, data.facts);
-                calculator.calculateStickerPriceData();
-                return 0;
+                const calculator: Calculator = new Calculator(data.identity, data.h_data, data.facts);
+                return calculator.calculateStickerPriceData();
             });
     }
 
     private async fetchStickerPriceData(cik: string): Promise<StickerPriceData> {
-        return Promise.all([this.factsService.getFacts(cik), this.fetchHistoricalPrices(cik)])
-            .then((values: [any, PriceData[]]) => {
+        return Promise.all([this.factsService.getFacts(cik), this.fetchIdentityAndHistoricalPrices(cik)])
+            .then(async (values: [any, { identity: Identity, priceDataPromise: Promise<PriceData[]> }]) => {
                 return {
+                    identity: values[1].identity,
                     facts: values[0],
-                    h_data: values[1]
+                    h_data: await values[1].priceDataPromise
                 }
             });
     }
 
-    private async fetchHistoricalPrices(cik: string): Promise<PriceData[]> {
+    private async fetchIdentityAndHistoricalPrices(cik: string): Promise<{ identity: Identity, priceDataPromise: Promise<PriceData[]> }> {
         return this.identityService.getIdentityWithCik(cik)
             .then((identity: Identity) => {
                 this.cik = identity.cik;
                 const input: HistoricalPriceInput = this.buildHistoricalPriceInput(identity);
-                return this.historicalPriceService.getHistoricalPrices(input)
+                return { 
+                    identity: identity, 
+                    priceDataPromise: this.historicalPriceService.getHistoricalPrices(input) 
+                };
             });
     }
 
