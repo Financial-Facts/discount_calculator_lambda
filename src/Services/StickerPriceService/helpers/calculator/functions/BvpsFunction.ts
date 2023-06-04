@@ -32,7 +32,7 @@ class BvpsFunction extends AbstractFunction {
                 while (outstandingDate.getTime() <= equityDate.getTime() && outstandingIndex + 1 !== this.quarterly_outstanding_shares.length) {
                     quarterly_BVPS.push({
                         cik: this.cik,
-                        announcedDate: this.quarterly_shareholder_equity[equityIndex].announcedDate,
+                        announcedDate: median_date(equityDate, outstandingDate),
                         value: this.quarterly_shareholder_equity[equityIndex].value /
                             this.quarterly_outstanding_shares[outstandingIndex].value
                     });

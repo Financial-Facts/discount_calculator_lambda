@@ -26,9 +26,11 @@ class GaapRetriever extends AbstractRetriever {
         return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP, deiFactsKeys);
     }
 
-    retrieve_quarterly_EPS(facts: any): any[] {
-        throw new Error("Method not implemented.");
+    retrieve_quarterly_EPS(): Promise<QuarterlyData[]> {
+        const factsKeys: string[] = Object.values(FACTS_KEYS.EPS);
+        return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP);
     }
+    
     retrieve_benchmark_ratio_price(facts: any, benchmark: number): number {
         throw new Error("Method not implemented.");
     }

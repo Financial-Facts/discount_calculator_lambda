@@ -88,20 +88,31 @@ class Parser {
         const quarterly_data: QuarterlyData[] = [];
         const processed_end_dates: string[] = []
         const key: string = Object.keys(data.units)[0];
+        const isShares = key === 'shares';
+        let annualSum: number = 0;
         data.units[key]
             .forEach((period: Period) => {
                 if (period.end &&
                     period.start &&
-                    !processed_end_dates.includes(period.end) &&
-                    days_between(new Date(period.start), new Date(period.end)) < 105) {
-                        // ToDo: Convert other currencies to USD
-                        const val: QuarterlyData = {
-                            cik: cik,
-                            announcedDate: new Date(period.end),
-                            value: period.val
+                    !processed_end_dates.includes(period.end)) {
+                        if (days_between(new Date(period.start), new Date(period.end)) < 105) {
+                            // ToDo: Convert other currencies to USD
+                            annualSum += period.val;
+                            quarterly_data.push({
+                                cik: cik,
+                                announcedDate: new Date(period.end),
+                                value: period.val
+                            });
+                            processed_end_dates.push(period.end);
+                        } else if (period.fp === 'FY') {
+                            quarterly_data.push({
+                                cik: cik,
+                                announcedDate: new Date(period.end),
+                                value: isShares ? period.val : period.val - annualSum
+                            });
+                            processed_end_dates.push(period.end);
+                            annualSum = 0;
                         }
-                        quarterly_data.push(val);
-                        processed_end_dates.push(period.end);
                     }
             });
         return quarterly_data;

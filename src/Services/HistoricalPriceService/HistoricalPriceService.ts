@@ -1,11 +1,9 @@
 import HistoricalPriceInput from "Services/HistoricalPriceService/models/HistoricalPriceInput";
 import PriceData from "./models/PriceData";
-import { error } from "console";
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "@/resources/ResourceConstants";
 
 class HistoricalPriceService {
-
 
     constructor() {}
 
@@ -15,7 +13,7 @@ class HistoricalPriceService {
             symbol: input.symbol,
             from: input.fromDate,
             to: input.toDate,
-            period: 'd'
+            period: input.frequency
           }).catch((error: any) => {
             throw new HttpException(409, CONSTANTS.FACTS.H_DATA_FETCH_ERROR + error.message);
           })

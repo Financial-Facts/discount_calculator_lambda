@@ -3,6 +3,5 @@ import PriceData from "../../../Services/HistoricalPriceService/models/PriceData
 
 export default interface StickerPriceData {
     identity: Identity,
-    facts: any,
-    h_data: PriceData[]
+    facts: any
 }
