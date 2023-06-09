@@ -34,9 +34,12 @@ class GaapRetriever extends AbstractRetriever {
     retrieve_benchmark_ratio_price(facts: any, benchmark: number): number {
         throw new Error("Method not implemented.");
     }
-    retrieve_quarterly_net_income(facts: any): any[] {
-        throw new Error("Method not implemented.");
+
+    retrieve_quarterly_net_income(): Promise<QuarterlyData[]> {
+        const factsKeys: string[] = Object.values(FACTS_KEYS.ROIC.NET_INCOME);
+        return this.parser.retrieve_quarterly_data(factsKeys, TaxonomyType.GAAP);
     }
+
     retrieve_quarterly_total_debt(facts: any): any[] {
         throw new Error("Method not implemented.");
     }

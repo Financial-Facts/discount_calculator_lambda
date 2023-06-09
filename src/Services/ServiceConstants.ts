@@ -6,7 +6,10 @@ const CONSTANTS = {
         DEI: 'dei',
         UNITS: 'units',
         FACTS: 'facts',
-        SLASH_SHARES: '/shares'
+        SLASH_SHARES: '/shares',
+        BVPS: 'bvps',
+        PE: 'pe',
+        ROIC: 'roic'
     },
 }
 

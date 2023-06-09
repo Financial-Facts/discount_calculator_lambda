@@ -12,6 +12,11 @@ const FACTS_KEYS = {
         EPS_BASIC: 'EarningsPerShareBasic',
         NET_PER_OUTSTANDING_LPU: 'NetIncomeLossPerOutstandingLimitedPartnershipUnit'
     },
+    ROIC: {
+        NET_INCOME: {
+            NET_INCOME_LOSS: 'NetIncomeLoss'
+        }
+    },
     DEI: {
         OUTSTANDING_SHARES: {
             E_COMMON_OUTSTANDING: 'EntityCommonStockSharesOutstanding'

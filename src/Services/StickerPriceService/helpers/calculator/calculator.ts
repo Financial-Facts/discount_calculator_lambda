@@ -5,22 +5,25 @@ import QuarterlyData from "@/resources/discount/models/QuarterlyData";
 import Discount from "@/resources/discount/IDiscount";
 import Identity from "@/resources/identity/models/Identity";
 import PeFunction from "./functions/PeFunction";
-import RetrieverFactory from "../retriever/retrieverUtils/RetrieverFactory";
 import AbstractRetriever from "../retriever/AbstractRetriever";
 import InsufficientDataException from "../../../../exceptions/InsufficientDataException";
+import RoicFunction from "./functions/RoicFunction";
+import CONSTANTS from "Services/ServiceConstants";
 
 class Calculator {
 
     private identity: Identity;
-    private facts: any;
-    private calcFunction: AbstractFunction;
     private retriever: AbstractRetriever;
+    private functions: Record<string, AbstractFunction>
 
-    constructor(identity: Identity, facts: any, retriever: AbstractRetriever) {
+    constructor(identity: Identity, retriever: AbstractRetriever) {
         this.identity = identity;
-        this.facts = facts;
-        this.calcFunction = new BvpsFunction(this.identity.cik, retriever);
         this.retriever = retriever;
+        this.functions = {
+            'bvps': new BvpsFunction(identity.cik, this.retriever),
+            'pe': new PeFunction(identity, retriever),
+            'roic': new RoicFunction(retriever)
+        }
     }
 
     public async calculateStickerPriceData(): Promise<Discount | null> {
@@ -30,7 +33,11 @@ class Calculator {
         .then((data: QuarterlyData[][]) => {
             const [ quarterlyBVPS, quarterlyEPS ] = data;
             const { tyy_BVPS_growth, tfy_BVPS_growth, tty_BVPS_growth } = this.calculateGrowthRates(data[0]);
-            return this.calculateQuarterlyPE(quarterlyEPS).then((quarterlyPE: QuarterlyData[]) => {
+            return Promise.all([
+                this.calculateQuarterlyPE(quarterlyEPS),
+                this.calculateQuarterlyROIC()])
+            .then((data: QuarterlyData[][]) => {
+                const [ quarterlyPE, quarterlyROIC ] = data;
                 return {
                     cik: this.identity.cik,
                     symbol: this.identity.symbol,
@@ -43,7 +50,7 @@ class Calculator {
                     quarterlyBVPS: quarterlyBVPS,
                     quarterlyPE: quarterlyPE,
                     quarterlyEPS: quarterlyEPS,
-                    quarterlyROIC: [],
+                    quarterlyROIC: quarterlyROIC,
                 }
             });
         });
@@ -54,21 +61,31 @@ class Calculator {
     }
 
     private async calculateQuarterlyBVPS(): Promise<QuarterlyData[]> {
-        return this.calcFunction.setVariables().then(() => {
-            return this.calcFunction.calculate();
+        const bvpsFunction: BvpsFunction = this.functions['bvps'] as BvpsFunction;
+        return bvpsFunction.setVariables().then(() => {
+            return bvpsFunction.calculate();
         });
     }
 
     private async calculateQuarterlyPE(quarterlyEPS: QuarterlyData[]): Promise<QuarterlyData[]> {
-        this.calcFunction = new PeFunction(this.identity, this.retriever, quarterlyEPS);
-        return this.calcFunction.setVariables().then(() => {
-            return this.calcFunction.calculate();
+        const peFunction: PeFunction = this.functions['pe'] as PeFunction;
+        peFunction.setQuarterlyEPS(quarterlyEPS);
+        return peFunction.setVariables().then(() => {
+            return peFunction.calculate();
+        });
+    }
+
+    private async calculateQuarterlyROIC(): Promise<QuarterlyData[]> {
+        const roicFunction : RoicFunction = this.functions['roic'] as RoicFunction;
+        return roicFunction.setVariables().then(() => {
+            return roicFunction.calculate();
         });
     }
 
     private calculateGrowthRates(quarterlyBVPS: QuarterlyData[]): { tyy_BVPS_growth: number, tfy_BVPS_growth: number, tty_BVPS_growth: number } {
         try {
-            const { lastQuarters, annualBVPS } = (this.calcFunction as BvpsFunction).getLastQuarterAndAnnualizedData(quarterlyBVPS);
+            const bvpsFunction: BvpsFunction = this.functions['bvps'] as BvpsFunction;
+            const { lastQuarters, annualBVPS } = bvpsFunction.getLastQuarterAndAnnualizedData(quarterlyBVPS);
             const tyy_BVPS_growth = (Math.pow(lastQuarters[lastQuarters.length - 1] / lastQuarters[0], (1/1)) - 1) * 100;
             const tfy_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 5].value, (1/5)) - 1) * 100;
             const tty_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 10].value, (1/10)) - 1) * 100;

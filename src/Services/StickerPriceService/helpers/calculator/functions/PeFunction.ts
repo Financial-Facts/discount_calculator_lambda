@@ -55,6 +55,10 @@ class PeFunction extends AbstractFunction {
         return Promise.resolve();
     }
 
+    setQuarterlyEPS(quarterlyEPS: QuarterlyData[]) {
+        this.quarterlyEPS = quarterlyEPS;
+    }
+    
     annualize(quarterlyPE: QuarterlyData[]): QuarterlyData[] {
         throw new Error("Method not implemented.");
     }

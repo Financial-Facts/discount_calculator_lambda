@@ -26,7 +26,6 @@ class StickerPriceService {
             .then((data: StickerPriceData) => {
                 const calculator: Calculator = new Calculator(
                     data.identity,
-                    data.facts,
                     RetrieverFactory.getRetriever(data.identity.cik, data.facts));
                 return calculator.calculateStickerPriceData();
             });
