@@ -7,7 +7,7 @@ class RetrieverFactory {
 
     constructor() {}
 
-    public getRetriever(cik: string, facts: any) {
+    public static getRetriever(cik: string, facts: any) {
         if (facts[CONSTANTS.STICKER_PRICE.FACTS][TaxonomyType.GAAP]) {
             return new GaapRetriever(cik, facts[CONSTANTS.STICKER_PRICE.FACTS]);
         }

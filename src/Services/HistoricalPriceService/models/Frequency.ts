@@ -1,5 +1,6 @@
 export enum Frequency {
-    DAILY = '1d',
-    WEEKLY = '1wk',
-    MONTHLY = '1mo'
+    DAILY = 'd',
+    WEEKLY = 'w',
+    MONTHLY = 'm',
+    YEAR = 'v'
 }

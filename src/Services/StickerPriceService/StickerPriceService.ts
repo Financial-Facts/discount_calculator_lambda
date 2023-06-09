@@ -9,6 +9,7 @@ import StickerPriceData from "./models/StickerPriceData";
 import Calculator from "./helpers/calculator/calculator";
 import CONSTANTS from "../../Services/ServiceConstants";
 import Discount from "@/resources/discount/IDiscount";
+import RetrieverFactory from "./helpers/retriever/retrieverUtils/RetrieverFactory";
 
 class StickerPriceService {
 
@@ -17,13 +18,16 @@ class StickerPriceService {
 
     constructor() {
         this.factsService = new FactsService();
-        this.identityService = new IdentityService;
+        this.identityService = new IdentityService();
     }
 
     public async getStickerPriceDiscount(cik: string): Promise<Discount | null> {
         return this.fetchStickerPriceData(cik)
             .then((data: StickerPriceData) => {
-                const calculator: Calculator = new Calculator(data.identity, data.facts);
+                const calculator: Calculator = new Calculator(
+                    data.identity,
+                    data.facts,
+                    RetrieverFactory.getRetriever(data.identity.cik, data.facts));
                 return calculator.calculateStickerPriceData();
             });
     }

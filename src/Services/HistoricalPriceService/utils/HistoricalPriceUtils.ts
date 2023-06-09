@@ -2,17 +2,11 @@ import Identity from "@/resources/identity/models/Identity";
 import { Frequency } from "../models/Frequency";
 import HistoricalPriceInput from "../models/HistoricalPriceInput";
 
-export function buildHistoricalPriceInput(identity: Identity): HistoricalPriceInput {
+export function buildHistoricalPriceInput(identity: Identity, fromDate: Date, toDate: Date): HistoricalPriceInput {
     return {
         symbol: identity.symbol,
-        fromDate: buildFromDate(),
-        toDate: new Date(),
+        fromDate: fromDate,
+        toDate: toDate,
         frequency: Frequency.DAILY
     }
-}
-
-function buildFromDate(): Date {
-    const date: Date = new Date();
-    date.setFullYear(date.getFullYear() - 15);
-    return date;
 }

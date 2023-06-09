@@ -7,15 +7,11 @@ import { days_between, median_date, quarterize } from "../../../../../Services/S
 class BvpsFunction extends AbstractFunction {
 
     private cik: string;
-    private retriever: AbstractRetriever;
-    private retrieverFactory: RetrieverFactory;
     private quarterly_shareholder_equity: QuarterlyData[];
     private quarterly_outstanding_shares: QuarterlyData[];
     
-    constructor(cik: string, facts: any) {
-        super();
-        this.retrieverFactory = new RetrieverFactory();
-        this.retriever = this.retrieverFactory.getRetriever(cik, facts);
+    constructor(cik: string, retriever: AbstractRetriever) {
+        super(retriever);
         this.quarterly_outstanding_shares = [];
         this.quarterly_shareholder_equity = [];
         this.cik = cik;
@@ -73,10 +69,9 @@ class BvpsFunction extends AbstractFunction {
         });
     }
 
-    annualize(quarterlyBVPS: QuarterlyData[]): { lastQuarters: number[]; annualBVPS: QuarterlyData[]; } {
+    annualize(quarterlyBVPS: QuarterlyData[]): QuarterlyData[] {
         let index = quarterlyBVPS.length - 1;
         const annualBVPS: QuarterlyData[] = [];
-        let lastQuarters: number[] = [];
         while (index >= 0) {
             let sum = quarterlyBVPS[index].value;
             let count = 1;
@@ -87,21 +82,35 @@ class BvpsFunction extends AbstractFunction {
                 count++;
                 index--;
             }
-
-            if (annualBVPS.length === 0) {
-                for (let i = index + 1; i < quarterlyBVPS.length; i++) {
-                    lastQuarters.push(quarterlyBVPS[i].value);
-                }
-            }
-
             annualBVPS.splice(0, 0, {
                 cik: this.cik,
                 announcedDate: periodStartDate,
                 value: sum/count
             });
         }
+        return annualBVPS;
+    }
+
+    getLastQuarterAndAnnualizedData(quartertlyBVPS: QuarterlyData[]): { lastQuarters: number[]; annualBVPS: QuarterlyData[]; } {
+        return {
+            lastQuarters: this.getLastQuarterData(quartertlyBVPS),
+            annualBVPS: this.annualize(quartertlyBVPS)
+        }
+    }
+
+    private getLastQuarterData(quarterlyBVPS: QuarterlyData[]): number[] {
+        let lastQuarters: number[] = [];
+        let index = quarterlyBVPS.length - 1;
+        let periodStartDate: Date = quarterlyBVPS[index].announcedDate;
+        index--;
+        while (index >= 0 && days_between(periodStartDate, quarterlyBVPS[index].announcedDate) <= 365) {
+            index--;
+        }
+        for (let i = index + 1; i < quarterlyBVPS.length; i++) {
+            lastQuarters.push(quarterlyBVPS[i].value);
+        }
         lastQuarters = quarterize(lastQuarters);
-        return { lastQuarters, annualBVPS };
+        return lastQuarters;
     }
     
 }
