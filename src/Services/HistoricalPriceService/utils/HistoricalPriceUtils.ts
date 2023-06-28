@@ -1,4 +1,4 @@
-import Identity from "@/resources/identity/models/Identity";
+import Identity from "@/resources/entities/Identity";
 import { Frequency } from "../models/Frequency";
 import HistoricalPriceInput from "../models/HistoricalPriceInput";
 

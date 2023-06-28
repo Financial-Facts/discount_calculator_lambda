@@ -1,4 +1,4 @@
-import QuarterlyData from "./models/QuarterlyData";
+import QuarterlyData from "../models/QuarterlyData";
 import TrailingPriceData from "./models/TrailingPriceData";
 
 export default interface Discount {

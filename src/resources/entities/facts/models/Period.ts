@@ -1,9 +1,9 @@
 export default interface Period {
     fp: string,
     fy: number,
-    end: string,
+    end: Date,
     val: number,
-    filed: string,
-    start?: string,
-    frame?: string
+    filed: Date,
+    start: Date,
+    frame: string
 }

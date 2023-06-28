@@ -1,11 +1,11 @@
-import QuarterlyData from "@/resources/discount/models/QuarterlyData";
+import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
 import HistoricalPriceService from "../../../../../Services/HistoricalPriceService/HistoricalPriceService";
-import AbstractRetriever from "../../retriever/AbstractRetriever";
 import { buildHistoricalPriceInput } from "../../../../../Services/HistoricalPriceService/utils/HistoricalPriceUtils";
-import Identity from "@/resources/identity/models/Identity";
+import Identity from "@/resources/entities/Identity";
 import PriceData from "../../../../../Services/HistoricalPriceService/models/PriceData";
 import { days_between, median_date } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import { Variables } from "../calculator";
 
 class PeFunction extends AbstractFunction {
 
@@ -14,12 +14,12 @@ class PeFunction extends AbstractFunction {
     private identity: Identity;
     private priceData: PriceData[];
 
-    constructor(identity: Identity, retriever: AbstractRetriever, quarterlyEPS?: QuarterlyData[]) {
-        super(retriever);
+    constructor(identity: Identity, variables: Variables) {
+        super();
         this.identity = identity;
         this.historicalPriceService = new HistoricalPriceService();
-        this.quarterlyEPS = quarterlyEPS ? quarterlyEPS : [];
         this.priceData = [];
+        this.quarterlyEPS = variables.EPS;
     }
 
     calculate(): QuarterlyData[] {
@@ -37,28 +37,19 @@ class PeFunction extends AbstractFunction {
         return quarterlyPE;
     }
 
-    // ToDo: come up with faster way to fetch historical data
-    async setVariables(): Promise<void> {
-        if (this.quarterlyEPS.length === 0) {
-            this.retriever.retrieve_quarterly_EPS().then((fetchedQuarterlyEPS: QuarterlyData[]) => {
-                this.quarterlyEPS = fetchedQuarterlyEPS;
-            });
-        }
-        const fromDate: Date = this.quarterlyEPS[0].announcedDate;
-        const toDate: Date = this.quarterlyEPS[this.quarterlyEPS.length - 1].announcedDate;
-        toDate.setDate(toDate.getDate() + 3);            
-        await this.historicalPriceService.getHistoricalPrices(
-            buildHistoricalPriceInput(this.identity, fromDate, toDate))
-                .then(priceData => {
-                    this.priceData = priceData;
-                });
-        return Promise.resolve();
-    }
+    // // ToDo: come up with faster way to fetch historical data
+    // async setVariables(variables: Variables): Promise<void> {
+    //     const fromDate: Date = this.quarterlyEPS[0].announcedDate;
+    //     const toDate: Date = this.quarterlyEPS[this.quarterlyEPS.length - 1].announcedDate;
+    //     toDate.setDate(toDate.getDate() + 3);            
+    //     await this.historicalPriceService.getHistoricalPrices(
+    //         buildHistoricalPriceInput(this.identity, fromDate, toDate))
+    //             .then(priceData => {
+    //                 this.priceData = priceData;
+    //             });
+    //     return Promise.resolve();
+    // }
 
-    setQuarterlyEPS(quarterlyEPS: QuarterlyData[]) {
-        this.quarterlyEPS = quarterlyEPS;
-    }
-    
     annualize(quarterlyPE: QuarterlyData[]): QuarterlyData[] {
         throw new Error("Method not implemented.");
     }

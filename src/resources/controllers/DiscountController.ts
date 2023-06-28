@@ -3,8 +3,8 @@ import Controller from '@/utils/interfaces/IController';
 import HttpException from '@/utils/exceptions/HttpException';
 import validationMiddleware from '@/middleware/Validation.middleware';
 import validation from '@/resources/InputValidation';
-import DiscountService from './DiscountService';
-import Discount from './IDiscount';
+import DiscountService from '../services/DiscountService';
+import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
 
 

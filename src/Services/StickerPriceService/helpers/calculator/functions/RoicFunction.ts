@@ -1,6 +1,6 @@
-import QuarterlyData from "@/resources/discount/models/QuarterlyData";
+import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
-import AbstractRetriever from "../../retriever/AbstractRetriever";
+import { Variables } from "../calculator";
 
 class RoicFunction extends AbstractFunction {
 
@@ -8,24 +8,28 @@ class RoicFunction extends AbstractFunction {
     private quarterlyShareholderEquity: QuarterlyData[];
     private quarterlyLongTermDebt: QuarterlyData[];
 
-    constructor(retriever: AbstractRetriever) {
-        super(retriever);
+    constructor(variables: Variables) {
+        super();
         this.quarterlyNetIncome = [];
         this.quarterlyShareholderEquity = [];
-        this.quarterlyLongTermDebt = [];
+        this.quarterlyLongTermDebt = variables.LONG_TERM_DEBT;
     }
 
     calculate(): QuarterlyData[] {
         return [];
     }
 
-    async setVariables(): Promise<void> {
-        await Promise.all([
-            this.retriever.retrieve_quarterly_net_income()
-        ])
-        .then(data => {
-            this.quarterlyNetIncome = data[0];
-        });
+    async setVariables(variables: Variables): Promise<void> {
+        // await Promise.all([
+        //     this.retriever.retrieve_quarterly_net_income(),
+        //     this.retriever.retrieve_quarterly_shareholder_equity(),
+        //     this.retriever.retrieve_quarterly_long_term_debt()])
+        // .then(data => {
+        //     this.quarterlyNetIncome = data[0];
+        //     this.quarterlyShareholderEquity = data[1];
+        //     this.quarterlyLongTermDebt = data[2];
+        //     console.log(this.quarterlyLongTermDebt);
+        // });
         return Promise.resolve();
     }
 

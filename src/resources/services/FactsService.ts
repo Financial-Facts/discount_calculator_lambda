@@ -3,6 +3,8 @@ import CONSTANTS from "../ResourceConstants";
 import fetch from 'node-fetch';
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
 import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
+import Facts from "../entities/facts/IFacts";
+import StickerPriceData from "../entities/facts/IStickerPriceData";
 
 class FactsService {
 
@@ -14,7 +16,7 @@ class FactsService {
     }
 
     // Fetch financial facts for a company
-    public async getFacts(cik: string): Promise<any> {
+    public async getFacts(cik: string): Promise<Facts> {
         try {
             const url = `${this.financialFactsServiceFactsV1Url}/${cik}`;
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
@@ -22,10 +24,27 @@ class FactsService {
                     if (response.status != 200) {
                         throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + await response.text());
                     }
-                    return response.text();
-                }).then((body: string) => {
-                    let data = JSON.parse(body);
-                    return data;
+                    return response.json();
+                }).then((body: Facts) => {
+                    return body;
+                })
+        } catch (err: any) {
+            throw new HttpException(err.status, CONSTANTS.FACTS.FETCH_ERROR + err.message);
+        }
+    }
+
+    // Fetch sticker price data for a company
+    public async getStickerPriceData(cik: string): Promise<StickerPriceData> {
+        try {
+            const url = `${this.financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
+            return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
+                .then(async (response: Response) => {
+                    if (response.status != 200) {
+                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + await response.text());
+                    }
+                    return response.json();
+                }).then((body: StickerPriceData) => {
+                    return body;
                 })
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.FACTS.FETCH_ERROR + err.message);

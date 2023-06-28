@@ -1,8 +1,7 @@
-import QuarterlyData from "@/resources/discount/models/QuarterlyData";
-import AbstractRetriever from "../../retriever/AbstractRetriever";
-import RetrieverFactory from "../../retriever/retrieverUtils/RetrieverFactory";
+import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
 import { days_between, median_date, quarterize } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import { Variables } from "../calculator";
 
 class BvpsFunction extends AbstractFunction {
 
@@ -10,10 +9,10 @@ class BvpsFunction extends AbstractFunction {
     private quarterly_shareholder_equity: QuarterlyData[];
     private quarterly_outstanding_shares: QuarterlyData[];
     
-    constructor(cik: string, retriever: AbstractRetriever) {
-        super(retriever);
-        this.quarterly_outstanding_shares = [];
-        this.quarterly_shareholder_equity = [];
+    constructor(cik: string, variables: Variables) {
+        super();
+        this.quarterly_outstanding_shares = variables.OUTSTANDING_SHARES;
+        this.quarterly_shareholder_equity = variables.SHAREHOLDER_EQUITY;
         this.cik = cik;
     }
 
@@ -23,8 +22,8 @@ class BvpsFunction extends AbstractFunction {
         let outstandingIndex = 0;
         while (equityIndex < this.quarterly_shareholder_equity.length &&
             outstandingIndex < this.quarterly_outstanding_shares.length) {
-                let equityDate = this.quarterly_shareholder_equity[equityIndex].announcedDate;
-                let outstandingDate = this.quarterly_outstanding_shares[outstandingIndex].announcedDate;
+                let equityDate = new Date(this.quarterly_shareholder_equity[equityIndex].announcedDate);
+                let outstandingDate = new Date(this.quarterly_outstanding_shares[outstandingIndex].announcedDate);
                 while (outstandingDate.getTime() <= equityDate.getTime() && outstandingIndex + 1 !== this.quarterly_outstanding_shares.length) {
                     quarterly_BVPS.push({
                         cik: this.cik,
@@ -33,7 +32,7 @@ class BvpsFunction extends AbstractFunction {
                             this.quarterly_outstanding_shares[outstandingIndex].value
                     });
                     outstandingIndex++;
-                    outstandingDate = this.quarterly_outstanding_shares[outstandingIndex].announcedDate;
+                    outstandingDate = new Date(this.quarterly_outstanding_shares[outstandingIndex].announcedDate);
                 }
                 while (equityDate.getTime() <= outstandingDate.getTime() && equityIndex + 1 !== this.quarterly_shareholder_equity.length) {
                     quarterly_BVPS.push({
@@ -43,7 +42,7 @@ class BvpsFunction extends AbstractFunction {
                             this.quarterly_outstanding_shares[outstandingIndex].value
                     });
                     equityIndex++;
-                    equityDate = this.quarterly_shareholder_equity[equityIndex].announcedDate;
+                    equityDate = new Date(this.quarterly_shareholder_equity[equityIndex].announcedDate);
                 }
                 if (equityIndex + 1 === this.quarterly_shareholder_equity.length && outstandingIndex + 1 === this.quarterly_outstanding_shares.length) {
                     quarterly_BVPS.push({
@@ -57,16 +56,6 @@ class BvpsFunction extends AbstractFunction {
                 }
             }
         return quarterly_BVPS;
-    }
-
-    async setVariables(): Promise<void> {
-        return Promise.all([
-            this.retriever.retrieve_quarterly_shareholder_equity(),
-            this.retriever.retrieve_quarterly_outstanding_shares()])
-        .then((data: [QuarterlyData[], QuarterlyData[]]) => {
-            this.quarterly_shareholder_equity = data[0];
-            this.quarterly_outstanding_shares = data[1];
-        });
     }
 
     annualize(quarterlyBVPS: QuarterlyData[]): QuarterlyData[] {

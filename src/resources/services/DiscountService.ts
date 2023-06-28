@@ -1,4 +1,4 @@
-import Discount from "./IDiscount";
+import Discount from "../entities/discount/IDiscount";
 import fetch from 'node-fetch';
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
