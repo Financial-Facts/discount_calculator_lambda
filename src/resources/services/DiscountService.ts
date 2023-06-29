@@ -71,7 +71,7 @@ class DiscountService {
     }
 
     public async checkForDiscount(cik: string): Promise<Discount | null> {
-        return this.stickerPriceService.getStickerPriceDiscount(cik);
+        return this.stickerPriceService.checkForSale(cik);
     }
 }
 
