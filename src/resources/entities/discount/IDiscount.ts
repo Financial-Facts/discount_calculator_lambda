@@ -13,11 +13,11 @@ export default interface Discount {
 
     lastUpdated?: Date
 
-    ttmPriceData: TrailingPriceData[]
+    ttmPriceData: TrailingPriceData
 
-    tfyPriceData: TrailingPriceData[]
+    tfyPriceData: TrailingPriceData
 
-    ttyPriceData: TrailingPriceData[]
+    ttyPriceData: TrailingPriceData
 
     quarterlyBVPS: QuarterlyData[]
 

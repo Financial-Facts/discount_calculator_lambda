@@ -1,90 +1,91 @@
-import PriceData from "../../../HistoricalPriceService/models/PriceData";
-import AbstractFunction from "./functions/AbstractFunction";
 import BvpsFunction from "./functions/BvpsFunction";
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import Discount from "@/resources/entities/discount/IDiscount";
-import Identity from "@/resources/entities/Identity";
 import PeFunction from "./functions/PeFunction";
 import InsufficientDataException from "../../../../exceptions/InsufficientDataException";
 import RoicFunction from "./functions/RoicFunction";
-import CONSTANTS from "Services/ServiceConstants";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
-
-export type Variable = 'SHAREHOLDER_EQUITY' | 'OUTSTANDING_SHARES' | 'EPS' | 'LONG_TERM_DEBT';
-export type Variables = Record<Variable, QuarterlyData[]>;
+import StickerPriceOutput from "./outputs/StickerPriceOutput";
+import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
+import HistoricalPriceService from "Services/HistoricalPriceService/HistoricalPriceService";
 
 class Calculator {
 
-    private identity: Identity;
-    private functions: Record<string, AbstractFunction>;
-    private variables: Variables;
-
-    constructor(stickerPriceData: StickerPriceData) {
-        this.identity = stickerPriceData.identity;
-        this.variables = {
-            SHAREHOLDER_EQUITY: stickerPriceData.quarterlyShareholderEquity,
-            OUTSTANDING_SHARES: stickerPriceData.quarterlyOutstandingShares,
-            EPS: stickerPriceData.quarterlyEPS,
-            LONG_TERM_DEBT: stickerPriceData.quarterlyLongTermDebt
-        }
-        this.functions = {
-            'bvps': new BvpsFunction(this.identity.cik, this.variables),
-            'pe': new PeFunction(this.identity, this.variables),
-            'roic': new RoicFunction(this.variables)
-        }
+    private bvpsFunction: BvpsFunction;
+    private peFunction: PeFunction;
+    private roicFunction: RoicFunction;
+    private stickerPriceOutput: StickerPriceOutput;
+    
+    constructor(historicalPriceService: HistoricalPriceService) {
+        this.bvpsFunction = new BvpsFunction();
+        this.peFunction = new PeFunction(historicalPriceService);
+        this.roicFunction = new RoicFunction();
+        this.stickerPriceOutput = new StickerPriceOutput();
     }
 
-    public async calculateStickerPriceData(): Promise<Discount | null> {
+    public async calculateStickerPriceData(data: StickerPriceData): Promise<Discount> {
         return Promise.all([
-            this.calculateQuarterlyBVPS()])
-        .then((data: QuarterlyData[][]) => {
-            const [ quarterlyBVPS ] = data;
-            const { tyy_BVPS_growth, tfy_BVPS_growth, tty_BVPS_growth } = this.calculateGrowthRates(data[0]);
-            return Promise.all([
-                this.calculateQuarterlyPE(),
-                this.calculateQuarterlyROIC()])
-            .then((data: QuarterlyData[][]) => {
-                const [ quarterlyPE, quarterlyROIC ] = data;
-                return {
-                    cik: this.identity.cik,
-                    symbol: this.identity.symbol,
-                    name: this.identity.name,
-                    ratioPrice: 0,
-                    lastUpdated: new Date(),
-                    ttmPriceData: [],
-                    tfyPriceData: [],
-                    ttyPriceData: [],
-                    quarterlyBVPS: quarterlyBVPS,
-                    quarterlyPE: quarterlyPE,
-                    quarterlyEPS: this.variables.EPS,
-                    quarterlyROIC: quarterlyROIC,
-                }
-            });
+            this.calculateQuarterlyBVPS(data),
+            this.calculateQuarterlyPE(data),
+            this.calculateQuarterlyROIC(data)])
+        .then((quarterlyData: QuarterlyData[][]) => {
+            const [ quarterlyBVPS, quarterlyPE, quarterlyROIC ] = quarterlyData;
+            const growthRates = this.calculateGrowthRates(data.cik, quarterlyBVPS);
+            const annualPE = this.peFunction.annualize(data.cik, quarterlyPE);
+            const analystGrowthEstimate: number = 0; //ToDo: Add growth estimate service
+            const trailingPricePromises: Promise<TrailingPriceData>[] = [];
+            Object.keys(growthRates)
+                .forEach((key: string) => {
+                    const period: number = +key;
+                    trailingPricePromises.push(this.stickerPriceOutput.submit(
+                        data.cik,
+                        growthRates[period],
+                        annualPE,
+                        data.quarterlyEPS[data.quarterlyEPS.length - 1].value,
+                        analystGrowthEstimate));
+                    });
+            return Promise.all(trailingPricePromises)
+                .then(trailingPriceData => {
+                    const [ttmPriceData, tfyPriceData, ttyPriceData ] = trailingPriceData;
+                    return {
+                        cik: data.cik,
+                        symbol: data.symbol,
+                        name: data.name,
+                        ratioPrice: data.benchmarkRatioPrice,
+                        lastUpdated: new Date(),
+                        ttmPriceData: ttmPriceData,
+                        tfyPriceData: tfyPriceData,
+                        ttyPriceData: ttyPriceData,
+                        quarterlyBVPS: quarterlyBVPS,
+                        quarterlyPE: quarterlyPE,
+                        quarterlyEPS: data.quarterlyEPS,
+                        quarterlyROIC: quarterlyROIC
+                    }
+                });
         });
     }
 
-    private async calculateQuarterlyBVPS(): Promise<QuarterlyData[]> {
-        return (this.functions['bvps'] as BvpsFunction).calculate();
+    private async calculateQuarterlyBVPS(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+        return this.bvpsFunction.calculate(stickerPriceData);
     }
 
-    private async calculateQuarterlyPE(): Promise<QuarterlyData[]> {
-        return (this.functions['pe'] as PeFunction).calculate();
+    private async calculateQuarterlyPE(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+        return this.peFunction.calculate(stickerPriceData);
     }
 
-    private async calculateQuarterlyROIC(): Promise<QuarterlyData[]> {
-        return (this.functions['roic'] as RoicFunction).calculate();
+    private async calculateQuarterlyROIC(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+        return this.roicFunction.calculate(stickerPriceData);
     }
 
-    private calculateGrowthRates(quarterlyBVPS: QuarterlyData[]): { tyy_BVPS_growth: number, tfy_BVPS_growth: number, tty_BVPS_growth: number } {
+    private calculateGrowthRates(cik: string, quarterlyBVPS: QuarterlyData[]): Record<number, number> {
         try {
-            const bvpsFunction: BvpsFunction = this.functions['bvps'] as BvpsFunction;
-            const { lastQuarters, annualBVPS } = bvpsFunction.getLastQuarterAndAnnualizedData(quarterlyBVPS);
+            const { lastQuarters, annualBVPS } = this.bvpsFunction.getLastQuarterAndAnnualizedData(cik, quarterlyBVPS);
             const tyy_BVPS_growth = (Math.pow(lastQuarters[lastQuarters.length - 1] / lastQuarters[0], (1/1)) - 1) * 100;
             const tfy_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 5].value, (1/5)) - 1) * 100;
             const tty_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 10].value, (1/10)) - 1) * 100;
-            return { tyy_BVPS_growth, tfy_BVPS_growth, tty_BVPS_growth }
+            return { 1: tyy_BVPS_growth, 5: tfy_BVPS_growth, 10: tty_BVPS_growth };
         } catch (error: any) {
-            throw new InsufficientDataException(`Insufficient data collected to calcuate growth rates for ${this.identity.name}`);
+            throw new InsufficientDataException(`Insufficient data collected to calcuate growth rates for ${cik}`);
         }
     }
 

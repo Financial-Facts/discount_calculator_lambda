@@ -2,56 +2,54 @@ import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
 import HistoricalPriceService from "../../../../../Services/HistoricalPriceService/HistoricalPriceService";
 import { buildHistoricalPriceInput } from "../../../../../Services/HistoricalPriceService/utils/HistoricalPriceUtils";
-import Identity from "@/resources/entities/Identity";
 import PriceData from "../../../../../Services/HistoricalPriceService/models/PriceData";
-import { days_between, median_date } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
-import { Variables } from "../calculator";
+import { annualizeByMean, days_between } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
+import HistoricalPriceInput from "Services/HistoricalPriceService/models/HistoricalPriceInput";
+import InsufficientDataException from "../../../../../exceptions/InsufficientDataException";
 
 class PeFunction extends AbstractFunction {
 
     private historicalPriceService: HistoricalPriceService;
-    private quarterlyEPS: QuarterlyData[];
-    private identity: Identity;
-    private priceData: PriceData[];
 
-    constructor(identity: Identity, variables: Variables) {
+    constructor(historicalPriceService: HistoricalPriceService) {
         super();
-        this.identity = identity;
-        this.historicalPriceService = new HistoricalPriceService();
-        this.priceData = [];
-        this.quarterlyEPS = variables.EPS;
+        this.historicalPriceService = historicalPriceService;
     }
 
-    calculate(): QuarterlyData[] {
+    async calculate(data: StickerPriceData): Promise<QuarterlyData[]> {
         const quarterlyPE: QuarterlyData[] = [];
-        this.quarterlyEPS.forEach(quarter => {
-            const price = this.priceData.find(day => {
-                return days_between(day.date, quarter.announcedDate) <= 3;
-            })?.close || 0;
-            quarterlyPE.push({
-                cik: this.identity.cik,
-                announcedDate: quarter.announcedDate,
-                value: quarter.value !== 0 ? price/quarter.value : 0
-            });
-        });
-        return quarterlyPE;
+        const quarterlyEPS = data.quarterlyEPS;
+        const historicalPriceInput =
+            this.buildHistoricalPriceInput(data.symbol, quarterlyEPS);
+        return this.historicalPriceService.getHistoricalPrices(historicalPriceInput)
+            .then((priceData: PriceData[]) => {
+                data.quarterlyEPS.forEach(quarter => {
+                    const price = priceData.find(day => {
+                        return days_between(new Date(day.date), new Date(quarter.announcedDate)) <= 3;
+                    })?.close;
+                    if (!price) {
+                        throw new InsufficientDataException("Insufficent historical price data available");
+                    }
+                    quarterlyPE.push({
+                        cik: data.cik,
+                        announcedDate: quarter.announcedDate,
+                        value: quarter.value !== 0 ? price/quarter.value : 0
+                    });
+                });
+                return quarterlyPE;
+            })
     }
 
-    // // ToDo: come up with faster way to fetch historical data
-    // async setVariables(variables: Variables): Promise<void> {
-    //     const fromDate: Date = this.quarterlyEPS[0].announcedDate;
-    //     const toDate: Date = this.quarterlyEPS[this.quarterlyEPS.length - 1].announcedDate;
-    //     toDate.setDate(toDate.getDate() + 3);            
-    //     await this.historicalPriceService.getHistoricalPrices(
-    //         buildHistoricalPriceInput(this.identity, fromDate, toDate))
-    //             .then(priceData => {
-    //                 this.priceData = priceData;
-    //             });
-    //     return Promise.resolve();
-    // }
+    annualize(cik: string, quarterlyPE: QuarterlyData[]): QuarterlyData[] {
+        return annualizeByMean(cik, quarterlyPE);
+    }
 
-    annualize(quarterlyPE: QuarterlyData[]): QuarterlyData[] {
-        throw new Error("Method not implemented.");
+    private buildHistoricalPriceInput(symbol: string, quarterlyEPS: QuarterlyData[]): HistoricalPriceInput {
+        const fromDate: Date = new Date(quarterlyEPS[0].announcedDate);
+        const toDate: Date = new Date(quarterlyEPS[quarterlyEPS.length - 1].announcedDate);
+        toDate.setDate(toDate.getDate() + 3); 
+        return buildHistoricalPriceInput(symbol, fromDate, toDate)
     }
     
 }

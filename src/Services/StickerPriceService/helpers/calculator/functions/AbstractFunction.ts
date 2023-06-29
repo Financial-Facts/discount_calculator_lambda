@@ -1,9 +1,10 @@
+import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 
 abstract class AbstractFunction {
 
-    abstract calculate(): QuarterlyData[];
-    abstract annualize(quarterlyData: QuarterlyData[]): QuarterlyData[];
+    abstract calculate(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]>;
+    abstract annualize(cik: string, quarterlyData: QuarterlyData[]): QuarterlyData[];
 
 }
 

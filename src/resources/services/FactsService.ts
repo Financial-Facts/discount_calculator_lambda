@@ -2,7 +2,6 @@ import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
 import fetch from 'node-fetch';
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
-import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 import Facts from "../entities/facts/IFacts";
 import StickerPriceData from "../entities/facts/IStickerPriceData";
 

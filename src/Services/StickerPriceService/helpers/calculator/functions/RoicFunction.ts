@@ -1,42 +1,28 @@
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
-import { Variables } from "../calculator";
+import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
+import { annualizeByAdd, processQuarterlyDatasets } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
 
 class RoicFunction extends AbstractFunction {
 
-    private quarterlyNetIncome: QuarterlyData[];
-    private quarterlyShareholderEquity: QuarterlyData[];
-    private quarterlyLongTermDebt: QuarterlyData[];
-
-    constructor(variables: Variables) {
-        super();
-        this.quarterlyNetIncome = [];
-        this.quarterlyShareholderEquity = [];
-        this.quarterlyLongTermDebt = variables.LONG_TERM_DEBT;
+    async calculate(data: StickerPriceData): Promise<QuarterlyData[]> {
+        const quarterlyNetIncome = data.quarterlyNetIncome;
+        const quarterlyShareholderEquity = data.quarterlyShareholderEquity;
+        const quarterlyLongTermDebt = data.quarterlyLongTermDebt;
+        return this.calculateQuarterlyIC(data.cik, quarterlyShareholderEquity, quarterlyLongTermDebt)
+            .then((quarterlyIC: QuarterlyData[]) => {
+                return processQuarterlyDatasets(data.cik, 365, quarterlyNetIncome, quarterlyIC, (a, b) => (a/b) * 100);
+            });
     }
 
-    calculate(): QuarterlyData[] {
-        return [];
+    annualize(cik: string, quarterlyData: QuarterlyData[]): QuarterlyData[] {
+       return annualizeByAdd(cik, quarterlyData);
     }
 
-    async setVariables(variables: Variables): Promise<void> {
-        // await Promise.all([
-        //     this.retriever.retrieve_quarterly_net_income(),
-        //     this.retriever.retrieve_quarterly_shareholder_equity(),
-        //     this.retriever.retrieve_quarterly_long_term_debt()])
-        // .then(data => {
-        //     this.quarterlyNetIncome = data[0];
-        //     this.quarterlyShareholderEquity = data[1];
-        //     this.quarterlyLongTermDebt = data[2];
-        //     console.log(this.quarterlyLongTermDebt);
-        // });
-        return Promise.resolve();
+    private async calculateQuarterlyIC(cik: string, quarterlyShareholderEquity: QuarterlyData[], quarterlyLongTermDebt: QuarterlyData[]): Promise<QuarterlyData[]> {
+        return processQuarterlyDatasets(cik, 365, quarterlyShareholderEquity, quarterlyLongTermDebt, (a, b) => a + b);
     }
 
-    annualize(quarterlyData: QuarterlyData[]): QuarterlyData[] {
-        throw new Error("Method not implemented.");
-    }
-    
 }
 
 export default RoicFunction;
