@@ -34,6 +34,7 @@ class FactsService {
 
     // Fetch sticker price data for a company
     public async getStickerPriceData(cik: string): Promise<StickerPriceData> {
+        console.log("In facts service gettings sticker price data for cik: " + cik);
         try {
             const url = `${this.financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})

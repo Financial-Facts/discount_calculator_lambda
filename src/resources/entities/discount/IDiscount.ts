@@ -26,5 +26,7 @@ export default interface Discount {
     quarterlyEPS: QuarterlyData[]
 
     quarterlyROIC: QuarterlyData[]
+
+    annualROIC: QuarterlyData[]
     
 }

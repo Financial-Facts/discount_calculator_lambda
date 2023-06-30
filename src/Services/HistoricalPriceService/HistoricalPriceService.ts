@@ -5,6 +5,8 @@ import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "Services/ServiceConstants";
 import { mapCSVToPriceData } from "./utils/HistoricalPriceUtils";
 import { FinancialDataListWrapper } from "./models/FinancialData";
+import { buildHistoricalPriceHeaders } from "@/utils/serviceUtils";
+import { symbol } from "joi";
 
 
 class HistoricalPriceService {
@@ -18,11 +20,12 @@ class HistoricalPriceService {
     }
 
     public getHistoricalPrices(input: HistoricalPriceInput): Promise<PriceData[]> {
+        console.log("In historical price service getting historical data for symbol: " + input.symbol);
         try {
           const url = `${this.historicalPriceUrlV7}/${input.symbol}` + 
                       `?symbol=${input.symbol}&period1=${input.fromDate}` + 
                       `&period2=${input.toDate}&interval=1d&includeAdjustedClose=true`;
-          return fetch(url)
+          return fetch(url, { method: 'GET', headers: buildHistoricalPriceHeaders()})
               .then(async (response: Response) => {
                   if (response.status != 200) {
                       throw new HttpException(response.status,
@@ -30,6 +33,7 @@ class HistoricalPriceService {
                   }
                   return response.text();
               }).then((body: string) => {
+                  console.log("Historical data successfully retrieved for symbol: " + input.symbol);
                   return mapCSVToPriceData(body);
               });
         } catch (err: any) {
@@ -38,6 +42,7 @@ class HistoricalPriceService {
     }
 
     public getCurrentPrice(symbol: string): Promise<number> {
+        console.log("In historical price service getting current price for symbol: " + symbol);
         try {
             const url = `${this.stockQuoteUrlV11}/${symbol}?modules=financialData`;
             return fetch(url)

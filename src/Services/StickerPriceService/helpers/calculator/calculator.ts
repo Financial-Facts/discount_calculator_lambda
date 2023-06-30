@@ -24,6 +24,7 @@ class Calculator {
     }
 
     public async calculateStickerPriceData(data: StickerPriceData): Promise<Discount> {
+        console.log("In calculator calculating sticker price for CIK: " + data.cik);
         return Promise.all([
             this.calculateQuarterlyBVPS(data),
             this.calculateQuarterlyPE(data),
@@ -59,7 +60,8 @@ class Calculator {
                         quarterlyBVPS: quarterlyBVPS,
                         quarterlyPE: quarterlyPE,
                         quarterlyEPS: data.quarterlyEPS,
-                        quarterlyROIC: quarterlyROIC
+                        quarterlyROIC: quarterlyROIC,
+                        annualROIC: this.roicFunction.annualize(data.cik, quarterlyROIC)
                     }
                 });
         });
@@ -88,7 +90,6 @@ class Calculator {
             throw new InsufficientDataException(`Insufficient data collected to calcuate growth rates for ${cik}`);
         }
     }
-
 }
 
 export default Calculator;
