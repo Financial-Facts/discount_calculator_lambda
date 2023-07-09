@@ -65,41 +65,50 @@ export function processQuarterlyDatasets(
     let index1 = 0;
     let index2 = 0;
     while (index1 < data1.length && index2 < data2.length) {
-            let data1Date = new Date(data1[index1].announcedDate);
-            let data2Date = new Date(data2[index2].announcedDate);
-            while (data2Date.getTime() <= data1Date.getTime() && index2 + 1 !== data2.length) {
-                if (days_between(data1Date, data2Date) < maxDaysDifference) {
-                    processedData.push({
-                        cik: cik,
-                        announcedDate: median_date(data1Date, data2Date),
-                        value: equation(data1[index1].value, data2[index2].value)
-                    });
-                }
-                index2++;
-                data2Date = new Date(data2[index2].announcedDate);
+        let data1Date = new Date(data1[index1].announcedDate);
+        let data2Date = new Date(data2[index2].announcedDate);
+        while (data2Date.getTime() <= data1Date.getTime() && index2 + 1 !== data2.length) {
+            if (days_between(data1Date, data2Date) <= maxDaysDifference) {
+                processedData.push({
+                    cik: cik,
+                    announcedDate: median_date(data1Date, data2Date),
+                    value: equation(data1[index1].value, data2[index2].value)
+                });
             }
-            while (data1Date.getTime() <= data2Date.getTime() && index1 + 1 !== data1.length) {
-                if (days_between(data1Date, data2Date) < maxDaysDifference) {
-                    processedData.push({
-                        cik: cik,
-                        announcedDate: median_date(data1Date, data2Date),
-                        value: equation(data1[index1].value, data2[index2].value)
-                    });
-                }
-                index1++;
-                data1Date = new Date(data1[index1].announcedDate);
+            index2++;
+            data2Date = new Date(data2[index2].announcedDate);
+        }
+        while (data1Date.getTime() <= data2Date.getTime() && index1 + 1 !== data1.length) {
+            if (days_between(data1Date, data2Date) <= maxDaysDifference) {
+                processedData.push({
+                    cik: cik,
+                    announcedDate: median_date(data1Date, data2Date),
+                    value: equation(data1[index1].value, data2[index2].value)
+                });
             }
-            if (index1 + 1 === data1.length && index2 + 1 === data2.length) {
-                if (days_between(data1Date, data2Date) < maxDaysDifference) {
+            index1++;
+            data1Date = new Date(data1[index1].announcedDate);
+        }
+        if (index1 + 1 === data1.length || index2 + 1 === data2.length) {
+            while (index1 + 1 <= data1.length || index2 + 1 <= data2.length) {
+                if (days_between(data1Date, data2Date) <= maxDaysDifference) {
                     processedData.push({
                         cik: cik,
                         announcedDate: median_date(data1Date, data2Date),
                         value: equation(data1[index1].value, data2[index2].value)
                     });
                 }
-                index1++;
-                index2++;
+                if (index1 + 1 !== data1.length) {
+                    index1++;
+                    data1Date = new Date(data1[index1].announcedDate);
+                } else if (index2 + 1 !== data2.length) {
+                    index2++;
+                    data2Date = new Date(data2[index2].announcedDate);
+                } else {
+                    return processedData;
+                }
             }
         }
+    }
     return processedData;
 }

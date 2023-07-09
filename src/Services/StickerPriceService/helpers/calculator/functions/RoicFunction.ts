@@ -9,17 +9,15 @@ class RoicFunction extends AbstractFunction {
         const quarterlyNetIncome = data.quarterlyNetIncome;
         const quarterlyShareholderEquity = data.quarterlyShareholderEquity;
         const quarterlyLongTermDebt = data.quarterlyLongTermDebt;
-        return this.calculateQuarterlyIC(data.cik, quarterlyShareholderEquity, quarterlyLongTermDebt)
-            .then((quarterlyIC: QuarterlyData[]) => {
-                return processQuarterlyDatasets(data.cik, 365, quarterlyNetIncome, quarterlyIC, (a, b) => (a/b) * 100);
-            });
+        const quarterlyIC = this.calculateQuarterlyIC(data.cik, quarterlyShareholderEquity, quarterlyLongTermDebt);
+        return processQuarterlyDatasets(data.cik, 365, quarterlyNetIncome, quarterlyIC, (a, b) => (a/b) * 100);
     }
 
     annualize(cik: string, quarterlyData: QuarterlyData[]): QuarterlyData[] {
        return annualizeByAdd(cik, quarterlyData);
     }
 
-    private async calculateQuarterlyIC(cik: string, quarterlyShareholderEquity: QuarterlyData[], quarterlyLongTermDebt: QuarterlyData[]): Promise<QuarterlyData[]> {
+    private calculateQuarterlyIC(cik: string, quarterlyShareholderEquity: QuarterlyData[], quarterlyLongTermDebt: QuarterlyData[]): QuarterlyData[] {
         return processQuarterlyDatasets(cik, 365, quarterlyShareholderEquity, quarterlyLongTermDebt, (a, b) => a + b);
     }
 

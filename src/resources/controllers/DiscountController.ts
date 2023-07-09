@@ -6,7 +6,7 @@ import validation from '@/resources/InputValidation';
 import DiscountService from '../services/DiscountService';
 import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
-
+import fetch from 'node-fetch';
 
 class DiscountController implements Controller {
 
@@ -37,7 +37,6 @@ class DiscountController implements Controller {
         response: Response,
         next: NextFunction
     ): Promise<Response | void> => {
-        const cik = request.params.cik;
         try {
             const fetchedDiscounts: Discount[] = await this.discountService.getBulk();
             response.status(200).json(fetchedDiscounts);
@@ -54,7 +53,11 @@ class DiscountController implements Controller {
         const cik = request.params.cik;
         try {
             const checkedDiscount: Discount | null = await this.discountService.checkForDiscount(cik);
-            response.status(200).json(checkedDiscount);
+            if (checkedDiscount) {
+                response.status(200).json(checkedDiscount);
+            } else {
+                response.status(200).json({ message: `${cik} is not on sale`});
+            }
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
         }

@@ -23,13 +23,14 @@ class PeFunction extends AbstractFunction {
         const historicalPriceInput =
             this.buildHistoricalPriceInput(data.symbol, quarterlyEPS);
         return this.historicalPriceService.getHistoricalPrices(historicalPriceInput)
-            .then((priceData: PriceData[]) => {
+            .then(async (priceData: PriceData[]) => {
                 data.quarterlyEPS.forEach(quarter => {
                     const price = priceData.find(day => {
                         return days_between(new Date(day.date), new Date(quarter.announcedDate)) <= 3;
                     })?.close;
                     if (!price) {
-                        throw new InsufficientDataException("Insufficent historical price data available");
+                        console.log("Insufficient historical price data available for " + data.cik);
+                        throw new InsufficientDataException("Insufficient historical price data available");
                     }
                     quarterlyPE.push({
                         cik: data.cik,
@@ -38,7 +39,7 @@ class PeFunction extends AbstractFunction {
                     });
                 });
                 return quarterlyPE;
-            })
+            });
     }
 
     annualize(cik: string, quarterlyPE: QuarterlyData[]): QuarterlyData[] {

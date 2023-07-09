@@ -29,7 +29,8 @@ class Calculator {
             this.calculateQuarterlyBVPS(data),
             this.calculateQuarterlyPE(data),
             this.calculateQuarterlyROIC(data)])
-        .then((quarterlyData: QuarterlyData[][]) => {
+        .then(async (quarterlyData: QuarterlyData[][]) => {
+            console.log("Finished calculating quarterly data for " + data.cik);
             const [ quarterlyBVPS, quarterlyPE, quarterlyROIC ] = quarterlyData;
             const growthRates = this.calculateGrowthRates(data.cik, quarterlyBVPS);
             const annualPE = this.peFunction.annualize(data.cik, quarterlyPE);
@@ -46,7 +47,7 @@ class Calculator {
                         analystGrowthEstimate));
                     });
             return Promise.all(trailingPricePromises)
-                .then(trailingPriceData => {
+                .then(async trailingPriceData => {
                     const [ttmPriceData, tfyPriceData, ttyPriceData ] = trailingPriceData;
                     return {
                         cik: data.cik,

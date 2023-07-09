@@ -1,9 +1,10 @@
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
-import fetch from 'node-fetch';
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
 import Facts from "../entities/facts/IFacts";
 import StickerPriceData from "../entities/facts/IStickerPriceData";
+import fetch, { Response } from "node-fetch";
+import fs from 'fs';
 
 class FactsService {
 
@@ -21,7 +22,7 @@ class FactsService {
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
-                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + await response.text());
+                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + response.text());
                     }
                     return response.json();
                 }).then((body: Facts) => {
@@ -40,12 +41,20 @@ class FactsService {
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
-                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + await response.text());
+                        const text = await response.text();
+                        if (response.status >= 500) {
+                            fs.writeFile(`src\\reports\\errors\\${cik}.txt`, text, err => {
+                                if (err) {
+                                    console.error(err);
+                                }
+                            });
+                        }
+                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + text);
                     }
                     return response.json();
                 }).then((body: StickerPriceData) => {
                     return body;
-                })
+                });
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.FACTS.FETCH_ERROR + err.message);
         }

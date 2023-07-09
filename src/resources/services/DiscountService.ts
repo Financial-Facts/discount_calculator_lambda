@@ -1,10 +1,9 @@
 import Discount from "../entities/discount/IDiscount";
-import fetch from 'node-fetch';
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
 import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
-
+import fetch, { Response } from "node-fetch";
 
 class DiscountService {
 
@@ -21,7 +20,7 @@ class DiscountService {
     public async getBulk(): Promise<Discount[]> {
         try {
             const url = `${this.financialFactServiceDiscountV1Url}/bulk`;
-            return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
+            return fetch(url, { headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
                         throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
@@ -57,7 +56,7 @@ class DiscountService {
                 }
                 console.log("CIK " + cik + " is not on sale");
                 return null;
-            }).finally(() => console.log("Checking " + cik + " for discount is complete"));
+            });
     }
 
         // Create a new discount 

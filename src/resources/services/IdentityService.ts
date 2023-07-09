@@ -1,7 +1,6 @@
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
 import Identity from "../entities/Identity";
-import fetch from 'node-fetch';
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
 
 

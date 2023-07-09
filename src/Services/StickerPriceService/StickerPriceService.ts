@@ -18,23 +18,23 @@ class StickerPriceService {
 
     public async checkForSale(cik: string): Promise<Discount | null> {
         return this.getStickerPriceDiscount(cik)
-            .then((discount: Discount) => {
+            .then(async (discount: Discount) => {
                 return this.historicalPriceService.getCurrentPrice(discount.symbol)
-                    .then((price: number) => {
+                    .then(async (price: number) => {
                         if (this.salePriceExceedsZero(discount) && 
                             this.anySalePriceExceedsValue(price, discount) &&
                             this.annualROICExceedsBenchmark(discount)) {
                                 return discount;
                         }
                         return null;
-                    })
-            })
+                    });
+            });
     }
 
     private async getStickerPriceDiscount(cik: string): Promise<Discount> {
         console.log("In sticker price service getting discount data for cik: " + cik);
         return this.factsService.getStickerPriceData(cik)
-            .then((data: StickerPriceData) => {
+            .then(async (data: StickerPriceData) => {
                 return this.calculator.calculateStickerPriceData(data);
             });
     }

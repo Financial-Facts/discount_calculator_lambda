@@ -1,6 +1,6 @@
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
-import { days_between, median_date, processQuarterlyDatasets, quarterize } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import { annualizeByMean, days_between, processQuarterlyDatasets, quarterize } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 
 class BvpsFunction extends AbstractFunction {
@@ -12,25 +12,7 @@ class BvpsFunction extends AbstractFunction {
     }
 
     annualize(cik: string, quarterlyBVPS: QuarterlyData[]): QuarterlyData[] {
-        let index = quarterlyBVPS.length - 1;
-        const annualBVPS: QuarterlyData[] = [];
-        while (index >= 0) {
-            let sum = quarterlyBVPS[index].value;
-            let count = 1;
-            let periodStartDate: Date = quarterlyBVPS[index].announcedDate;
-            index--;
-            while (index >= 0 && days_between(periodStartDate, quarterlyBVPS[index].announcedDate) <= 365) {
-                sum += quarterlyBVPS[index].value;
-                count++;
-                index--;
-            }
-            annualBVPS.unshift({
-                cik: cik,
-                announcedDate: periodStartDate,
-                value: sum/count
-            });
-        }
-        return annualBVPS;
+        return annualizeByMean(cik, quarterlyBVPS);
     }
 
     getLastQuarterAndAnnualizedData(cik: string, quartertlyBVPS: QuarterlyData[]):
