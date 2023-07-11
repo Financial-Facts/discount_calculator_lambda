@@ -16,17 +16,16 @@ class StickerPriceService {
         this.calculator = new Calculator(this.historicalPriceService);
     }
 
-    public async checkForSale(cik: string): Promise<Discount | null> {
+    public async checkForSale(cik: string): Promise<Discount> {
         return this.getStickerPriceDiscount(cik)
             .then(async (discount: Discount) => {
                 return this.historicalPriceService.getCurrentPrice(discount.symbol)
                     .then(async (price: number) => {
                         if (this.salePriceExceedsZero(discount) && 
-                            this.anySalePriceExceedsValue(price, discount) &&
-                            this.annualROICExceedsBenchmark(discount)) {
-                                return discount;
+                            this.anySalePriceExceedsValue(price, discount)) {
+                                discount.active = true;
                         }
-                        return null;
+                        return discount;
                     });
             });
     }
@@ -40,8 +39,11 @@ class StickerPriceService {
     }
 
     private salePriceExceedsZero(discount: Discount): boolean {
-        return discount.ttmPriceData.salePrice > 0 &&
-               discount.tfyPriceData.salePrice > 0 && 
+        return discount.ttmPriceData.salePrice !== undefined &&
+               discount.ttmPriceData.salePrice > 0 &&
+               discount.tfyPriceData.salePrice !== undefined &&
+               discount.tfyPriceData.salePrice > 0 &&
+               discount.ttyPriceData.salePrice !== undefined &&
                discount.ttyPriceData.salePrice > 0;
     }
 
@@ -49,17 +51,6 @@ class StickerPriceService {
         return discount.ttmPriceData.salePrice > value ||
                discount.tfyPriceData.salePrice > value || 
                discount.ttyPriceData.salePrice > value;
-    }
-
-    private annualROICExceedsBenchmark(discount: Discount): boolean {
-        const averageRoicOverPeriod = {
-            1: discount.annualROIC.slice(-1)[0].value,
-            5: discount.annualROIC.slice(-5).map(year => year.value).reduce((a, b) => a + b)/5,
-            10: discount.annualROIC.slice(-10).map(year => year.value).reduce((a, b) => a + b)/10
-        }
-        return averageRoicOverPeriod[1] > 10 &&
-               averageRoicOverPeriod[5] > 10 && 
-               averageRoicOverPeriod[10] > 10;
     }
 }
 

@@ -1,10 +1,11 @@
 import HttpException from "@/utils/exceptions/HttpException";
 
-class InsufficientDataException extends HttpException {
+class DisqualifyingDataException extends HttpException {
 
     constructor(message: string) {
         super(409, message);
     }
+
 }
 
-export default InsufficientDataException;
+export default DisqualifyingDataException;

@@ -12,7 +12,7 @@ class HistoricalPriceService {
     private stockQuoteUrlV11: string;
 
     constructor() {
-        this.historicalPriceUrlV7 = 'https://query1.finance.yahoo.com/v7/finance/download';
+        this.historicalPriceUrlV7 = 'https://query2.finance.yahoo.com/v7/finance/download';
         this.stockQuoteUrlV11 = 'https://query1.finance.yahoo.com/v11/finance/quoteSummary';
     }
 

@@ -9,6 +9,8 @@ export default interface Discount {
 
     name: string;
 
+    active: boolean;
+
     ratioPrice?: number;
 
     lastUpdated?: Date

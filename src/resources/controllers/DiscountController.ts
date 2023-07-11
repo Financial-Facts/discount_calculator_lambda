@@ -1,12 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import Controller from '@/utils/interfaces/IController';
 import HttpException from '@/utils/exceptions/HttpException';
-import validationMiddleware from '@/middleware/Validation.middleware';
-import validation from '@/resources/InputValidation';
 import DiscountService from '../services/DiscountService';
 import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
-import fetch from 'node-fetch';
+import DisqualifyingDataException from '../../exceptions/DisqualifyingDataException';
+import InsufficientDataException from '../../exceptions/InsufficientDataException';
 
 class DiscountController implements Controller {
 
@@ -22,8 +21,12 @@ class DiscountController implements Controller {
         console.log("Initializing discount routes...");
 
         this.router.get(
-            `${this.path}/bulk`,
-            this.getBulk
+            `${this.path}/:cik(${CONSTANTS.GLOBAL.CIK_REGEX})`,
+            this.getDiscountWithCik
+        )
+
+        this.router.put(
+            `${this.path}/bulkUpdateDiscounts`
         )
 
         this.router.post(
@@ -32,14 +35,15 @@ class DiscountController implements Controller {
         )
     }
 
-    private getBulk = async (
+    private getDiscountWithCik = async (
         request: Request,
         response: Response,
         next: NextFunction
     ): Promise<Response | void> => {
         try {
-            const fetchedDiscounts: Discount[] = await this.discountService.getBulk();
-            response.status(200).json(fetchedDiscounts);
+            const cik = request.params.cik;
+            const fetchedDiscount: Discount = await this.discountService.getDiscountWithCik(cik);
+            response.status(200).json(fetchedDiscount);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
         }
@@ -52,13 +56,25 @@ class DiscountController implements Controller {
     ): Promise<Response | void> => {
         const cik = request.params.cik;
         try {
-            const checkedDiscount: Discount | null = await this.discountService.checkForDiscount(cik);
-            if (checkedDiscount) {
-                response.status(200).json(checkedDiscount);
+            const hasActiveDiscount: boolean = await this.discountService.checkForDiscount(cik);
+            if (hasActiveDiscount) {
+                response.status(200).json({ active: hasActiveDiscount, message: `${cik} is on sale`});
             } else {
-                response.status(200).json({ message: `${cik} is not on sale`});
+                response.status(200).json({ active: hasActiveDiscount, message: `${cik} is not on sale`});
             }
         } catch (err: any) {
+            if (err instanceof DisqualifyingDataException) {
+                this.discountService.delete(cik)
+                    .then(() => {
+                        console.log(`Discount for ${cik} has been deleted due to: ${err.message}`);
+                    }).catch((deleteEx: HttpException) => {
+                        if (deleteEx.status !== 404) {
+                            console.log(`Deleting discount for ${cik} failed due to: ${deleteEx.message}`);
+                        } else {
+                            console.log(`Discount for ${cik} does not exist`);
+                        }
+                    });
+            }
             next(new HttpException(err.status, err.message));
         }
     }

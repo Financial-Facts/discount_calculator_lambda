@@ -11,7 +11,6 @@ class StickerPriceOutput {
         analystGrowthEstimate?: number
     ): Promise<TrailingPriceData> {
         const forwardPE: number = annualPE.map(year => year.value).reduce((a, b) => a + b) / annualPE.length;
-        const result = 0;
 
         // If analyst estimates are lower than the predicted equity growth rate, go with them
         if (!analystGrowthEstimate) {

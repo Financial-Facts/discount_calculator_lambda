@@ -2,6 +2,7 @@ const CONSTANTS = {
     GLOBAL: {
         POST: 'POST',
         PUT: 'PUT',
+        DELETE: 'DELETE',
         JSON: 'Application/json',
         CIK_REGEX: 'CIK[0-9]{10}',
         AUTHORIZATION: 'Authorization'

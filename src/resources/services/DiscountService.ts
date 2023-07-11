@@ -17,16 +17,16 @@ class DiscountService {
     }
 
     // Get an existing discount
-    public async getBulk(): Promise<Discount[]> {
+    public async getDiscountWithCik(cik: string): Promise<Discount> {
         try {
-            const url = `${this.financialFactServiceDiscountV1Url}/bulk`;
+            const url = `${this.financialFactServiceDiscountV1Url}/${cik}`;
             return fetch(url, { headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
                         throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
                     }
                     return response.json();
-                }).then((body: Discount[]) => {
+                }).then((body: Discount) => {
                     return body;
                 });
         } catch (err: any) {
@@ -35,44 +35,57 @@ class DiscountService {
     }
 
     // Check CIK for active discount
-    public async checkForDiscount(cik: string): Promise<Discount | null> {
+    public async checkForDiscount(cik: string): Promise<boolean> {
         console.log("In discount service checking for a discount on CIK: " + cik);
         return this.stickerPriceService.checkForSale(cik)
-            .then((sale: Discount | null) => {
-                if (sale) {
-                    this.save(sale)
-                        .then(response => {
-                            if (response.includes('Success')) {
-                                console.log("Sticker price sale saved for cik: " + cik);
-                                return sale;
-                            }
-                            console.log("Sticker price save failed for cik: " + cik + " with response: " + response);
-                            return sale;
-                        }).catch((err: any) => {
-                            console.log("Sticker price save failed for cik: " + cik + " with err: " + err);
-                            return sale;
-                        });
-                    return sale;
-                }
-                console.log("CIK " + cik + " is not on sale");
-                return null;
+            .then((discount: Discount) => {
+                this.save(discount)
+                    .then(response => {
+                        if (response.includes('Success')) {
+                            console.log("Sticker price sale saved for cik: " + cik);
+                            return discount;
+                        }
+                        console.log("Sticker price save failed for cik: " + cik + " with response: " + response);
+                        return discount;
+                    }).catch((err: any) => {
+                        console.log("Sticker price save failed for cik: " + cik + " with err: " + err);
+                        return discount;
+                    });
+                return discount.active;
             });
     }
 
-        // Create a new discount 
-        private async save(discount: Discount): Promise<string> {
-            try {
-                return fetch(this.financialFactServiceDiscountV1Url, { 
-                    method: CONSTANTS.GLOBAL.POST,
-                    headers: buildHeadersWithBasicAuth(),
-                    body: JSON.stringify(discount)
-                }).then((response: Response) => {
-                    return response.text();
-                })
-            } catch (err: any) {
-                throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
-            }
+     // Delete a discount
+     public async delete(cik: string): Promise<string> {
+        try {
+            return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
+                method: CONSTANTS.GLOBAL.DELETE,
+                headers: buildHeadersWithBasicAuth()
+            }).then(async (response: Response) => {
+                if (response.status != 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
+                }
+                return response.text();
+            })
+        } catch (err: any) {
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
         }
+    }
+
+    // Create a new discount 
+    private async save(discount: Discount): Promise<string> {
+        try {
+            return fetch(this.financialFactServiceDiscountV1Url, { 
+                method: CONSTANTS.GLOBAL.POST,
+                headers: buildHeadersWithBasicAuth(),
+                body: JSON.stringify(discount)
+            }).then((response: Response) => {
+                return response.text();
+            })
+        } catch (err: any) {
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+        }
+    }
 }
 
 export default DiscountService;

@@ -8,6 +8,8 @@ import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import HistoricalPriceService from "Services/HistoricalPriceService/HistoricalPriceService";
+import DisqualifyingDataException from "../../../../exceptions/DisqualifyingDataException";
+import { annualizeByAdd } from "../../../../Services/StickerPriceService/utils/StickerPriceUtils";
 
 class Calculator {
 
@@ -31,11 +33,21 @@ class Calculator {
             this.calculateQuarterlyROIC(data)])
         .then(async (quarterlyData: QuarterlyData[][]) => {
             console.log("Finished calculating quarterly data for " + data.cik);
+
             const [ quarterlyBVPS, quarterlyPE, quarterlyROIC ] = quarterlyData;
             const growthRates = this.calculateGrowthRates(data.cik, quarterlyBVPS);
+            this.checkRatesMeetRequirements(data.cik, growthRates);
+
             const annualPE = this.peFunction.annualize(data.cik, quarterlyPE);
+            const annualBVPS = this.bvpsFunction.annualize(data.cik, quarterlyBVPS);
+            const annualROIC = this.roicFunction.annualize(data.cik, quarterlyROIC);
+            const annualEPS = annualizeByAdd(data.cik, data.quarterlyEPS);
+            this.checkAnnualAvgExceedsZero(data.cik, [annualPE, annualBVPS, annualROIC, annualEPS]);
+            this.checkRoicExceedsMinimum(data.cik, annualROIC);
+
             const analystGrowthEstimate: number = 0; //ToDo: Add growth estimate service
             const trailingPricePromises: Promise<TrailingPriceData>[] = [];
+
             Object.keys(growthRates)
                 .forEach((key: string) => {
                     const period: number = +key;
@@ -53,6 +65,7 @@ class Calculator {
                         cik: data.cik,
                         symbol: data.symbol,
                         name: data.name,
+                        active: false,
                         ratioPrice: data.benchmarkRatioPrice,
                         lastUpdated: new Date(),
                         ttmPriceData: ttmPriceData,
@@ -90,6 +103,41 @@ class Calculator {
         } catch (error: any) {
             throw new InsufficientDataException(`Insufficient data collected to calcuate growth rates for ${cik}`);
         }
+    }
+
+    private checkRatesMeetRequirements(cik: string, growthRates: Record<number, number>): void {
+        Object.values(growthRates).forEach(value => {
+            if (value < 10) {
+                throw new DisqualifyingDataException(`Growth rates do not meet a minimum of 10% for ${cik}`);
+            }
+        })
+    }
+
+    private checkAnnualAvgExceedsZero(cik: string, annualData: QuarterlyData[][]): void {
+        this.checkAnnualDataAvgExceedsValue(annualData, 0, `Annual data is on average negative for ${cik}`);
+    }
+
+    private checkRoicExceedsMinimum(cik: string, annualRoic: QuarterlyData[]): void {
+        this.checkAnnualDataAvgExceedsValue([annualRoic], 10, `Annual ROIC does not meet minimum 10% for ${cik}`);
+    }
+
+    private checkAnnualDataAvgExceedsValue(
+        annualData: QuarterlyData[][],
+        value: number,
+        errorMessage: string
+    ): void {
+        annualData.forEach(dataset => {
+            const averageOverPeriod = {
+                1: dataset.slice(-1)[0].value,
+                5: dataset.slice(-5).map(year => year.value).reduce((a, b) => a + b)/5,
+                10: dataset.slice(-10).map(year => year.value).reduce((a, b) => a + b)/10
+            }
+            if (averageOverPeriod[1] < value ||
+                averageOverPeriod[5] < value || 
+                averageOverPeriod[10] < value) {
+                throw new DisqualifyingDataException(errorMessage);
+            }
+        })
     }
 }
 
