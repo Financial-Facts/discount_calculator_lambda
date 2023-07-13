@@ -4,16 +4,20 @@ import CONSTANTS from "../ResourceConstants";
 import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import fetch, { Response } from "node-fetch";
+import HistoricalPriceService from "../../Services/HistoricalPriceService/HistoricalPriceService";
+import SimpleDiscount from "../entities/discount/ISimpleDiscount";
 
 class DiscountService {
 
     private financialFactServiceDiscountV1Url: string;
     private stickerPriceService: StickerPriceService;
+    private historicalPriceService: HistoricalPriceService;
 
     constructor() {
         this.financialFactServiceDiscountV1Url 
             = process.env.FINANCIAL_FACTS_SERVICE_BASE_URL + CONSTANTS.DISCOUNT.V1_ENDPOINT;
-        this.stickerPriceService = new StickerPriceService();
+        this.historicalPriceService = new HistoricalPriceService();
+        this.stickerPriceService = new StickerPriceService(this.historicalPriceService);
     }
 
     // Get an existing discount
@@ -22,7 +26,7 @@ class DiscountService {
             const url = `${this.financialFactServiceDiscountV1Url}/${cik}`;
             return fetch(url, { headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
-                    if (response.status != 200) {
+                    if (response.status !== 200) {
                         throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
                     }
                     return response.json();
@@ -55,6 +59,54 @@ class DiscountService {
             });
     }
 
+    public async bulkUpdateDiscountStatus(): Promise<string[]> {
+        console.log('In discount service updating bulk discount statuses');
+        return this.getBulkSimpleDiscounts()
+            .then(async (simpleDiscounts: SimpleDiscount[]) => {
+                const pricePromises: Promise<number>[] = [];
+                simpleDiscounts.forEach(simpleDiscount => {
+                    pricePromises.push(this.historicalPriceService.getCurrentPrice(simpleDiscount.symbol));
+                });
+                return Promise.all(pricePromises)
+                    .then(async prices => {
+                        const updates: string[] = [];
+                        const updatePromises: Promise<string>[] = [];
+                        for(let i = 0; i < simpleDiscounts.length; i++) {
+                            const simpleDiscount = simpleDiscounts[i];
+                            const currentPrice = prices[i];
+                            if (currentPrice < simpleDiscount.ttmSalePrice ||
+                                currentPrice < simpleDiscount.tfySalePrice ||
+                                currentPrice < simpleDiscount.ttySalePrice) {
+                                    if (simpleDiscount.active) {
+                                        updates.push(`${simpleDiscount.cik} status remains active`);
+                                    } else {
+                                        updatePromises.push(this.updateStatus(simpleDiscount.cik, true)
+                                            .then(response => {
+                                                return `${simpleDiscount.cik} status is now active`;
+                                            }).catch((err: any) => {
+                                                return `Update discount failed while updating ${simpleDiscount.cik} status to active`;
+                                            }));
+                                    }
+                            } else {
+                                if (!simpleDiscount.active) {
+                                    updates.push(`${simpleDiscount.cik} status remains inactive`);
+                                } else {
+                                    updatePromises.push(this.updateStatus(simpleDiscount.cik, false)
+                                        .then(response => {
+                                            return `${simpleDiscount.cik} status is now inactive`;
+                                        }).catch((err: any) => {
+                                            return `Update discount failed while updating ${simpleDiscount.cik} status to inactive`;
+                                        }));
+                                }
+                            }
+                        }
+                        return Promise.all(updatePromises).then(resolvedUpdates => {
+                            return [...updates, ...resolvedUpdates];
+                        });
+                    });
+            });
+    }
+
      // Delete a discount
      public async delete(cik: string): Promise<string> {
         try {
@@ -72,6 +124,28 @@ class DiscountService {
         }
     }
 
+    // Get bulk simple discounts
+    private async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
+        console.log("In discount service getting cik for all discounts");
+        try {
+            const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
+            return fetch(url, { 
+                headers: buildHeadersWithBasicAuth()
+            }).then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        throw new HttpException(response.status,
+                            CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + await response.text());
+                    }
+                    return response.json();
+                }).then((body: SimpleDiscount[]) => {
+                    return body;
+                });
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
+        }
+    }
+
     // Create a new discount 
     private async save(discount: Discount): Promise<string> {
         try {
@@ -81,9 +155,24 @@ class DiscountService {
                 body: JSON.stringify(discount)
             }).then((response: Response) => {
                 return response.text();
-            })
+            });
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+        }
+    }
+
+    // Update discount status
+    private async updateStatus(cik: string, active: boolean): Promise<string> {
+        try {
+            return fetch(this.financialFactServiceDiscountV1Url, {
+                method: CONSTANTS.GLOBAL.PUT,
+                headers: buildHeadersWithBasicAuth(),
+                body: JSON.stringify({ cik: cik, active: active })
+            }).then((response: Response) => {
+                return response.text();
+            });
+        } catch (err: any) {
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + err.message);   
         }
     }
 }

@@ -5,7 +5,6 @@ import DiscountService from '../services/DiscountService';
 import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
 import DisqualifyingDataException from '../../exceptions/DisqualifyingDataException';
-import InsufficientDataException from '../../exceptions/InsufficientDataException';
 
 class DiscountController implements Controller {
 
@@ -26,7 +25,8 @@ class DiscountController implements Controller {
         )
 
         this.router.put(
-            `${this.path}/bulkUpdateDiscounts`
+            `${this.path}`,
+            this.bulkUpdateDiscountStatus
         )
 
         this.router.post(
@@ -44,6 +44,20 @@ class DiscountController implements Controller {
             const cik = request.params.cik;
             const fetchedDiscount: Discount = await this.discountService.getDiscountWithCik(cik);
             response.status(200).json(fetchedDiscount);
+        } catch (err: any) {
+            next(new HttpException(err.status, err.message));
+        }
+    }
+
+    private bulkUpdateDiscountStatus = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ): Promise<Response | void> => {
+        try {
+            const statusList: string[] = await this.discountService.bulkUpdateDiscountStatus();
+            console.log(`Discount service responded with ${statusList} during bulk discount update`);
+            response.status(200).json({ statusList: statusList });
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
         }
