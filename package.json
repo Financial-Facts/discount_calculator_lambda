@@ -1,5 +1,5 @@
 {
-  "name": "sticker_price_service",
+  "name": "facts_calculator_service",
   "version": "1.0.0",
   "description": "Sticker price processing service that interacts with financial_facts_service to deliver discounts and financial data to frontend",
   "main": "index.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Choochera/sticker_price_service.git"
+    "url": "git+https://github.com/Choochera/facts_calculator_service.git"
   },
   "author": "Choochera",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Choochera/sticker_price_service/issues"
+    "url": "https://github.com/Choochera/facts_calculator_service/issues"
   },
-  "homepage": "https://github.com/Choochera/sticker_price_service#readme",
+  "homepage": "https://github.com/Choochera/facts_calculator_service#readme",
   "devDependencies": {
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.13",
