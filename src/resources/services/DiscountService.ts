@@ -59,6 +59,7 @@ class DiscountService {
             });
     }
 
+    // Check if all discounts currently saved or active/inactive and updates them
     public async bulkUpdateDiscountStatus(): Promise<string[]> {
         console.log('In discount service updating bulk discount statuses');
         return this.getBulkSimpleDiscounts()
@@ -69,8 +70,8 @@ class DiscountService {
                 });
                 return Promise.all(pricePromises)
                     .then(async prices => {
-                        const updates: string[] = [];
-                        const updatePromises: Promise<string>[] = [];
+                        const unchanged: string[] = [];
+                        const discountUpdateMap: Record<string, boolean> = {};
                         for(let i = 0; i < simpleDiscounts.length; i++) {
                             const simpleDiscount = simpleDiscounts[i];
                             const currentPrice = prices[i];
@@ -78,31 +79,22 @@ class DiscountService {
                                 currentPrice < simpleDiscount.tfySalePrice ||
                                 currentPrice < simpleDiscount.ttySalePrice) {
                                     if (simpleDiscount.active) {
-                                        updates.push(`${simpleDiscount.cik} status remains active`);
+                                        unchanged.push(`${simpleDiscount.cik} status remains active`);
                                     } else {
-                                        updatePromises.push(this.updateStatus(simpleDiscount.cik, true)
-                                            .then(response => {
-                                                return `${simpleDiscount.cik} status is now active`;
-                                            }).catch((err: any) => {
-                                                return `Update discount failed while updating ${simpleDiscount.cik} status to active`;
-                                            }));
+                                        discountUpdateMap[simpleDiscount.cik] = true;
                                     }
                             } else {
                                 if (!simpleDiscount.active) {
-                                    updates.push(`${simpleDiscount.cik} status remains inactive`);
+                                    unchanged.push(`${simpleDiscount.cik} status remains inactive`);
                                 } else {
-                                    updatePromises.push(this.updateStatus(simpleDiscount.cik, false)
-                                        .then(response => {
-                                            return `${simpleDiscount.cik} status is now inactive`;
-                                        }).catch((err: any) => {
-                                            return `Update discount failed while updating ${simpleDiscount.cik} status to inactive`;
-                                        }));
+                                    discountUpdateMap[simpleDiscount.cik] = false;
                                 }
                             }
                         }
-                        return Promise.all(updatePromises).then(resolvedUpdates => {
-                            return [...updates, ...resolvedUpdates];
-                        });
+                        return this.submitBulkDiscountStatusUpdate(discountUpdateMap)
+                            .then(updates => {
+                                return [...unchanged, ...updates];
+                            });
                     });
             });
     }
@@ -153,7 +145,10 @@ class DiscountService {
                 method: CONSTANTS.GLOBAL.POST,
                 headers: buildHeadersWithBasicAuth(),
                 body: JSON.stringify(discount)
-            }).then((response: Response) => {
+            }).then(async (response: Response) => {
+                if (response.status !== 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.CREATION_ERROR + await response.text);   
+                }
                 return response.text();
             });
         } catch (err: any) {
@@ -162,14 +157,19 @@ class DiscountService {
     }
 
     // Update discount status
-    private async updateStatus(cik: string, active: boolean): Promise<string> {
+    private async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
         try {
             return fetch(this.financialFactServiceDiscountV1Url, {
                 method: CONSTANTS.GLOBAL.PUT,
                 headers: buildHeadersWithBasicAuth(),
-                body: JSON.stringify({ cik: cik, active: active })
-            }).then((response: Response) => {
-                return response.text();
+                body: JSON.stringify({ discountUpdateMap })
+            }).then(async (response: Response) => {
+                if (response.status !== 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + await response.text());   
+                }
+                return response.json();
+            }).then((updates: string[]) => {
+                return updates;
             });
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + err.message);   
