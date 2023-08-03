@@ -1,4 +1,5 @@
 dist
 node_modules
-.env
+parameters.json
+package-lock.json
 reports

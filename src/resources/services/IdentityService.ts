@@ -9,9 +9,7 @@ class IdentityService {
     private ffsIdentityUrl: string;
 
     constructor() {
-        this.ffsIdentityUrl = 
-            process.env.FINANCIAL_FACTS_SERVICE_BASE_URL +
-            CONSTANTS.IDENTITY.V1_ENDPOINT
+        this.ffsIdentityUrl = process.env.ffs_base_url + CONSTANTS.IDENTITY.V1_ENDPOINT
     }
 
     public async getIdentityWithCik(cik: string): Promise<Identity> {

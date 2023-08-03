@@ -11,8 +11,7 @@ class FactsService {
     private financialFactsServiceFactsV1Url: string;
     
     constructor() {
-        this.financialFactsServiceFactsV1Url
-            = process.env.FINANCIAL_FACTS_SERVICE_BASE_URL + CONSTANTS.FACTS.V1_ENDPOINT;
+        this.financialFactsServiceFactsV1Url = process.env.ffs_base_url + CONSTANTS.FACTS.V1_ENDPOINT;
     }
 
     // Fetch financial facts for a company
@@ -38,6 +37,7 @@ class FactsService {
         console.log("In facts service gettings sticker price data for cik: " + cik);
         try {
             const url = `${this.financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
+            console.log(url);
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {

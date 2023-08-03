@@ -14,8 +14,7 @@ class DiscountService {
     private historicalPriceService: HistoricalPriceService;
 
     constructor() {
-        this.financialFactServiceDiscountV1Url 
-            = process.env.FINANCIAL_FACTS_SERVICE_BASE_URL + CONSTANTS.DISCOUNT.V1_ENDPOINT;
+        this.financialFactServiceDiscountV1Url = process.env.ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
         this.historicalPriceService = new HistoricalPriceService();
         this.stickerPriceService = new StickerPriceService(this.historicalPriceService);
     }
