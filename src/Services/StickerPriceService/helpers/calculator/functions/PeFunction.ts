@@ -6,7 +6,7 @@ import PriceData from "../../../../../Services/HistoricalPriceService/models/Pri
 import { annualizeByMean, days_between } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import HistoricalPriceInput from "Services/HistoricalPriceService/models/HistoricalPriceInput";
-import InsufficientDataException from "../../../../../exceptions/InsufficientDataException";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
 class PeFunction extends AbstractFunction {
 

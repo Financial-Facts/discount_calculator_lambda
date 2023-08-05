@@ -5,19 +5,23 @@ import morgan from 'morgan';
 import Controller from '@/utils/interfaces/IController';
 import ErrorMiddleware from '@/middleware/ErrorHandler.middleware';
 import helmet from 'helmet';
-
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../swagger.json';
+import Listener from './utils/interfaces/IListener';
 class App {
 
     public express: Application;
     public port: number;
 
-    constructor(controllers: Controller[], port: number) {
+    constructor(controllers: Controller[], listeners: Listener[], port: number) {
         this.express = express();
         this.port = port;
 
         this.initializeMiddleware();
         this.initializeControllers(controllers);
+        this.initializeListeners(listeners);
         this.initializeErrorHandling();
+        this.initializeSwagger();
     }
 
     private initializeMiddleware(): void {
@@ -35,8 +39,18 @@ class App {
         });
     }
 
+    private initializeListeners(listeners: Listener[]): void {
+        listeners.forEach(listener => {
+            listener.listen();
+        })
+    }
+
     private initializeErrorHandling(): void {
         this.express.use(ErrorMiddleware);
+    }
+
+    private initializeSwagger(): void {
+        this.express.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
     }
 
     public listen(): void {

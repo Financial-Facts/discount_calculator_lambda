@@ -58,8 +58,25 @@ class DiscountService {
             });
     }
 
+        // Delete a discount
+        public async delete(cik: string): Promise<string> {
+            try {
+                return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
+                    method: CONSTANTS.GLOBAL.DELETE,
+                    headers: buildHeadersWithBasicAuth()
+                }).then(async (response: Response) => {
+                    if (response.status != 200) {
+                        throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
+                    }
+                    return response.text();
+                })
+            } catch (err: any) {
+                throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+            }
+        }
+
     // Check if all discounts currently saved or active/inactive and updates them
-    public async bulkUpdateDiscountStatus(): Promise<string[]> {
+    public async bulkCheckDiscountStatusAndUpdate(): Promise<string[]> {
         console.log('In discount service updating bulk discount statuses');
         return this.getBulkSimpleDiscounts()
             .then(async (simpleDiscounts: SimpleDiscount[]) => {
@@ -98,42 +115,45 @@ class DiscountService {
             });
     }
 
-     // Delete a discount
-     public async delete(cik: string): Promise<string> {
-        try {
-            return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
-                method: CONSTANTS.GLOBAL.DELETE,
-                headers: buildHeadersWithBasicAuth()
-            }).then(async (response: Response) => {
-                if (response.status != 200) {
-                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
-                }
-                return response.text();
-            })
-        } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+        // Get bulk simple discounts
+        private async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
+            console.log("In discount service getting simple discounts");
+            try {
+                const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
+                return fetch(url, { 
+                    headers: buildHeadersWithBasicAuth()
+                }).then(async (response: Response) => {
+                        if (response.status !== 200) {
+                            throw new HttpException(response.status,
+                                CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + await response.text());
+                        }
+                        return response.json();
+                    }).then((body: SimpleDiscount[]) => {
+                        return body;
+                    });
+            } catch (err: any) {
+                throw new HttpException(err.status,
+                    CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
+            }
         }
-    }
-
-    // Get bulk simple discounts
-    private async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
-        console.log("In discount service getting cik for all discounts");
+    
+    // Update discount status
+    private async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
         try {
-            const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
-            return fetch(url, { 
-                headers: buildHeadersWithBasicAuth()
+            return fetch(this.financialFactServiceDiscountV1Url, {
+                method: CONSTANTS.GLOBAL.PUT,
+                headers: buildHeadersWithBasicAuth(),
+                body: JSON.stringify({ discountUpdateMap })
             }).then(async (response: Response) => {
-                    if (response.status !== 200) {
-                        throw new HttpException(response.status,
-                            CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + await response.text());
-                    }
-                    return response.json();
-                }).then((body: SimpleDiscount[]) => {
-                    return body;
-                });
+                if (response.status !== 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + await response.text());   
+                }
+                return response.json();
+            }).then((updates: string[]) => {
+                return updates;
+            });
         } catch (err: any) {
-            throw new HttpException(err.status,
-                CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + err.message);   
         }
     }
 
@@ -152,26 +172,6 @@ class DiscountService {
             });
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
-        }
-    }
-
-    // Update discount status
-    private async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
-        try {
-            return fetch(this.financialFactServiceDiscountV1Url, {
-                method: CONSTANTS.GLOBAL.PUT,
-                headers: buildHeadersWithBasicAuth(),
-                body: JSON.stringify({ discountUpdateMap })
-            }).then(async (response: Response) => {
-                if (response.status !== 200) {
-                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + await response.text());   
-                }
-                return response.json();
-            }).then((updates: string[]) => {
-                return updates;
-            });
-        } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + err.message);   
         }
     }
 }

@@ -2,14 +2,14 @@ import BvpsFunction from "./functions/BvpsFunction";
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import Discount from "@/resources/entities/discount/IDiscount";
 import PeFunction from "./functions/PeFunction";
-import InsufficientDataException from "../../../../exceptions/InsufficientDataException";
 import RoicFunction from "./functions/RoicFunction";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import HistoricalPriceService from "Services/HistoricalPriceService/HistoricalPriceService";
-import DisqualifyingDataException from "../../../../exceptions/DisqualifyingDataException";
+import DisqualifyingDataException from "../../../../utils/exceptions/DisqualifyingDataException";
 import { annualizeByAdd } from "../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
 class Calculator {
 
