@@ -1,7 +1,9 @@
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
-import Identity from "../entities/Identity";
+import Identity from "../entities/identity/Identity";
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
+import IdentitiesAndDiscounts from "../entities/identity/IdentitiesAndDiscounts";
+import BulkIdentitiesRequest from "../entities/identity/BulkIdentitiesRequest";
 
 
 class IdentityService {
@@ -28,6 +30,32 @@ class IdentityService {
         } catch (err: any) {
             throw new HttpException(err.status,
                 CONSTANTS.IDENTITY.FETCH_ERROR + err.message);
+        }
+    }
+
+    public async getBulkIdentitiesAndOptionalDiscounts(
+        request: BulkIdentitiesRequest,
+        includeDiscounts: boolean
+    ): Promise<IdentitiesAndDiscounts> {
+        const url = `${this.ffsIdentityUrl}/bulk?includeDiscounts=${includeDiscounts}`;
+        try {
+            return fetch(url,
+                { 
+                    method: 'POST',
+                    headers: buildHeadersWithBasicAuth(),
+                    body: JSON.stringify(request)
+                }).then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        throw new HttpException(response.status,
+                            CONSTANTS.IDENTITY.BULK_FETCH_ERROR + await response.text())
+                    }
+                    return response.json();
+                }).then((body: IdentitiesAndDiscounts) => {
+                    return body;
+                });
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                CONSTANTS.IDENTITY.BULK_FETCH_ERROR);
         }
     }
 }

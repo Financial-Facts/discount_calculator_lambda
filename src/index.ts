@@ -7,6 +7,7 @@ import initializeEnv from '@/utils/initializeEnv';
 import DataSource from './datasource';
 import ListenerController from './resources/controllers/ListenerController';
 import PriceCheckConsumer from './resources/consumers/PriceCheckConsumer/PriceCheckConsumer';
+import IdentityController from './resources/controllers/IdentityController';
 
 
 initializeEnv().then(() => {
@@ -15,6 +16,7 @@ initializeEnv().then(() => {
         [
             new DiscountController(dataSource),
             new FactsController(dataSource),
+            new IdentityController(dataSource),
             new ListenerController(dataSource)
         ], [
             new PriceCheckConsumer(dataSource)

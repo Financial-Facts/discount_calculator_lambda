@@ -21,6 +21,7 @@ const CONSTANTS = {
     },
     IDENTITY: {
         V1_ENDPOINT: '/v1/identity',
+        BULK_FETCH_ERROR: 'Failure while collecting identites and discounts',
         FETCH_ERROR: 'Failure during identity get request: ',
     },
     LISTENER: {

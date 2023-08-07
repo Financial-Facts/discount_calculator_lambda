@@ -4,22 +4,14 @@ import CONSTANTS from "../ResourceConstants";
 import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import fetch, { Response } from "node-fetch";
-import HistoricalPriceService from "../../Services/HistoricalPriceService/HistoricalPriceService";
 import SimpleDiscount from "../entities/discount/ISimpleDiscount";
 
 class DiscountService {
 
     private financialFactServiceDiscountV1Url: string;
-    private stickerPriceService: StickerPriceService;
-    private historicalPriceService: HistoricalPriceService;
 
-    constructor(
-        historicalPriceService: HistoricalPriceService,
-        stickerPriceService: StickerPriceService
-    ) {
+    constructor() {
         this.financialFactServiceDiscountV1Url = process.env.ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
-        this.historicalPriceService = historicalPriceService;
-        this.stickerPriceService = stickerPriceService;
     }
 
     // Get an existing discount
@@ -40,82 +32,21 @@ class DiscountService {
         }
     }
 
-    // Check CIK for active discount
-    public async checkForDiscount(cik: string): Promise<boolean> {
-        console.log("In discount service checking for a discount on CIK: " + cik);
-        return this.stickerPriceService.checkForSale(cik)
-            .then((discount: Discount) => {
-                this.save(discount)
-                    .then(response => {
-                        if (response.includes('Success')) {
-                            console.log("Sticker price sale saved for cik: " + cik);
-                            return discount;
-                        }
-                        console.log("Sticker price save failed for cik: " + cik + " with response: " + response);
-                        return discount;
-                    }).catch((err: any) => {
-                        console.log("Sticker price save failed for cik: " + cik + " with err: " + err);
-                        return discount;
-                    });
-                return discount.active;
-            });
-    }
-
-        // Delete a discount
-        public async delete(cik: string): Promise<string> {
-            try {
-                return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
-                    method: CONSTANTS.GLOBAL.DELETE,
-                    headers: buildHeadersWithBasicAuth()
-                }).then(async (response: Response) => {
-                    if (response.status != 200) {
-                        throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
-                    }
-                    return response.text();
-                })
-            } catch (err: any) {
-                throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
-            }
+    // Delete a discount
+    public async delete(cik: string): Promise<string> {
+        try {
+            return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
+                method: CONSTANTS.GLOBAL.DELETE,
+                headers: buildHeadersWithBasicAuth()
+            }).then(async (response: Response) => {
+                if (response.status != 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
+                }
+                return response.text();
+            })
+        } catch (err: any) {
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
         }
-
-    // Check if all discounts currently saved or active/inactive and updates them
-    public async bulkCheckDiscountStatusAndUpdate(): Promise<string[]> {
-        console.log('In discount service updating bulk discount statuses');
-        return this.getBulkSimpleDiscounts()
-            .then(async (simpleDiscounts: SimpleDiscount[]) => {
-                const pricePromises: Promise<number>[] = [];
-                simpleDiscounts.forEach(simpleDiscount => {
-                    pricePromises.push(this.historicalPriceService.getCurrentPrice(simpleDiscount.symbol));
-                });
-                return Promise.all(pricePromises)
-                    .then(async prices => {
-                        const unchanged: string[] = [];
-                        const discountUpdateMap: Record<string, boolean> = {};
-                        for(let i = 0; i < simpleDiscounts.length; i++) {
-                            const simpleDiscount = simpleDiscounts[i];
-                            const currentPrice = prices[i];
-                            if (currentPrice < simpleDiscount.ttmSalePrice ||
-                                currentPrice < simpleDiscount.tfySalePrice ||
-                                currentPrice < simpleDiscount.ttySalePrice) {
-                                    if (simpleDiscount.active) {
-                                        unchanged.push(`${simpleDiscount.cik} status remains active`);
-                                    } else {
-                                        discountUpdateMap[simpleDiscount.cik] = true;
-                                    }
-                            } else {
-                                if (!simpleDiscount.active) {
-                                    unchanged.push(`${simpleDiscount.cik} status remains inactive`);
-                                } else {
-                                    discountUpdateMap[simpleDiscount.cik] = false;
-                                }
-                            }
-                        }
-                        return this.submitBulkDiscountStatusUpdate(discountUpdateMap)
-                            .then(updates => {
-                                return [...unchanged, ...updates];
-                            });
-                    });
-            });
     }
 
     // Get bulk simple discounts
@@ -161,17 +92,17 @@ class DiscountService {
     }
 
     // Create a new discount 
-    private async save(discount: Discount): Promise<string> {
+    public async save(discount: Discount): Promise<string> {
         try {
             return fetch(this.financialFactServiceDiscountV1Url, { 
                 method: CONSTANTS.GLOBAL.POST,
                 headers: buildHeadersWithBasicAuth(),
                 body: JSON.stringify(discount)
             }).then(async (response: Response) => {
-                if (response.status !== 200) {
-                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.CREATION_ERROR + await response.text);   
+                if (response.status !== 201 && response.status !== 200) {
+                    throw new HttpException(response.status, CONSTANTS.DISCOUNT.CREATION_ERROR + await response.text());   
                 }
-                return response.text();
+                return await response.text();
             });
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   

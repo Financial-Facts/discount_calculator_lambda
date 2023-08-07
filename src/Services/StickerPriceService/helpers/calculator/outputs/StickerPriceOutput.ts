@@ -1,5 +1,6 @@
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
+import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 
 class StickerPriceOutput {
 
@@ -32,6 +33,10 @@ class StickerPriceOutput {
         const numberOfEquityDoubles = num_years/returnTimeToDouble;
         const stickerPrice = futurePrice/(Math.pow(2, numberOfEquityDoubles));
 
+        if (!stickerPrice || Number.isNaN(stickerPrice)) {
+            throw new DisqualifyingDataException('Invalid sticker price data calculated');
+        }
+        
         return {
             cik: cik,
             stickerPrice: stickerPrice,

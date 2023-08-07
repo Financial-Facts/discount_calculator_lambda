@@ -42,11 +42,8 @@ class StickerPriceService {
     }
 
     private salePriceExceedsZero(discount: Discount): boolean {
-        return discount.ttmPriceData.salePrice !== undefined &&
-               discount.ttmPriceData.salePrice > 0 &&
-               discount.tfyPriceData.salePrice !== undefined &&
+        return discount.ttmPriceData.salePrice > 0 &&
                discount.tfyPriceData.salePrice > 0 &&
-               discount.ttyPriceData.salePrice !== undefined &&
                discount.ttyPriceData.salePrice > 0;
     }
 

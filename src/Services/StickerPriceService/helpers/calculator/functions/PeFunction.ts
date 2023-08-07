@@ -3,7 +3,7 @@ import AbstractFunction from "./AbstractFunction";
 import HistoricalPriceService from "../../../../../Services/HistoricalPriceService/HistoricalPriceService";
 import { buildHistoricalPriceInput } from "../../../../../Services/HistoricalPriceService/utils/HistoricalPriceUtils";
 import PriceData from "../../../../../Services/HistoricalPriceService/models/PriceData";
-import { annualizeByMean, days_between } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import { annualizeByMean, days_between } from "../../../utils/QuarterlyDataUtils";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import HistoricalPriceInput from "Services/HistoricalPriceService/models/HistoricalPriceInput";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";

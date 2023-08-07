@@ -16,9 +16,9 @@ class DataSource {
         console.log('Initializing data source...');
         this.factsService = new FactsService();
         this.identityService = new IdentityService();
+        this.discountService = new DiscountService();
         this.historicalPriceService = new HistoricalPriceService();
         this.stickerPriceService = new StickerPriceService(this.factsService, this.historicalPriceService);
-        this.discountService = new DiscountService(this.historicalPriceService, this.stickerPriceService);
     }
 }
 

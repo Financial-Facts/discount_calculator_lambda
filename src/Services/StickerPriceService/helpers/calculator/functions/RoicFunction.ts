@@ -1,7 +1,7 @@
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
-import { annualizeByAdd, processQuarterlyDatasets } from "../../../../../Services/StickerPriceService/utils/StickerPriceUtils";
+import { annualizeByAdd, processQuarterlyDatasets } from "../../../utils/QuarterlyDataUtils";
 
 class RoicFunction extends AbstractFunction {
 
