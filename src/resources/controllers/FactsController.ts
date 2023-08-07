@@ -2,16 +2,17 @@ import CONSTANTS from "../ResourceConstants";
 import { Router, Request, Response, NextFunction } from 'express';
 import HttpException from "@/utils/exceptions/HttpException";
 import Controller from "@/utils/interfaces/IController";
-import FactsService from "../services/FactsService";
+import DataSource from "datasource";
 
 
 class FactsController implements Controller {
 
     public path = CONSTANTS.FACTS.V1_ENDPOINT;
     public router = Router();
-    private FactsService = new FactsService();
+    private FactsService;
 
-    constructor() {
+    constructor(datasource: DataSource) {
+        this.FactsService = datasource.factsService;
         this.initializeRoute();
     }
 

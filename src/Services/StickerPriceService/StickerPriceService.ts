@@ -10,8 +10,11 @@ class StickerPriceService {
     private calculator: Calculator;
     private historicalPriceService: HistoricalPriceService;
 
-    constructor(historicalPriceService: HistoricalPriceService) {
-        this.factsService = new FactsService();
+    constructor(
+        factsService: FactsService,
+        historicalPriceService: HistoricalPriceService
+    ) {
+        this.factsService = factsService;
         this.historicalPriceService = historicalPriceService;
         this.calculator = new Calculator(this.historicalPriceService);
     }

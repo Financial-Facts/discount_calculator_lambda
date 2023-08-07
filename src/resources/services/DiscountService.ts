@@ -13,10 +13,13 @@ class DiscountService {
     private stickerPriceService: StickerPriceService;
     private historicalPriceService: HistoricalPriceService;
 
-    constructor() {
+    constructor(
+        historicalPriceService: HistoricalPriceService,
+        stickerPriceService: StickerPriceService
+    ) {
         this.financialFactServiceDiscountV1Url = process.env.ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
-        this.historicalPriceService = new HistoricalPriceService();
-        this.stickerPriceService = new StickerPriceService(this.historicalPriceService);
+        this.historicalPriceService = historicalPriceService;
+        this.stickerPriceService = stickerPriceService;
     }
 
     // Get an existing discount
@@ -115,30 +118,30 @@ class DiscountService {
             });
     }
 
-        // Get bulk simple discounts
-        private async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
-            console.log("In discount service getting simple discounts");
-            try {
-                const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
-                return fetch(url, { 
-                    headers: buildHeadersWithBasicAuth()
-                }).then(async (response: Response) => {
-                        if (response.status !== 200) {
-                            throw new HttpException(response.status,
-                                CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + await response.text());
-                        }
-                        return response.json();
-                    }).then((body: SimpleDiscount[]) => {
-                        return body;
-                    });
-            } catch (err: any) {
-                throw new HttpException(err.status,
-                    CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
-            }
+    // Get bulk simple discounts
+    public async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
+        console.log("In discount service getting simple discounts");
+        try {
+            const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
+            return fetch(url, { 
+                headers: buildHeadersWithBasicAuth()
+            }).then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        throw new HttpException(response.status,
+                            CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + await response.text());
+                    }
+                    return response.json();
+                }).then((body: SimpleDiscount[]) => {
+                    return body;
+                });
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
         }
+    }
     
     // Update discount status
-    private async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
+    public async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
         try {
             return fetch(this.financialFactServiceDiscountV1Url, {
                 method: CONSTANTS.GLOBAL.PUT,

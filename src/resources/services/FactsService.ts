@@ -37,7 +37,6 @@ class FactsService {
         console.log("In facts service gettings sticker price data for cik: " + cik);
         try {
             const url = `${this.financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
-            console.log(url);
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {

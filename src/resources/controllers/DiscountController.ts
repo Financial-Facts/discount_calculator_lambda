@@ -4,14 +4,16 @@ import HttpException from '@/utils/exceptions/HttpException';
 import DiscountService from '../services/DiscountService';
 import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
+import DataSource from 'datasource';
 
 class DiscountController implements Controller {
 
-    public path = CONSTANTS.DISCOUNT.V1_ENDPOINT;
-    public router = Router();
-    private discountService = new DiscountService();
+    path = CONSTANTS.LISTENER.V1_ENDPOINT;
+    router = Router();
+    discountService: DiscountService;
 
-    constructor() {
+    constructor(dataSource: DataSource) {
+        this.discountService = dataSource.discountService;
         this.initializeRoute();
     }
 
@@ -21,11 +23,6 @@ class DiscountController implements Controller {
         this.router.get(
             `${this.path}/:cik(${CONSTANTS.GLOBAL.CIK_REGEX})`,
             this.getDiscountWithCik
-        )
-
-        this.router.put(
-            `${this.path}/listener/updateDiscounts`,
-            this.bulkCheckDiscountStatusAndUpdate
         )
 
     }
@@ -43,21 +40,6 @@ class DiscountController implements Controller {
             next(new HttpException(err.status, err.message));
         }
     }
-
-    private bulkCheckDiscountStatusAndUpdate = async (
-        request: Request,
-        response: Response,
-        next: NextFunction
-    ): Promise<Response | void> => {
-        try {
-            const statusList: string[] = await this.discountService.bulkCheckDiscountStatusAndUpdate();
-            console.log(`Discount service responded with ${statusList} during bulk discount update`);
-            response.status(200).json({ statusList: statusList });
-        } catch (err: any) {
-            next(new HttpException(err.status, err.message));
-        }
-    }
-
 }
 
 export default DiscountController;

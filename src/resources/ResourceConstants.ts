@@ -22,6 +22,9 @@ const CONSTANTS = {
     IDENTITY: {
         V1_ENDPOINT: '/v1/identity',
         FETCH_ERROR: 'Failure during identity get request: ',
+    },
+    LISTENER: {
+        V1_ENDPOINT: '/v1/listener'
     }
 }
 

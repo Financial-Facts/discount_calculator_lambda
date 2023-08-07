@@ -7,19 +7,19 @@ import ErrorMiddleware from '@/middleware/ErrorHandler.middleware';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
-import Listener from './utils/interfaces/IListener';
+import Consumer from './utils/interfaces/IConsumer';
+
 class App {
 
     public express: Application;
     public port: number;
 
-    constructor(controllers: Controller[], listeners: Listener[], port: number) {
+    constructor(controllers: Controller[], consumers: Consumer[], port: number) {
         this.express = express();
         this.port = port;
-
         this.initializeMiddleware();
         this.initializeControllers(controllers);
-        this.initializeListeners(listeners);
+        this.initializeConsumer(consumers);
         this.initializeErrorHandling();
         this.initializeSwagger();
     }
@@ -39,9 +39,9 @@ class App {
         });
     }
 
-    private initializeListeners(listeners: Listener[]): void {
-        listeners.forEach(listener => {
-            listener.listen();
+    private initializeConsumer(consumers: Consumer[]): void {
+        consumers.forEach(consumer => {
+            consumer.start();
         })
     }
 

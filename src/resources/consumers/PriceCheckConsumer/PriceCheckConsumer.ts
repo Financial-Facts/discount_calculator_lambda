@@ -1,39 +1,33 @@
 import DisqualifyingDataException from '@/utils/exceptions/DisqualifyingDataException';
 import HttpException from '@/utils/exceptions/HttpException';
 import DiscountService from '../../services/DiscountService';
-import Listener from '@/utils/interfaces/IListener';
 import { Consumer } from 'sqs-consumer';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import SqsMsgBody from './models/SqsMsgBody';
 import CONSTANTS from '../../../Services/ServiceConstants';
+import DataSource from 'datasource';
 
-class DiscountCheckListener implements Listener {
+class PriceCheckConsumer {
 
     private discountService: DiscountService;
     private processingCik: Set<string>;
     private sqsUrl: string;
 
-    constructor() {
-        console.log('Initializing discount check listener...');
+    constructor(dataSource: DataSource) {
         this.sqsUrl = process.env.discount_check_sqs_url ?? CONSTANTS.GLOBAL.EMPTY;
-        this.discountService = new DiscountService();
+        this.discountService = dataSource.discountService;
         this.processingCik = new Set<string>();
     }
 
-    public async listen(): Promise<void> {
+    public async start(): Promise<void> {
+        console.log('Initializing polling for price check consumer...');
         const app = Consumer.create({
             queueUrl: this.sqsUrl,
             handleMessage: async (message) => {
-                console.log(`Polled message from SQS: ${message}`)
+                console.log(`Message retrieved from SQS: ${message}`)
                 if (message.Body) {
                     const event: SqsMsgBody = JSON.parse(message.Body);
-                    event.Records.forEach(record => {
-                        if (record.s3 && record.s3.object && record.s3.object.key) {
-                            const cik = this.removeS3KeySuffix(record.s3.object.key);
-                            this.processingCik.add(cik);
-                            this.checkForDiscount(cik);
-                        }
-                    });
+                    this.processEvent(event);
                 }
             },
             sqs: new SQSClient({
@@ -53,6 +47,18 @@ class DiscountCheckListener implements Listener {
           });
           
           app.start();
+    }
+
+    private processEvent(event: SqsMsgBody): void {
+        event.Records.forEach(record => {
+            if (record.s3 && record.s3.object && record.s3.object.key) {
+                const cik = this.removeS3KeySuffix(record.s3.object.key);
+                if (!this.processingCik.has(cik)) {
+                    this.processingCik.add(cik);
+                    this.checkForDiscount(cik);
+                }
+            }
+        });
     }
 
     private async checkForDiscount(cik: string): Promise<void> {
@@ -82,4 +88,4 @@ class DiscountCheckListener implements Listener {
 }
 
 
-export default DiscountCheckListener;
+export default PriceCheckConsumer;
