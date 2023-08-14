@@ -1,7 +1,6 @@
 import Discount from "../entities/discount/IDiscount";
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
-import StickerPriceService from "../../Services/StickerPriceService/StickerPriceService";
 import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import fetch, { Response } from "node-fetch";
 import SimpleDiscount from "../entities/discount/ISimpleDiscount";

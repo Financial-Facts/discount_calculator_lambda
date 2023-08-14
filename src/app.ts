@@ -41,7 +41,7 @@ class App {
 
     private initializeConsumer(consumers: Consumer[]): void {
         consumers.forEach(consumer => {
-            consumer.start();
+            consumer.startPolling();
         })
     }
 

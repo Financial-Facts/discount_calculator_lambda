@@ -21,7 +21,7 @@ class FactsService {
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
-                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + response.text());
+                        throw new HttpException(response.status, CONSTANTS.FACTS.FETCH_ERROR + await response.text());
                     }
                     return response.json();
                 }).then((body: Facts) => {
