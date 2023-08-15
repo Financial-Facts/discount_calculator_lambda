@@ -42,7 +42,7 @@ class App {
     private initializeConsumer(consumers: Consumer[]): void {
         consumers.forEach(consumer => {
             consumer.startPolling();
-        })
+        });
     }
 
     private initializeErrorHandling(): void {

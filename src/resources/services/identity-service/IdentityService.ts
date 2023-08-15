@@ -1,21 +1,22 @@
 import HttpException from "@/utils/exceptions/HttpException";
-import CONSTANTS from "../ResourceConstants";
-import Identity from "../entities/identity/Identity";
-import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
-import IdentitiesAndDiscounts from "../entities/identity/IdentitiesAndDiscounts";
-import BulkIdentitiesRequest from "../entities/identity/BulkIdentitiesRequest";
+import CONSTANTS from "../../ResourceConstants";
+import Identity from "../../entities/identity/Identity";
+import { buildHeadersWithBasicAuth } from "../../../utils/serviceUtils";
+import IdentitiesAndDiscounts from "../../entities/identity/IdentitiesAndDiscounts";
+import BulkIdentitiesRequest from "../../entities/identity/BulkIdentitiesRequest";
+import Service from "@/utils/interfaces/IService";
+import IdentityService from "./IIdentityService";
 
+let financialFactsServiceFactsV1Url = CONSTANTS.GLOBAL.EMPTY;
 
-class IdentityService {
+const identityService: Service & IdentityService = {
 
-    private ffsIdentityUrl: string;
+    setUrl: (): void => {
+        financialFactsServiceFactsV1Url = process.env.ffs_base_url + CONSTANTS.IDENTITY.V1_ENDPOINT;
+    },
 
-    constructor() {
-        this.ffsIdentityUrl = process.env.ffs_base_url + CONSTANTS.IDENTITY.V1_ENDPOINT
-    }
-
-    public async getIdentityWithCik(cik: string): Promise<Identity> {
-        const url =  `${this.ffsIdentityUrl}/${cik}`;
+    getIdentityWithCik: async (cik: string): Promise<Identity> => {
+        const url =  `${financialFactsServiceFactsV1Url}/${cik}`;
         try {
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
@@ -31,13 +32,13 @@ class IdentityService {
             throw new HttpException(err.status,
                 CONSTANTS.IDENTITY.FETCH_ERROR + err.message);
         }
-    }
+    },
 
-    public async getBulkIdentitiesAndOptionalDiscounts(
+    getBulkIdentitiesAndOptionalDiscounts: async (
         request: BulkIdentitiesRequest,
         includeDiscounts: boolean
-    ): Promise<IdentitiesAndDiscounts> {
-        const url = `${this.ffsIdentityUrl}/bulk?includeDiscounts=${includeDiscounts}`;
+    ): Promise<IdentitiesAndDiscounts> => {
+        const url = `${financialFactsServiceFactsV1Url}/bulk?includeDiscounts=${includeDiscounts}`;
         try {
             return fetch(url,
                 { 
@@ -57,7 +58,7 @@ class IdentityService {
             throw new HttpException(err.status,
                 CONSTANTS.IDENTITY.BULK_FETCH_ERROR);
         }
-    }
+    },
 }
 
-export default IdentityService;
+export default identityService;

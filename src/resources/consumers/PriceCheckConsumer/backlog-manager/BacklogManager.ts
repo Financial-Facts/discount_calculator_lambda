@@ -1,5 +1,5 @@
 import Discount from "@/resources/entities/discount/IDiscount";
-import DiscountService from "@/resources/services/DiscountService";
+import discountService from "@/resources/services/discount-service/DiscountService";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
 import StickerPriceService from "Services/StickerPriceService/StickerPriceService";
@@ -13,11 +13,9 @@ class BacklogManager {
     private backlog: string[] = [];
     private existingDiscountCik: Set<string> = new Set<string>();
 
-    private discountService: DiscountService;
     private stickerPriceService: StickerPriceService;
     
     constructor(dataSource: DataSource) {
-        this.discountService = dataSource.discountService;
         this.stickerPriceService = dataSource.stickerPriceService;
         this.loadExistingDiscountCikSet()
             .then(() => this.watchBacklog());
@@ -58,7 +56,7 @@ class BacklogManager {
         } catch (err: any) {
             if (err instanceof DisqualifyingDataException &&
                 this.existingDiscountCik.has(cik)) {
-                await this.deleteDiscount(cik, err.message);
+                this.deleteDiscount(cik, err.message);
             }
             console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
         }
@@ -74,7 +72,7 @@ class BacklogManager {
 
     private async saveDiscount(discount: Discount): Promise<void> {
         const cik = discount.cik;
-        return this.discountService.save(discount)
+        return discountService.saveDiscount(discount)
             .then(response => {
                 if (response) {
                     this.existingDiscountCik.add(cik);
@@ -86,7 +84,7 @@ class BacklogManager {
     }
 
     private async deleteDiscount(cik: string, reason: string): Promise<void> {
-        this.discountService.delete(cik)
+        return discountService.deleteDiscount(cik)
             .then(() => {
                 console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
                 this.existingDiscountCik.delete(cik);
@@ -108,7 +106,7 @@ class BacklogManager {
     }
 
     private async loadExistingDiscountCikSet(): Promise<void> {
-        return this.discountService.getBulkSimpleDiscounts()
+        return discountService.getBulkSimpleDiscounts()
             .then(async simpleDiscounts => {
                 simpleDiscounts.forEach(simpleDiscount => {
                     this.existingDiscountCik.add(simpleDiscount.cik);

@@ -5,7 +5,8 @@ const CONSTANTS = {
         DELETE: 'DELETE',
         JSON: 'Application/json',
         CIK_REGEX: 'CIK[0-9]{10}',
-        AUTHORIZATION: 'Authorization'
+        AUTHORIZATION: 'Authorization',
+        EMPTY: ''
     },
     DISCOUNT: {
         V1_ENDPOINT: '/v1/discount',

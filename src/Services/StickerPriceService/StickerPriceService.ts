@@ -1,28 +1,22 @@
-import FactsService from "@/resources/services/FactsService";
 import HistoricalPriceService from "../HistoricalPriceService/HistoricalPriceService";
 import Calculator from "./helpers/calculator/calculator";
 import Discount from "@/resources/entities/discount/IDiscount";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
+import factsService from "@/resources/services/facts-service/FactsService";
+import historicalPriceService from "../HistoricalPriceService/HistoricalPriceService";
 
 class StickerPriceService {
 
-    private factsService: FactsService;
     private calculator: Calculator;
-    private historicalPriceService: HistoricalPriceService;
 
-    constructor(
-        factsService: FactsService,
-        historicalPriceService: HistoricalPriceService
-    ) {
-        this.factsService = factsService;
-        this.historicalPriceService = historicalPriceService;
-        this.calculator = new Calculator(this.historicalPriceService);
+    constructor() {
+        this.calculator = new Calculator();
     }
 
     public async checkForSale(cik: string): Promise<Discount> {
         return this.getStickerPriceDiscount(cik)
             .then(async (discount: Discount) => {
-                return this.historicalPriceService.getCurrentPrice(discount.symbol)
+                return historicalPriceService.getCurrentPrice(discount.symbol)
                     .then(async (price: number) => {
                         if (this.salePriceExceedsZero(discount) && 
                             this.anySalePriceExceedsValue(price, discount)) {
@@ -35,7 +29,7 @@ class StickerPriceService {
 
     private async getStickerPriceDiscount(cik: string): Promise<Discount> {
         console.log("In sticker price service getting discount data for cik: " + cik);
-        return this.factsService.getStickerPriceData(cik)
+        return factsService.getStickerPriceData(cik)
             .then(async (data: StickerPriceData) => {
                 return this.calculator.calculateStickerPriceData(data);
             });

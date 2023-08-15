@@ -19,9 +19,9 @@ class Calculator {
     private roicFunction: RoicFunction;
     private stickerPriceOutput: StickerPriceOutput;
     
-    constructor(historicalPriceService: HistoricalPriceService) {
+    constructor() {
         this.bvpsFunction = new BvpsFunction();
-        this.peFunction = new PeFunction(historicalPriceService);
+        this.peFunction = new PeFunction();
         this.roicFunction = new RoicFunction();
         this.stickerPriceOutput = new StickerPriceOutput();
     }

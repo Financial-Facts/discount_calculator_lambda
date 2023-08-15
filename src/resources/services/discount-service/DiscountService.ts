@@ -1,23 +1,24 @@
-import Discount from "../entities/discount/IDiscount";
+import Discount from "../../entities/discount/IDiscount";
 import HttpException from "@/utils/exceptions/HttpException";
-import CONSTANTS from "../ResourceConstants";
 import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import fetch, { Response } from "node-fetch";
-import SimpleDiscount from "../entities/discount/ISimpleDiscount";
+import SimpleDiscount from "../../entities/discount/ISimpleDiscount";
+import DiscountService from "./IDiscountService";
+import CONSTANTS from "@/resources/ResourceConstants";
+import Service from "@/utils/interfaces/IService";
 
-class DiscountService {
+let financialFactServiceDiscountV1Url = CONSTANTS.GLOBAL.EMPTY;
 
-    private financialFactServiceDiscountV1Url: string;
+const discountService: Service & DiscountService = {
 
-    constructor() {
-        this.financialFactServiceDiscountV1Url = process.env.ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
-    }
+    setUrl: (): void => {
+        financialFactServiceDiscountV1Url = process.env.ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
+    },
 
-    // Get an existing discount
-    public async getDiscountWithCik(cik: string): Promise<Discount> {
+    getDiscountWithCik: async (cik: string): Promise<Discount> => {
         try {
-            const url = `${this.financialFactServiceDiscountV1Url}/${cik}`;
-            return fetch(url, { headers: buildHeadersWithBasicAuth()})
+            const url = `${financialFactServiceDiscountV1Url}/${cik}`;
+            return fetch(url, { headers: buildHeadersWithBasicAuth() })
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
                         throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
@@ -29,12 +30,11 @@ class DiscountService {
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.FETCH_ERROR + err.message);
         }
-    }
+    },
 
-    // Delete a discount
-    public async delete(cik: string): Promise<string> {
+    deleteDiscount: async (cik: string): Promise<string> => {
         try {
-            return fetch(`${this.financialFactServiceDiscountV1Url}/${cik}`, { 
+            return fetch(`${financialFactServiceDiscountV1Url}/${cik}`, {
                 method: CONSTANTS.GLOBAL.DELETE,
                 headers: buildHeadersWithBasicAuth()
             }).then(async (response: Response) => {
@@ -42,17 +42,16 @@ class DiscountService {
                     throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
                 }
                 return response.text();
-            })
+            });
         } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);
         }
-    }
+    },
 
-    // Get bulk simple discounts
-    public async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
+    getBulkSimpleDiscounts: async (): Promise<SimpleDiscount[]> => {
         console.log("In discount service getting simple discounts");
         try {
-            const url = `${this.financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
+            const url = `${financialFactServiceDiscountV1Url}/bulkSimpleDiscounts`;
             return fetch(url, { 
                 headers: buildHeadersWithBasicAuth()
             }).then(async (response: Response) => {
@@ -68,12 +67,11 @@ class DiscountService {
             throw new HttpException(err.status,
                 CONSTANTS.DISCOUNT.FETCH_ALL_CIK_ERROR + err.message);
         }
-    }
-    
-    // Update discount status
-    public async submitBulkDiscountStatusUpdate(discountUpdateMap: Record<string, boolean>): Promise<string[]> {
+    },
+
+    submitBulkDiscountStatusUpdate: async (discountUpdateMap: Record<string, boolean>): Promise<string[]> => {
         try {
-            return fetch(this.financialFactServiceDiscountV1Url, {
+            return fetch(financialFactServiceDiscountV1Url, {
                 method: CONSTANTS.GLOBAL.PUT,
                 headers: buildHeadersWithBasicAuth(),
                 body: JSON.stringify({ discountUpdateMap })
@@ -88,12 +86,11 @@ class DiscountService {
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.DISCOUNT.UPDATE_ERROR + err.message);   
         }
-    }
+    },
 
-    // Create a new discount 
-    public async save(discount: Discount): Promise<string> {
+    saveDiscount: async (discount: Discount): Promise<string> => {
         try {
-            return fetch(this.financialFactServiceDiscountV1Url, { 
+            return fetch(financialFactServiceDiscountV1Url, { 
                 method: CONSTANTS.GLOBAL.POST,
                 headers: buildHeadersWithBasicAuth(),
                 body: JSON.stringify(discount)
@@ -109,4 +106,4 @@ class DiscountService {
     }
 }
 
-export default DiscountService;
+export default discountService;

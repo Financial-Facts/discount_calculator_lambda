@@ -4,18 +4,20 @@ import { buildHistoricalPriceInput, mapCSVToPriceData } from "./utils/Historical
 import fetch, { Response } from "node-fetch";
 import CONSTANTS from "../../Services/ServiceConstants";
 import ThirdPartyDataFailureException from "@/utils/exceptions/ThirdPartyDataFailureException";
+import Service from "@/utils/interfaces/IService";
+import HistoricalPriceService from "./IHistoricalPriceService";
 
-class HistoricalPriceService {
+let historicalPriceUrlV1 = CONSTANTS.GLOBAL.EMPTY;
 
-    private historicalPriceUrlV1: string;
+const historicalPriceService: Service & HistoricalPriceService = {
+    
+    setUrl: (): void => {
+        historicalPriceUrlV1 = process.env.historical_data_source_url_v1 ?? CONSTANTS.GLOBAL.EMPTY;
+    },
 
-    constructor() {
-        this.historicalPriceUrlV1 = process.env.historical_data_source_url_v1 ?? CONSTANTS.GLOBAL.EMPTY;
-    }
-
-    public async getHistoricalPrices(input: HistoricalPriceInput): Promise<PriceData[]> {
+    getHistoricalPrices: async (input: HistoricalPriceInput): Promise<PriceData[]> => {
         console.log(`In historical price service getting historical data for symbol: ${input.symbol}`);
-        const url = `${this.historicalPriceUrlV1}/${input.symbol}` + 
+        const url = `${historicalPriceUrlV1}/${input.symbol}` + 
             `?symbol=${input.symbol}&period1=${input.fromDate}` + 
             `&period2=${input.toDate}&interval=1d&includeAdjustedClose=true`;
         return fetch(url, { method: 'GET'})
@@ -31,15 +33,15 @@ class HistoricalPriceService {
             }).then(async (body: string) => {
                 return mapCSVToPriceData(body);
             });
-    }
+    },
 
-    public async getCurrentPrice(symbol: string): Promise<number> {
+    getCurrentPrice: async (symbol: string): Promise<number> => {
         console.log("In historical price service getting current price for symbol: " + symbol);
         const to = new Date();
         const from = new Date();
         from.setDate(from.getDate() - 4);
         const input: HistoricalPriceInput = buildHistoricalPriceInput(symbol, from, to);
-        return this.getHistoricalPrices(input)
+        return historicalPriceService.getHistoricalPrices(input)
             .then(priceData => {
                 if (priceData && priceData.length > 0) {
                     const price = priceData[priceData.length - 1].close;
@@ -52,4 +54,4 @@ class HistoricalPriceService {
     }
 }
 
-export default HistoricalPriceService;
+export default historicalPriceService;

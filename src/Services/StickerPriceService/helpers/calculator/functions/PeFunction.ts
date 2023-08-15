@@ -7,14 +7,12 @@ import { annualizeByMean, days_between } from "../../../utils/QuarterlyDataUtils
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import HistoricalPriceInput from "Services/HistoricalPriceService/models/HistoricalPriceInput";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
+import historicalPriceService from "../../../../../Services/HistoricalPriceService/HistoricalPriceService";
 
 class PeFunction extends AbstractFunction {
 
-    private historicalPriceService: HistoricalPriceService;
-
-    constructor(historicalPriceService: HistoricalPriceService) {
+    constructor() {
         super();
-        this.historicalPriceService = historicalPriceService;
     }
 
     async calculate(data: StickerPriceData): Promise<QuarterlyData[]> {
@@ -22,7 +20,7 @@ class PeFunction extends AbstractFunction {
         const quarterlyEPS = data.quarterlyEPS;
         const historicalPriceInput =
             this.buildHistoricalPriceInput(data.symbol, quarterlyEPS);
-        return this.historicalPriceService.getHistoricalPrices(historicalPriceInput)
+        return historicalPriceService.getHistoricalPrices(historicalPriceInput)
             .then(async (priceData: PriceData[]) => {
                 data.quarterlyEPS.forEach(quarter => {
                     const price = priceData.find(day => {

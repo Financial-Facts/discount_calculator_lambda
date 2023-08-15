@@ -1,21 +1,18 @@
 import Controller from "@/utils/interfaces/IController";
 import { Router, Request, Response, NextFunction } from 'express';
 import CONSTANTS from "../ResourceConstants";
-import IdentityService from "../services/IdentityService";
-import DataSource from "datasource";
 import HttpException from "@/utils/exceptions/HttpException";
 import IdentitiesAndDiscounts from "../entities/identity/IdentitiesAndDiscounts";
 import BulkIdentitiesRequest from "../entities/identity/BulkIdentitiesRequest";
 import InvalidRequestException from "@/utils/exceptions/InvalidRequestException";
+import identityService from "../services/identity-service/IdentityService";
 
 class IdentityController implements Controller {
 
     path = CONSTANTS.IDENTITY.V1_ENDPOINT;
     router = Router();
-    identityService: IdentityService;
 
-    constructor(dataSource: DataSource) {
-        this.identityService = dataSource.identityService;
+    constructor() {
         this.initalizeRoutes();
     }
 
@@ -42,7 +39,7 @@ class IdentityController implements Controller {
                 includeDiscounts = includeDiscountsParam.toLowerCase() === 'true';
             }
             const data: IdentitiesAndDiscounts =
-                await this.identityService.getBulkIdentitiesAndOptionalDiscounts(identitiesRequest, includeDiscounts);
+                await identityService.getBulkIdentitiesAndOptionalDiscounts(identitiesRequest, includeDiscounts);
             response.status(200).json(data);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));

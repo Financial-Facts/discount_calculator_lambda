@@ -3,16 +3,15 @@ import { Router, Request, Response, NextFunction } from 'express';
 import HttpException from "@/utils/exceptions/HttpException";
 import Controller from "@/utils/interfaces/IController";
 import DataSource from "datasource";
+import factsService from "../services/facts-service/FactsService";
 
 
 class FactsController implements Controller {
 
     public path = CONSTANTS.FACTS.V1_ENDPOINT;
     public router = Router();
-    private FactsService;
 
-    constructor(datasource: DataSource) {
-        this.FactsService = datasource.factsService;
+    constructor() {
         this.initializeRoute();
     }
 
@@ -31,7 +30,7 @@ class FactsController implements Controller {
     ): Promise<Response | void> => {
         const cik = request.params.cik;
         try {
-            const facts: any = await this.FactsService.getFacts(cik);
+            const facts: any = await factsService.getFacts(cik);
             response.status(200).json(facts);
         } catch (err: any) {
             next(new HttpException(err.status, err.message));
