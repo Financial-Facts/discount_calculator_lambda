@@ -2,7 +2,7 @@ import CONSTANTS from "../ResourceConstants";
 import { Router, Request, Response, NextFunction } from 'express';
 import HttpException from "@/utils/exceptions/HttpException";
 import Controller from "@/utils/interfaces/IController";
-import factsService from "../services/facts-service/FactsService";
+import { factsService } from "../../bootstrap";
 
 
 class FactsController implements Controller {

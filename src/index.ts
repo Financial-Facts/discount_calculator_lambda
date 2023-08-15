@@ -7,20 +7,11 @@ import initializeEnv from '@/utils/initializeEnv';
 import ListenerController from './resources/controllers/ListenerController';
 import PriceCheckConsumer from './resources/consumers/PriceCheckConsumer/PriceCheckConsumer';
 import IdentityController from './resources/controllers/IdentityController';
-import discountService from './resources/services/discount-service/DiscountService';
-import Service from './utils/interfaces/IService';
-import factsService from './resources/services/facts-service/FactsService';
-import identityService from './resources/services/identity-service/IdentityService';
-import historicalPriceService from './Services/HistoricalPriceService/HistoricalPriceService';
+import bootstrap from './bootstrap';
 
 
 initializeEnv().then(() => {
-    initializeServices([
-        discountService,
-        factsService,
-        identityService,
-        historicalPriceService
-    ]);
+    bootstrap();
     const app = new App(
         [
             new DiscountController(),
@@ -34,9 +25,3 @@ initializeEnv().then(() => {
     
     app.listen();
 })
-
-function initializeServices(services: Service[]): void {
-    services.forEach(service => {
-        service.setUrl();
-    });
-}

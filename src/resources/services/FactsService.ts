@@ -1,24 +1,22 @@
+import CONSTANTS from "@/resources/ResourceConstants";
+import Facts from "@/resources/entities/facts/IFacts";
+import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import HttpException from "@/utils/exceptions/HttpException";
-import CONSTANTS from "../../ResourceConstants";
-import { buildHeadersWithBasicAuth } from "../../../utils/serviceUtils";
-import Facts from "../../entities/facts/IFacts";
-import StickerPriceData from "../../entities/facts/IStickerPriceData";
-import fetch, { Response } from "node-fetch";
+import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import fs from 'fs';
-import Service from "@/utils/interfaces/IService";
-import FactsService from "./IFactsService";
 
-let financialFactsServiceFactsV1Url = CONSTANTS.GLOBAL.EMPTY;
+class FactsService {
 
-const factsService: Service & FactsService = {
+    private financialFactsServiceFactsV1Url: string;
+    
+    constructor(ffs_base_url: string) {
+        this.financialFactsServiceFactsV1Url = ffs_base_url + CONSTANTS.FACTS.V1_ENDPOINT;
+    }
 
-    setUrl: (): void => {
-        financialFactsServiceFactsV1Url = process.env.ffs_base_url + CONSTANTS.FACTS.V1_ENDPOINT;
-    },
-
-    getFacts: async (cik: string): Promise<Facts> => {
+    // Fetch financial facts for a company
+    public async getFacts(cik: string): Promise<Facts> {
         try {
-            const url = `${financialFactsServiceFactsV1Url}/${cik}`;
+            const url = `${this.financialFactsServiceFactsV1Url}/${cik}`;
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
@@ -31,12 +29,13 @@ const factsService: Service & FactsService = {
         } catch (err: any) {
             throw new HttpException(err.status, CONSTANTS.FACTS.FETCH_ERROR + err.message);
         }
-    },
+    }
 
-    getStickerPriceData: async (cik: string): Promise<StickerPriceData> => {
+    // Fetch sticker price data for a company
+    public async getStickerPriceData(cik: string): Promise<StickerPriceData> {
         console.log("In facts service gettings sticker price data for cik: " + cik);
         try {
-            const url = `${financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
+            const url = `${this.financialFactsServiceFactsV1Url}/${cik}/stickerPriceData`;
             return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
                 .then(async (response: Response) => {
                     if (response.status != 200) {
@@ -58,7 +57,6 @@ const factsService: Service & FactsService = {
             throw new HttpException(err.status, CONSTANTS.FACTS.FETCH_ERROR + err.message);
         }
     }
-
 }
 
-export default factsService;
+export default FactsService;

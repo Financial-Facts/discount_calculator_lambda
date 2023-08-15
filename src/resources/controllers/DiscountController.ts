@@ -3,7 +3,7 @@ import Controller from '@/utils/interfaces/IController';
 import HttpException from '@/utils/exceptions/HttpException';
 import Discount from '../entities/discount/IDiscount';
 import CONSTANTS from '../ResourceConstants';
-import discountService from '../services/discount-service/DiscountService';
+import { discountService } from '../../bootstrap';
 
 class DiscountController implements Controller {
 

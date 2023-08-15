@@ -1,8 +1,7 @@
 import Discount from "@/resources/entities/discount/IDiscount";
-import discountService from "@/resources/services/discount-service/DiscountService";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
-import stickerPriceService from "../../../../Services/StickerPriceService/StickerPriceService";
+import { discountService, stickerPriceService } from "../../../../bootstrap";
 
 class BacklogManager {
 
@@ -68,7 +67,7 @@ class BacklogManager {
 
     private async saveDiscount(discount: Discount): Promise<void> {
         const cik = discount.cik;
-        return discountService.saveDiscount(discount)
+        return discountService.save(discount)
             .then(response => {
                 if (response) {
                     this.existingDiscountCik.add(cik);
@@ -80,7 +79,7 @@ class BacklogManager {
     }
 
     private async deleteDiscount(cik: string, reason: string): Promise<void> {
-        return discountService.deleteDiscount(cik)
+        return discountService.delete(cik)
             .then(() => {
                 console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
                 this.existingDiscountCik.delete(cik);

@@ -5,7 +5,7 @@ import HttpException from "@/utils/exceptions/HttpException";
 import IdentitiesAndDiscounts from "../entities/identity/IdentitiesAndDiscounts";
 import BulkIdentitiesRequest from "../entities/identity/BulkIdentitiesRequest";
 import InvalidRequestException from "@/utils/exceptions/InvalidRequestException";
-import identityService from "../services/identity-service/IdentityService";
+import { identityService } from "../../bootstrap";
 
 class IdentityController implements Controller {
 

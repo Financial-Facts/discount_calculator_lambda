@@ -3,8 +3,7 @@ import Controller from "@/utils/interfaces/IController";
 import { Router, Request, Response, NextFunction } from "express";
 import CONSTANTS from "../ResourceConstants";
 import HttpException from "@/utils/exceptions/HttpException";
-import discountService from "@/resources/services/discount-service/DiscountService";
-import historicalPriceService from "../../Services/HistoricalPriceService/HistoricalPriceService";
+import { discountService, historicalPriceService } from "../../bootstrap";
 
 class ListenerController implements Controller {
 
