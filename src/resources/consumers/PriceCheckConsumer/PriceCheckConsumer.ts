@@ -2,7 +2,6 @@ import { Consumer } from 'sqs-consumer';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import SqsMsgBody from './models/SqsMsgBody';
 import CONSTANTS from '../../../Services/ServiceConstants';
-import DataSource from 'datasource';
 import BacklogManager from './backlog-manager/BacklogManager';
 
 class PriceCheckConsumer {
@@ -10,8 +9,8 @@ class PriceCheckConsumer {
     private sqsUrl = process.env.discount_check_sqs_url ?? CONSTANTS.GLOBAL.EMPTY;
     private backlogManager: BacklogManager;
 
-    constructor(dataSource: DataSource) {
-        this.backlogManager = new BacklogManager(dataSource);
+    constructor() {
+        this.backlogManager = new BacklogManager();
     }
 
     public async startPolling(): Promise<void> {

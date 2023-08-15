@@ -4,7 +4,6 @@ import App from './app';
 import DiscountController from '@/resources/controllers/DiscountController';
 import FactsController from './resources/controllers/FactsController';
 import initializeEnv from '@/utils/initializeEnv';
-import DataSource from './datasource';
 import ListenerController from './resources/controllers/ListenerController';
 import PriceCheckConsumer from './resources/consumers/PriceCheckConsumer/PriceCheckConsumer';
 import IdentityController from './resources/controllers/IdentityController';
@@ -12,23 +11,24 @@ import discountService from './resources/services/discount-service/DiscountServi
 import Service from './utils/interfaces/IService';
 import factsService from './resources/services/facts-service/FactsService';
 import identityService from './resources/services/identity-service/IdentityService';
+import historicalPriceService from './Services/HistoricalPriceService/HistoricalPriceService';
 
 
 initializeEnv().then(() => {
-    const dataSource =  new DataSource();
     initializeServices([
         discountService,
         factsService,
-        identityService
+        identityService,
+        historicalPriceService
     ]);
     const app = new App(
         [
             new DiscountController(),
             new FactsController(),
             new IdentityController(),
-            new ListenerController(dataSource)
+            new ListenerController()
         ], [
-            new PriceCheckConsumer(dataSource)
+            new PriceCheckConsumer()
         ],
         Number(+(process.env.service_port ?? 3000)));
     

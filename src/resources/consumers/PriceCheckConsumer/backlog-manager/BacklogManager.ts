@@ -2,8 +2,7 @@ import Discount from "@/resources/entities/discount/IDiscount";
 import discountService from "@/resources/services/discount-service/DiscountService";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
-import StickerPriceService from "Services/StickerPriceService/StickerPriceService";
-import DataSource from "datasource";
+import stickerPriceService from "../../../../Services/StickerPriceService/StickerPriceService";
 
 class BacklogManager {
 
@@ -12,11 +11,8 @@ class BacklogManager {
 
     private backlog: string[] = [];
     private existingDiscountCik: Set<string> = new Set<string>();
-
-    private stickerPriceService: StickerPriceService;
     
-    constructor(dataSource: DataSource) {
-        this.stickerPriceService = dataSource.stickerPriceService;
+    constructor() {
         this.loadExistingDiscountCikSet()
             .then(() => this.watchBacklog());
     }
@@ -64,7 +60,7 @@ class BacklogManager {
 
     private async checkForDiscount(cik: string): Promise<void> {
         console.log("In price check consumer checking for a discount on CIK: " + cik);
-        return this.stickerPriceService.checkForSale(cik)
+        return stickerPriceService.checkForSale(cik)
             .then(async (discount: Discount) => {
                 return this.saveDiscount(discount); 
             });

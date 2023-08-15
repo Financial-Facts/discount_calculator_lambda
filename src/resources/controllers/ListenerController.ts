@@ -1,6 +1,5 @@
 import SimpleDiscount from "@/resources/entities/discount/ISimpleDiscount";
 import Controller from "@/utils/interfaces/IController";
-import DataSource from "datasource";
 import { Router, Request, Response, NextFunction } from "express";
 import CONSTANTS from "../ResourceConstants";
 import HttpException from "@/utils/exceptions/HttpException";
@@ -12,7 +11,7 @@ class ListenerController implements Controller {
     path = CONSTANTS.LISTENER.V1_ENDPOINT;
     router = Router();
 
-    constructor(dataSource: DataSource) {
+    constructor() {
         this.initializeRoutes();
     }
 
