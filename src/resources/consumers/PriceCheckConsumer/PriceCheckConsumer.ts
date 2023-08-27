@@ -20,8 +20,13 @@ class PriceCheckConsumer {
             handleMessage: async (message) => {
                 console.log(`Message retrieved from SQS: ${JSON.stringify(message)}`)
                 if (message.Body) {
-                    const event: SqsMsgBody = JSON.parse(message.Body);
-                    this.processEvent(event);
+                    try {
+                        const event: SqsMsgBody = JSON.parse(message.Body);
+                        this.processEvent(event);
+                    } catch (err: any) {
+                        const cik = message.Body;
+                        this.backlogManager.addCikToBacklog(cik);
+                    }
                 }
             },
             sqs: new SQSClient({

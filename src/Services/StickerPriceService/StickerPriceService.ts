@@ -1,7 +1,10 @@
 import Discount from "@/resources/entities/discount/IDiscount";
-import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import Calculator from "./helpers/calculator/calculator";
-import { factsService, historicalPriceService } from "../../bootstrap";
+import { historicalPriceService, statementService } from "../../bootstrap";
+import QuarterlyData from "@/resources/entities/models/QuarterlyData";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
+import Statements from "@/resources/entities/statements/statements";
+import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 
 class StickerPriceService {
 
@@ -27,12 +30,28 @@ class StickerPriceService {
 
     private async getStickerPriceDiscount(cik: string): Promise<Discount> {
         console.log("In sticker price service getting discount data for cik: " + cik);
-        return factsService.getStickerPriceData(cik)
-            .then(async (data: StickerPriceData) => {
+        return statementService.getStatements(cik)
+            .then(async (statements: Statements) => {
+                const data = this.buildStickerPriceData(statements);
+                this.checkHasSufficientStickerPriceData(data);
                 return this.calculator.calculateStickerPriceData(data);
             });
     }
     
+    private checkHasSufficientStickerPriceData(data: StickerPriceData): void {
+        this.checkHasSufficientQuarterlyData(data.quarterlyEPS, 'EPS');
+        this.checkHasSufficientQuarterlyData(data.quarterlyLongTermDebt, 'Long Term debt');
+        this.checkHasSufficientQuarterlyData(data.quarterlyNetIncome, 'Net Income');
+        this.checkHasSufficientQuarterlyData(data.quarterlyOutstandingShares, 'Outstanding Shares');
+        this.checkHasSufficientQuarterlyData(data.quarterlyShareholderEquity, 'Shareholder Equity');
+    }
+
+    private checkHasSufficientQuarterlyData(data: QuarterlyData[], type: string): void {
+        if (data.length < 40) {
+            throw new InsufficientDataException(`Insufficent sticker price data value: ${type}`);
+        }
+    }
+
     private salePriceExceedsZero(discount: Discount): boolean {
         return discount.ttmPriceData.salePrice > 0 &&
                 discount.tfyPriceData.salePrice > 0 &&
@@ -43,6 +62,50 @@ class StickerPriceService {
         return discount.ttmPriceData.salePrice > value ||
                 discount.tfyPriceData.salePrice > value || 
                 discount.ttyPriceData.salePrice > value;
+    }
+
+    private buildStickerPriceData(statements: Statements): StickerPriceData {
+        return {
+            cik: statements.balanceSheets[0].cik,
+            symbol: statements.balanceSheets[0].symbol,
+            name: statements.balanceSheets[0].link,
+            benchmarkRatioPrice: 0,
+            quarterlyShareholderEquity: statements.balanceSheets.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    value: sheets.totalStockholdersEquity
+                }
+            }),
+            quarterlyOutstandingShares: statements.incomeStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    value: sheets.weightedAverageShsOut
+                }
+            }),
+            quarterlyLongTermDebt: statements.balanceSheets.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    value: sheets.longTermDebt
+                }
+            }),
+            quarterlyEPS: statements.incomeStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    value: sheets.eps
+                }
+            }),
+            quarterlyNetIncome: statements.incomeStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    value: sheets.netIncome
+                }
+            }),
+        }
     }
 }
 

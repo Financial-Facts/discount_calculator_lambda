@@ -6,7 +6,6 @@ import RoicFunction from "./functions/RoicFunction";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
-import HistoricalPriceService from "../../../../Services/HistoricalPriceService/HistoricalPriceService";
 import { annualizeByAdd } from "../../utils/QuarterlyDataUtils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { checkValuesMeetRequirements } from "../../../../Services/StickerPriceService/utils/DisqualificationUtils";
@@ -108,8 +107,9 @@ class Calculator {
 
     private calculateGrowthRates(cik: string, quarterlyBVPS: QuarterlyData[]): Record<number, number> {
         try {
-            const { lastQuarters, annualBVPS } = this.bvpsFunction.getLastQuarterAndAnnualizedData(cik, quarterlyBVPS);
-            const tyy_BVPS_growth = (Math.pow(lastQuarters[lastQuarters.length - 1] / lastQuarters[0], (1/1)) - 1) * 100;
+            const annualBVPS = this.bvpsFunction.annualize(cik, quarterlyBVPS);
+            const lastQuarters = quarterlyBVPS.slice(-4);
+            const tyy_BVPS_growth = ((Math.pow(lastQuarters[lastQuarters.length - 1].value / lastQuarters[0].value, (1/4)) - 1) * 100) * 4;
             const tfy_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 5].value, (1/5)) - 1) * 100;
             const tty_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 10].value, (1/10)) - 1) * 100;
             return { 1: tyy_BVPS_growth, 5: tfy_BVPS_growth, 10: tty_BVPS_growth };

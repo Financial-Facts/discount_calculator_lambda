@@ -2,10 +2,11 @@ import Discount from "@/resources/entities/discount/IDiscount";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, stickerPriceService } from "../../../../bootstrap";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
 class BacklogManager {
 
-    private batchCapacity = +(process.env.price_check_consumer_capacity ?? 25);
+    private batchCapacity = +(process.env.price_check_consumer_capacity ?? 2);
     private frequency = +(process.env.price_check_consumer_frequency ?? 1);
 
     private backlog: string[] = [];
@@ -49,7 +50,8 @@ class BacklogManager {
         try {
             await this.checkForDiscount(cik);
         } catch (err: any) {
-            if (err instanceof DisqualifyingDataException &&
+            if ((err instanceof DisqualifyingDataException || 
+                err instanceof InsufficientDataException)  &&
                 this.existingDiscountCik.has(cik)) {
                 this.deleteDiscount(cik, err.message);
             }

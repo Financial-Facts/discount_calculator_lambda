@@ -12,23 +12,6 @@ class DiscountService {
         this.financialFactServiceDiscountV1Url = ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
     }
     
-    // Get an existing discount
-    public async getDiscountWithCik(cik: string): Promise<Discount> {
-        try {
-            const url = `${this.financialFactServiceDiscountV1Url}/${cik}`;
-            return fetch(url, { headers: buildHeadersWithBasicAuth()})
-                .then(async (response: Response) => {
-                    if (response.status !== 200) {
-                        throw new HttpException(response.status, CONSTANTS.DISCOUNT.FETCH_ERROR + await response.text());
-                    }
-                    return response.json();
-                }).then((body: Discount) => {
-                    return body;
-                });
-        } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.DISCOUNT.FETCH_ERROR + err.message);
-        }
-    }
     // Delete a discount
     public async delete(cik: string): Promise<string> {
         try {

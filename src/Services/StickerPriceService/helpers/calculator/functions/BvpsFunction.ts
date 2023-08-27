@@ -14,30 +14,6 @@ class BvpsFunction extends AbstractFunction {
     annualize(cik: string, quarterlyBVPS: QuarterlyData[]): QuarterlyData[] {
         return annualizeByMean(cik, quarterlyBVPS);
     }
-
-    getLastQuarterAndAnnualizedData(cik: string, quartertlyBVPS: QuarterlyData[]):
-        { lastQuarters: number[]; annualBVPS: QuarterlyData[]; }
-    {
-        return {
-            lastQuarters: this.getLastQuarterData(quartertlyBVPS),
-            annualBVPS: this.annualize(cik, quartertlyBVPS)
-        }
-    }
-
-    private getLastQuarterData(quarterlyBVPS: QuarterlyData[]): number[] {
-        let lastQuarters: number[] = [];
-        let index = quarterlyBVPS.length - 1;
-        let periodStartDate: Date = quarterlyBVPS[index].announcedDate;
-        index--;
-        while (index >= 0 && days_between(periodStartDate, quarterlyBVPS[index].announcedDate) <= 365) {
-            index--;
-        }
-        for (let i = index + 1; i < quarterlyBVPS.length; i++) {
-            lastQuarters.push(quarterlyBVPS[i].value);
-        }
-        lastQuarters = quarterize(lastQuarters);
-        return lastQuarters;
-    }
     
 }
 

@@ -14,9 +14,10 @@ const CONSTANTS = {
         UPDATE_ERROR: 'Failure during discount update request: ',
         FETCH_ERROR: 'Failure during discount get request: ',
         FETCH_ALL_CIK_ERROR: 'Failure during discount get all simple discount request: '    },
-    FACTS: {
-        V1_ENDPOINT: '/v1/facts',
-        FETCH_ERROR: 'Failure during facts get request: ',
+    STATEMENTS: {
+        V1_ENDPOINT: '/v1/statements',
+        SAVE_ERROR: 'Failure during statement save request: ', 
+        FETCH_ERROR: 'Failure during statement get request: ',
         INPUT_ERROR: 'Invalid input parameters',
         H_DATA_FETCH_ERROR: 'Failure while fetching historical data: '
     },

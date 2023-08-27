@@ -14,25 +14,6 @@ class IdentityService {
         this.financialFactsServiceIdentityV1Url = ffs_base_url + CONSTANTS.IDENTITY.V1_ENDPOINT;
     }
 
-    public async getIdentityWithCik(cik: string): Promise<Identity> {
-        const url =  `${this.financialFactsServiceIdentityV1Url}/${cik}`;
-        try {
-            return fetch(url, { method: 'GET', headers: buildHeadersWithBasicAuth()})
-                .then(async (response: Response) => {
-                    if (response.status !== 200) {
-                        throw new HttpException(response.status,
-                            CONSTANTS.IDENTITY.FETCH_ERROR + await response.text())
-                    }
-                    return response.text();
-                }).then((body: string) => {
-                    return JSON.parse(body) as Identity;
-                });
-        } catch (err: any) {
-            throw new HttpException(err.status,
-                CONSTANTS.IDENTITY.FETCH_ERROR + err.message);
-        }
-    }
-
     public async getBulkIdentitiesAndOptionalDiscounts(
         request: BulkIdentitiesRequest,
         includeDiscounts: boolean
