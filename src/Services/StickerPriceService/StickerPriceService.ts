@@ -68,7 +68,7 @@ class StickerPriceService {
         return {
             cik: statements.balanceSheets[0].cik,
             symbol: statements.balanceSheets[0].symbol,
-            name: statements.balanceSheets[0].link,
+            name: statements.balanceSheets[0].symbol,
             benchmarkRatioPrice: 0,
             quarterlyShareholderEquity: statements.balanceSheets.map(sheets => {
                 return {

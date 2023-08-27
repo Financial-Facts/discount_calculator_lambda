@@ -1,38 +1,55 @@
 import BalanceSheet from "@/resources/entities/statements/balance-sheet";
 import IncomeStatement from "@/resources/entities/statements/income-statement";
 import Statements from "@/resources/entities/statements/statements";
-import { ReportTranslated, secEdgarApi } from 'sec-edgar-api'
+import { ReportTranslated, SubmissionList, secEdgarApi } from 'sec-edgar-api'
+import { Report } from "./models/Report";
 
-const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
+const quarterlyPeriods = ['Q1', 'Q2', 'Q3', 'Q4'];
 
 checkForNewFiling('0000001750').then(val => {
-    // console.log(val);
+    console.log(val);
 })
 
 async function checkForNewFiling(cik: string): Promise<Statements> {
     return secEdgarApi.getReports({
         symbol: cik
-    }).then(reports => {
-        return secEdgarApi.getSubmissions({
+    }).then(async translatedReports => 
+        secEdgarApi.getSubmissions({
             symbol: cik
-        }).then(submissions => {
-            const cleanedReports = cleanReports(reports);
-            const quarterlyReports = cleanedReports.filter(report => periods.includes(report.fiscalPeriod));
-            const symbol = submissions.tickers[0];
-            // console.log(quarterlyReports);
-            return {
-                incomeStatements: buildIncomeStatements(cik, symbol, quarterlyReports),
-                balanceSheets: buildBalanceSheets(cik, symbol, quarterlyReports)
-            }
         })
-    });
+    .then(submissions => {
+        let reports: Report[] = cleanReports(translatedReports, submissions);
+        const symbol = submissions.tickers[0];
+        return {
+            incomeStatements: buildIncomeStatements(cik, symbol, reports),
+            balanceSheets: buildBalanceSheets(cik, symbol, reports)
+        }
+    }));
 }
 
-function buildBalanceSheets(cik: string, symbol: string, reports: ReportTranslated[]): BalanceSheet[] {
+function buildQuarterlyFilings(submissions: SubmissionList): any[] {
+    const recentFilings = submissions.filings.recent;
+    return recentFilings.acceptanceDateTime.map((val, index) => {
+        return {
+            acceptanceDateTime: recentFilings.acceptanceDateTime[index],
+            form: recentFilings.form[index],
+            reportDate: recentFilings.reportDate[index]
+        }
+    }).filter(filing => filing.form === '10-Q' || filing.form === '10-K')
+    .reverse();
+}
+
+function buildBalanceSheets(cik: string, symbol: string, reports: Report[]): BalanceSheet[] {
+    reports
+        .map(report => {
+            return {
+
+            }
+        })
     return [];
 }
 
-function buildIncomeStatements(cik: string, symbol: string, reports: ReportTranslated[]): IncomeStatement[] {
+function buildIncomeStatements(cik: string, symbol: string, reports: Report[]): IncomeStatement[] {
     return reports
         .filter(report => 
             report.dateReport && report.eps && report.incomeNet && report.sharesOutstanding)
@@ -43,7 +60,7 @@ function buildIncomeStatements(cik: string, symbol: string, reports: ReportTrans
                 symbol: symbol,
                 reportedCurrency: null,
                 fillingDate: new Date(report.dateFiled),
-                acceptedDate: null,
+                acceptedDate: report.acceptedDate || null,
                 calendarYear: report.dateReport.slice(0, 4),
                 period: report.fiscalPeriod,
                 revenue: report.revenueTotal,
@@ -53,10 +70,10 @@ function buildIncomeStatements(cik: string, symbol: string, reports: ReportTrans
                 researchAndDevelopmentExpenses: report.expenseResearchDevelopment,
                 generalAndAdministrativeExpenses: null,
                 sellingAndMarketingExpenses: null,
-                sellingGeneralAndAdministrativeExpenses: null,
+                sellingGeneralAndAdministrativeExpenses: twoVariableOperation(report.profitGross, report.incomeOperating, (a, b) => Math.abs(a - Math.abs(b))),
                 otherExpenses: report.expenseNonCashOther,
                 operatingExpenses: report.expenseOperating,
-                costAndExpenses: null,
+                costAndExpenses: report.expenseTotal,
                 interestIncome: null,
                 interestExpense: report.expenseInterest,
                 depreciationAndAmortization: report.expenseDepreciation,
@@ -80,9 +97,24 @@ function buildIncomeStatements(cik: string, symbol: string, reports: ReportTrans
     });
 }
 
-function cleanReports(reports: ReportTranslated[]): ReportTranslated[] {
-    reports = cleanRevenueOperating(reports);
+function cleanReports(reports: Report[], submissions: SubmissionList): ReportTranslated[] {
+    reports = cleanEbitda(reports);
     reports = cleanSharesOutstanding(reports);
+    reports = cleanReportDates(reports, submissions);
+    return reports
+}
+
+function cleanReportDates(reports: Report[], submissions: SubmissionList): ReportTranslated[] {
+    const filings = buildQuarterlyFilings(submissions);
+    reports = reports.filter(report => quarterlyPeriods.includes(report.fiscalPeriod));
+    let i1 = filings.length - 1;
+    let i2 = reports.length - 1;
+    while (i1 >= 0 && i2 >= 0) {
+        reports[i2].dateReport = filings[i1].reportDate;
+        reports[i2].acceptedDate = filings[i1].acceptanceDateTime ? new Date(filings[i1].acceptanceDateTime) : null;
+        i1--;
+        i2--;
+    }
     return reports;
 }
 
@@ -102,13 +134,10 @@ function cleanSharesOutstanding(reports: ReportTranslated[]): ReportTranslated[]
     return reports;
 }
 
-function cleanRevenueOperating(reports: ReportTranslated[]): ReportTranslated[] {
+function cleanEbitda(reports: ReportTranslated[]): ReportTranslated[] {
     reports.forEach(report => {
-        if (report.incomeNet && report.expenseInterest && report.expenseTax) {
-            console.log(report.incomeNet + report.expenseInterest + report.expenseTax);
-        }
-        if (report.profitGross && report.expenseOperating && report.expenseDepreciation) {
-            console.log(report.profitGross - report.expenseOperating - report.expenseDepreciation);
+        if (report.ebit && report.expenseDepreciation) {
+            report.ebitda = report.ebit + report.expenseDepreciation;
         }
     })
     return reports;
