@@ -5,7 +5,7 @@ export default interface IncomeStatement {
     symbol: string | null,
     reportedCurrency: string | null,
     fillingDate: Date | null,
-    acceptedDate: Date | null,
+    acceptedDate: string | null,
     calendarYear: string | null,
     period: string | null,
     revenue: number | null,

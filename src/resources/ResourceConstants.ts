@@ -12,6 +12,7 @@ const CONSTANTS = {
         V1_ENDPOINT: '/v1/discount',
         CREATION_ERROR: 'Failure during discount creation request: ',
         UPDATE_ERROR: 'Failure during discount update request: ',
+        DELETE_ERROR: 'Failure during discount delete request',
         FETCH_ERROR: 'Failure during discount get request: ',
         FETCH_ALL_CIK_ERROR: 'Failure during discount get all simple discount request: '    },
     STATEMENTS: {

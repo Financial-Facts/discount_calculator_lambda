@@ -25,7 +25,7 @@ class DiscountService {
                 return response.text();
             })
         } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.DISCOUNT.CREATION_ERROR + err.message);   
+            throw new HttpException(err.status, CONSTANTS.DISCOUNT.DELETE_ERROR + err.message);   
         }
     }
 

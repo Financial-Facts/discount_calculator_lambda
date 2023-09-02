@@ -1,4 +1,8 @@
-export default interface S3Event {
+export interface SqsMsgBody {
+    Records: S3Event[];
+}
+
+export interface S3Event {
     eventVersion: string,
     eventSource: string,
     awsRegion: string,

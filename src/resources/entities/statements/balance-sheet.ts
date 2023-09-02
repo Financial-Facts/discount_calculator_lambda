@@ -5,7 +5,7 @@ export default interface BalanceSheet {
     symbol: string,
     reportedCurrency: string | null,
     fillingDate: Date | null,
-    acceptedDate: Date | null,
+    acceptedDate: string | null,
     calendarYear: string | null,
     period: string | null,
     cashAndCashEquivalents: number | null,

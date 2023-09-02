@@ -1,6 +1,5 @@
 import HttpException from "@/utils/exceptions/HttpException";
 import CONSTANTS from "../ResourceConstants";
-import Identity from "../entities/identity/Identity";
 import { buildHeadersWithBasicAuth } from "../../utils/serviceUtils";
 import IdentitiesAndDiscounts from "../entities/identity/IdentitiesAndDiscounts";
 import BulkIdentitiesRequest from "../entities/identity/BulkIdentitiesRequest";

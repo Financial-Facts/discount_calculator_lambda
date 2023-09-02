@@ -16,23 +16,23 @@ class StickerPriceService {
 
     public async checkForSale(cik: string): Promise<Discount> {
         return this.getStickerPriceDiscount(cik)
-        .then(async (discount: Discount) => {
-            return historicalPriceService.getCurrentPrice(discount.symbol)
-                .then(async (price: number) => {
-                    if (this.salePriceExceedsZero(discount) && 
-                        this.anySalePriceExceedsValue(price, discount)) {
-                            discount.active = true;
-                    }
-                    return discount;
-                });
-        });
+            .then(async (discount: Discount) => {
+                return historicalPriceService.getCurrentPrice(discount.symbol)
+                    .then(async (price: number) => {
+                        if (this.salePriceExceedsZero(discount) && 
+                            this.anySalePriceExceedsValue(price, discount)) {
+                                discount.active = true;
+                        }
+                        return discount;
+                    });
+            });
     }
 
     private async getStickerPriceDiscount(cik: string): Promise<Discount> {
         console.log("In sticker price service getting discount data for cik: " + cik);
         return statementService.getStatements(cik)
             .then(async (statements: Statements) => {
-                const data = this.buildStickerPriceData(statements);
+                const data = this.buildStickerPriceData(cik, statements);
                 this.checkHasSufficientStickerPriceData(data);
                 return this.calculator.calculateStickerPriceData(data);
             });
@@ -64,9 +64,9 @@ class StickerPriceService {
                 discount.ttyPriceData.salePrice > value;
     }
 
-    private buildStickerPriceData(statements: Statements): StickerPriceData {
+    private buildStickerPriceData(cik: string, statements: Statements): StickerPriceData {
         return {
-            cik: statements.balanceSheets[0].cik,
+            cik: cik,
             symbol: statements.balanceSheets[0].symbol,
             name: statements.balanceSheets[0].symbol,
             benchmarkRatioPrice: 0,

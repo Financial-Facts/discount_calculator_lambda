@@ -11,35 +11,19 @@ export function median_date(d1: Date, d2: Date): Date {
      return new Date((d1.getTime() + d2.getTime()) / 2);
 }
 
-// Converts set of numbers into four quarters by adding them together
-export function quarterize(data: number[]): number[] {
-    const chunkSize: number = data.length/4; 
-    const result: number[] = [];
-    let i = data.length;
-    while (i >= 1) {
-        const chunk = data.slice(i - chunkSize, i);
-        result.splice(0, 0,
-            chunk.reduce((a: number, b: number) => {
-                return a + b;
-            })/chunk.length);
-        i -= chunkSize;
-    }
-    return result;
-}
-
 // Annualizes QuarterlyData by adding together values
 export function annualizeByAdd(cik: string, data: QuarterlyData[]): QuarterlyData[] {
     const annualData: QuarterlyData[] = [];
-    let i = data.length - 1;
-    while (i - 4 >= 0) {
-        annualData.unshift(data.slice(i - 3, i + 1).reduce((quarter1, quarter2) => {
+    let i = 0;
+    while (i < data.length) {
+        annualData.push(data.slice(i, i + 4).reduce((quarter1, quarter2) => {
             return {
                 cik: cik,
                 announcedDate: new Date(data[i].announcedDate),
                 value: quarter1.value + quarter2.value
             }
         }));
-        i = i - 4;
+        i = i + 4;
     }
     return annualData;
 }

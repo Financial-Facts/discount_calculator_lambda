@@ -1,33 +1,42 @@
 import { Consumer } from 'sqs-consumer';
 import { SQSClient } from '@aws-sdk/client-sqs';
-import SqsMsgBody from './models/SqsMsgBody';
 import CONSTANTS from '../../../Services/ServiceConstants';
-import BacklogManager from './backlog-manager/BacklogManager';
+import { SqsMsgBody } from './PriceCheckConsumer.typings';
+import DiscountManager from './backlog-manager/DiscountManager';
 
 class PriceCheckConsumer {
 
+    private batchCapacity = +(process.env.price_check_consumer_capacity ?? 2);
+    private frequency = +(process.env.price_check_consumer_frequency ?? 1);
+
     private sqsUrl = process.env.discount_check_sqs_url ?? CONSTANTS.GLOBAL.EMPTY;
-    private backlogManager: BacklogManager;
+    private discountManager: DiscountManager;
+
 
     constructor() {
-        this.backlogManager = new BacklogManager();
+        this.discountManager = new DiscountManager();
     }
 
     public async startPolling(): Promise<void> {
         console.log('Initializing polling for price check consumer...');
         const app = Consumer.create({
             queueUrl: this.sqsUrl,
-            handleMessage: async (message) => {
-                console.log(`Message retrieved from SQS: ${JSON.stringify(message)}`)
-                if (message.Body) {
-                    try {
-                        const event: SqsMsgBody = JSON.parse(message.Body);
-                        this.processEvent(event);
-                    } catch (err: any) {
-                        const cik = message.Body;
-                        this.backlogManager.addCikToBacklog(cik);
+            handleMessageBatch: async messages => {
+                const processing: Promise<void>[] = [];
+                for (let message of messages) {
+                    console.log(`Message retrieved from SQS: ${JSON.stringify(message)}`)
+                    if (message.Body) {
+                        try {
+                            const event: SqsMsgBody = JSON.parse(message.Body);
+                            processing.push(this.processEvent(event));
+                        } catch (err: any) {
+                            const cik = message.Body;
+                            processing.push(this.discountManager.intiateDiscountCheck(cik));
+                        }
                     }
                 }
+                await Promise.all(processing);
+                await new Promise(f => setTimeout(f, 1000 * this.frequency));
             },
             sqs: new SQSClient({
               region: 'us-east-1'
@@ -35,7 +44,7 @@ class PriceCheckConsumer {
           });
 
           app.updateOption('waitTimeSeconds', 20);
-          app.updateOption('batchSize', 10);
+          app.updateOption('batchSize', this.batchCapacity);
 
           app.on('error', (err) => {
             console.error(err.message);
@@ -49,12 +58,13 @@ class PriceCheckConsumer {
     }
 
     private async processEvent(event: SqsMsgBody): Promise<void> {
-        event.Records.forEach(async record => {
+        for (let record of event.Records) {
             if (record.s3 && record.s3.object && record.s3.object.key) {
                 const cik = this.removeS3KeySuffix(record.s3.object.key);
-                this.backlogManager.addCikToBacklog(cik);
+                console.log(`In price check consumer, processing: ${cik}`);
+                return this.discountManager.intiateDiscountCheck(cik);
             }
-        });
+        }
     }
 
     private removeS3KeySuffix(key: string): string {

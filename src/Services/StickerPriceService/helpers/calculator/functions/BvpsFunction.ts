@@ -1,6 +1,6 @@
 import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import AbstractFunction from "./AbstractFunction";
-import { annualizeByMean, days_between, processQuarterlyDatasets, quarterize } from "../../../utils/QuarterlyDataUtils";
+import { annualizeByMean, days_between, processQuarterlyDatasets } from "../../../utils/QuarterlyDataUtils";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 
 class BvpsFunction extends AbstractFunction {

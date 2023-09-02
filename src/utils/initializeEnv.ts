@@ -7,20 +7,11 @@ import { AWSError } from "sqs-consumer";
 
 async function initializeEnv(): Promise<void> {
     const filename = 'parameters.json';
-    try {
-        const data = fs.readFileSync(filename);
-        process.env = JSON.parse(data.toString('utf-8'));
-        console.log('Parameters pulled from JSON');
-    } catch (error) {
-        return setEnvParameters().then(() => {
-            cleanEnv(process.env, {
-                service_port: port({ default: 3000 })
-            });
-            fs.writeFile(filename, JSON.stringify(process.env), (error) => {
-                console.log('Parameter file write failed - ' + error);
-            });
-        })
-    }
+    return setEnvParameters().then(() => {
+        cleanEnv(process.env, {
+            service_port: port({ default: 3000 })
+        });
+    });
 }
 
 async function setEnvParameters(): Promise<void> {
@@ -29,29 +20,30 @@ async function setEnvParameters(): Promise<void> {
     });
     await Promise.all([
         fetchEnvParameters(ssmClient),
-        fetchFinancialFactsCredentials(ssmClient)])
+        fetchNeededFFSParams(ssmClient)])
     .then(fetchedValues => {
-        const [parameters, auth] = fetchedValues;
-        process.env.ffs_auth = auth;
+        const [parameters] = fetchedValues;
         Object.keys(parameters).forEach(key => {
             process.env[key] = parameters[key];
         });
     });
 }
 
-async function fetchFinancialFactsCredentials(ssmClient: SSM): Promise<string> {
+async function fetchNeededFFSParams(ssmClient: SSM): Promise<void> {
     return ssmClient.getParametersByPath({
         Path: `/config/financial_facts_service`,
-        Recursive: true,
+        Recursive: false,
         WithDecryption: true
     }).then((data: GetParametersByPathResult) => {
         if (data && data.Parameters) {
+            process.env['enable.api'] = data.Parameters.find(param =>
+                removePathFromName(param.Name) === 'enable.api')?.Value;
             const username = data.Parameters.find(param =>
                 removePathFromName(param.Name) === 'financial-facts-service.username')?.Value;
             const password = data.Parameters.find(param =>
                 removePathFromName(param.Name) === 'financial-facts-service.password')?.Value;
             const encoded = Buffer.from(`${username}:${password}`).toString('base64');
-            return `Basic ${encoded}`;
+            process.env.ffs_auth = `Basic ${encoded}`;
         } else {
             console.log('FFS credentials were not found while initializing env');
             throw new EnvInitializationException('FFS credentials not found');
