@@ -1,14 +1,29 @@
-import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
-import StickerPriceInput from "../helpers/calculator/models/StickerPriceInput";
+import { PeriodicData } from "@/resources/entities/models/PeriodicData";
+import { BigFive, StickerPriceInput } from "../helpers/calculator/calculator.typings";
 
-export function checkValuesMeetRequirements(input: StickerPriceInput): void {
+export function checkValuesMeetRequirements(input: StickerPriceInput, bigFive: BigFive): void {
     checkRatesMeetRequirements(input.data.cik, input.growthRates);
     checkAnnualAvgExceedsZero(input.data.cik, [
-        input.annualPE, input.annualBVPS,
-        input.annualROIC, input.annualEPS
+        input.annualPE,
+        input.annualBVPS,
+        input.annualEPS
     ]);
-    checkRoicExceedsMinimum(input.data.cik, input.annualROIC);
+    checkBigFiveExceedGrowthRateMinimum(input.data.cik, bigFive);
+}
+
+function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
+    checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');
+    checkAverageGrowthRateExceedsValue(
+        calculateAnnualGrowthRates(cik, bigFive.annualRevenue),
+        `Revenue growth does not meet a minimum of 10% for ${cik}`);
+    checkAverageGrowthRateExceedsValue(
+        calculateAnnualGrowthRates(cik, bigFive.annualEPS),
+        `EPS growth does not meet a minimum of 10% for ${cik}`);
+    checkAverageGrowthRateExceedsValue(
+        calculateAnnualGrowthRates(cik, bigFive.annualEquity),
+        `Equity growth does not meet a minimum of 10% for ${cik}`);
+    
 }
 
 function checkRatesMeetRequirements(cik: string, growthRates: Record<number, number>): void {
@@ -19,16 +34,23 @@ function checkRatesMeetRequirements(cik: string, growthRates: Record<number, num
     })
 }
 
-function checkAnnualAvgExceedsZero(cik: string, annualData: QuarterlyData[][]): void {
+function checkAnnualAvgExceedsZero(cik: string, annualData: PeriodicData[][]): void {
     checkAnnualDataAvgExceedsValue(annualData, 0, `Annual data is on average negative for ${cik}`);
 }
 
-function checkRoicExceedsMinimum(cik: string, annualRoic: QuarterlyData[]): void {
-    checkAnnualDataAvgExceedsValue([annualRoic], 10, `Annual ROIC does not meet minimum 10% for ${cik}`);
+function checkPercentageExceedsMinimum(cik: string, data: PeriodicData[], type: string): void {
+    checkAnnualDataAvgExceedsValue([data], 10, `Annual ${type} does not meet minimum 10% for ${cik}`);
+}
+
+function checkAverageGrowthRateExceedsValue(data: PeriodicData[], errorMessage: string) {
+    const average = data.map(year => year.value).reduce((a, b) => a + b) / data.length;
+    if (average < 10) {
+        throw new DisqualifyingDataException(errorMessage);
+    }
 }
 
 function checkAnnualDataAvgExceedsValue(
-    annualData: QuarterlyData[][],
+    annualData: PeriodicData[][],
     value: number,
     errorMessage: string
 ): void {
@@ -44,4 +66,21 @@ function checkAnnualDataAvgExceedsValue(
             throw new DisqualifyingDataException(errorMessage);
         }
     })
+}
+
+function calculateAnnualGrowthRates(cik: string, data: PeriodicData[]): PeriodicData[] {
+    const annualGrowthRates: PeriodicData[] = [];
+    let i = 1;
+    while (i < data.length) {
+        let previous = data[i - 1];
+        let current = data[i];
+        annualGrowthRates.push({
+            cik: cik,
+            announcedDate: current.announcedDate,
+            period: current.period,
+            value: ((current.value - previous.value)/previous.value) * 100
+        });
+        i++;
+    }
+    return annualGrowthRates;
 }

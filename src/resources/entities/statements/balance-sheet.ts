@@ -1,3 +1,5 @@
+import { Period } from "../models/PeriodicData";
+
 export default interface BalanceSheet {
 
     cik: string,
@@ -7,7 +9,7 @@ export default interface BalanceSheet {
     fillingDate: Date | null,
     acceptedDate: string | null,
     calendarYear: string | null,
-    period: string | null,
+    period: Period,
     cashAndCashEquivalents: number | null,
     shortTermInvestments: number | null,
     cashAndShortTermInvestments: number | null,
@@ -45,13 +47,13 @@ export default interface BalanceSheet {
     accumulatedOtherComprehensiveIncomeLoss: number | null,
     othertotalStockholdersEquity: number | null,
     totalStockholdersEquity: number,
-    totalEquity: number | null,
+    totalEquity: number,
     totalLiabilitiesAndStockholdersEquity: number | null,
     minorityInterest: number | null,
     totalLiabilitiesAndTotalEquity: number | null,
     totalInvestments: number | null,
     totalDebt: number | null,
-    netDebt: number | null,
+    netDebt: number,
     link: string | null,
     finalLink: string | null
 

@@ -1,3 +1,5 @@
+import { Period } from "../models/PeriodicData";
+
 export default interface IncomeStatement {
 
     cik: string,
@@ -7,8 +9,8 @@ export default interface IncomeStatement {
     fillingDate: Date | null,
     acceptedDate: string | null,
     calendarYear: string | null,
-    period: string | null,
-    revenue: number | null,
+    period: Period,
+    revenue: number,
     costOfRevenue: number | null,
     grossProfit: number | null,
     grossProfitRatio: number | null,
@@ -24,12 +26,12 @@ export default interface IncomeStatement {
     depreciationAndAmortization: number | null,
     ebitda: number | null,
     ebitdaratio: number | null,
-    operatingIncome: number | null,
+    operatingIncome: number,
     operatingIncomeRatio: number | null,
     totalOtherIncomeExpensesNet: number | null,
     incomeBeforeTax: number | null,
     incomeBeforeTaxRatio: number | null,
-    incomeTaxExpense: number | null,
+    incomeTaxExpense: number,
     netIncome: number,
     netIncomeRatio: number | null,
     eps: number,

@@ -1,5 +1,5 @@
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
-import QuarterlyData from "@/resources/entities/models/QuarterlyData";
+import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 
 class StickerPriceOutput {
@@ -7,7 +7,7 @@ class StickerPriceOutput {
     public async submit(
         cik: string, 
         equityGrowthRate: number,
-        annualPE: QuarterlyData[],
+        annualPE: PeriodicData[],
         currentQuarterlyEPS: number,
         analystGrowthEstimate?: number
     ): Promise<TrailingPriceData> {

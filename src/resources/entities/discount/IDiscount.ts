@@ -1,4 +1,4 @@
-import QuarterlyData from "../models/QuarterlyData";
+import { PeriodicData } from "../models/PeriodicData";
 import TrailingPriceData from "./models/TrailingPriceData";
 
 export default interface Discount {
@@ -21,14 +21,14 @@ export default interface Discount {
 
     ttyPriceData: TrailingPriceData
 
-    quarterlyBVPS: QuarterlyData[]
+    quarterlyBVPS: PeriodicData[]
 
-    quarterlyPE: QuarterlyData[]
+    quarterlyPE: PeriodicData[]
 
-    quarterlyEPS: QuarterlyData[]
+    quarterlyEPS: PeriodicData[]
 
-    quarterlyROIC: QuarterlyData[]
+    quarterlyROIC: PeriodicData[]
 
-    annualROIC: QuarterlyData[]
+    annualROIC: PeriodicData[]
     
 }

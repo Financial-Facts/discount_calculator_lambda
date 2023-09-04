@@ -1,15 +1,15 @@
 import BvpsFunction from "./functions/BvpsFunction";
-import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import Discount from "@/resources/entities/discount/IDiscount";
 import PeFunction from "./functions/PeFunction";
 import RoicFunction from "./functions/RoicFunction";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
-import { annualizeByAdd } from "../../utils/QuarterlyDataUtils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { checkValuesMeetRequirements } from "../../../../Services/StickerPriceService/utils/DisqualificationUtils";
-import StickerPriceInput from "./models/StickerPriceInput";
+import { PeriodicData } from "@/resources/entities/models/PeriodicData";
+import { annualizeByAdd, annualizeByLastQuarter } from "../../../../Services/StickerPriceService/utils/QuarterlyDataUtils";
+import { BigFive, StickerPriceInput } from "./calculator.typings";
 
 class Calculator {
 
@@ -27,19 +27,25 @@ class Calculator {
 
     public async calculateStickerPriceData(data: StickerPriceData): Promise<Discount> {
         console.log("In calculator calculating sticker price for CIK: " + data.cik);
-        return this.calculateQuarterlyData(data)
-            .then(async (quarterlyData: QuarterlyData[][]) => {
-                const [ quarterlyBVPS, quarterlyPE, quarterlyROIC ] = quarterlyData;
+        return this.calculatePeriodicData(data)
+            .then(async (periodicData: PeriodicData[][]) => {
+                const [ quarterlyBVPS, annualPE, quarterlyROIC ] = periodicData;
+                const annualEPS = annualizeByAdd(data.cik, data.quarterlyEPS);
                 const input: StickerPriceInput = {
                     data: data,
                     growthRates: this.calculateGrowthRates(data.cik, quarterlyBVPS),
-                    annualPE: this.peFunction.annualize(data.cik, quarterlyPE),
+                    annualPE: annualPE,
                     annualBVPS: this.bvpsFunction.annualize(data.cik, quarterlyBVPS),
-                    annualROIC: this.roicFunction.annualize(data.cik, quarterlyROIC),
-                    annualEPS: annualizeByAdd(data.cik, data.quarterlyEPS),
+                    annualEPS: annualEPS,
                     analystGrowthEstimate: 0 //ToDo: Add growth estimate service
                 }
-                checkValuesMeetRequirements(input);
+                const bigFive: BigFive = {
+                    annualROIC: this.roicFunction.annualize(data.cik, quarterlyROIC),
+                    annualEPS: annualEPS,
+                    annualEquity: annualizeByLastQuarter(data.cik, data.quarterlyTotalEquity),
+                    annualRevenue: annualizeByAdd(data.cik, data.quarterlyRevenue)
+                }
+                checkValuesMeetRequirements(input, bigFive);
                 return this.calculateTrailingPriceData(input)
                     .then(async trailingPriceData => {
                         const [ttmPriceData, tfyPriceData, ttyPriceData ] = trailingPriceData;
@@ -54,23 +60,23 @@ class Calculator {
                             tfyPriceData: tfyPriceData,
                             ttyPriceData: ttyPriceData,
                             quarterlyBVPS: quarterlyBVPS,
-                            quarterlyPE: quarterlyPE,
+                            quarterlyPE: annualPE,
                             quarterlyEPS: data.quarterlyEPS,
                             quarterlyROIC: quarterlyROIC,
-                            annualROIC: this.roicFunction.annualize(data.cik, quarterlyROIC)
+                            annualROIC: bigFive.annualROIC
                         }
                     });
         });
     }
 
-    private async calculateQuarterlyData(data: StickerPriceData): Promise<QuarterlyData[][]> {
+    private async calculatePeriodicData(data: StickerPriceData): Promise<PeriodicData[][]> {
         return Promise.all([
             this.calculateQuarterlyBVPS(data),
-            this.calculateQuarterlyPE(data),
+            this.calculateAnnualPE(data),
             this.calculateQuarterlyROIC(data)])
-        .then(quarterlyData => {
+        .then(PeriodicData => {
             console.log("Finished calculating quarterly data for " + data.cik);
-            return quarterlyData;
+            return PeriodicData;
         })
     }
 
@@ -82,8 +88,8 @@ class Calculator {
                 trailingPricePromises.push(this.stickerPriceOutput.submit(
                     input.data.cik,
                     input.growthRates[period],
-                    input.annualPE,
-                    input.data.quarterlyEPS[input.data.quarterlyEPS.length - 1].value,
+                    input.annualPE.slice(0, 10),
+                    input.annualEPS[input.annualEPS.length - 1].value,
                     input.analystGrowthEstimate));
                 });
         return Promise.all(trailingPricePromises)
@@ -93,30 +99,48 @@ class Calculator {
             });
                 
     }
-    private async calculateQuarterlyBVPS(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+    private async calculateQuarterlyBVPS(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
         return this.bvpsFunction.calculate(stickerPriceData);
     }
 
-    private async calculateQuarterlyPE(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+    private async calculateAnnualPE(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
         return this.peFunction.calculate(stickerPriceData);
     }
 
-    private async calculateQuarterlyROIC(stickerPriceData: StickerPriceData): Promise<QuarterlyData[]> {
+    private async calculateQuarterlyROIC(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
         return this.roicFunction.calculate(stickerPriceData);
     }
 
-    private calculateGrowthRates(cik: string, quarterlyBVPS: QuarterlyData[]): Record<number, number> {
+    private calculateGrowthRates(cik: string, quarterlyBVPS: PeriodicData[]): Record<number, number> {
         try {
             const annualBVPS = this.bvpsFunction.annualize(cik, quarterlyBVPS);
-            const lastQuarters = quarterlyBVPS.slice(-4);
-            const tyy_BVPS_growth = ((Math.pow(lastQuarters[lastQuarters.length - 1].value / lastQuarters[0].value, (1/4)) - 1) * 100) * 4;
-            const tfy_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 5].value, (1/5)) - 1) * 100;
-            const tty_BVPS_growth = (Math.pow(annualBVPS[annualBVPS.length - 1].value / annualBVPS[annualBVPS.length - 10].value, (1/10)) - 1) * 100;
+            const annualBVPSGrowthRates = this.calculateAnnualGrowthRates(cik, annualBVPS);
+            const tyy_BVPS_growth = annualBVPSGrowthRates[annualBVPSGrowthRates.length - 1].value;
+            const tfy_BVPS_growth = annualBVPSGrowthRates.slice(-5).map(period => period.value).reduce((a, b) => a + b) / 5;
+            const tty_BVPS_growth = annualBVPSGrowthRates.slice(-10).map(period => period.value).reduce((a, b) => a + b) / 10;
             return { 1: tyy_BVPS_growth, 5: tfy_BVPS_growth, 10: tty_BVPS_growth };
         } catch (error: any) {
             throw new InsufficientDataException(`Insufficient data collected to calcuate growth rates for ${cik}`);
         }
     }
+
+    private calculateAnnualGrowthRates(cik: string, data: PeriodicData[]): PeriodicData[] {
+        const annualGrowthRates: PeriodicData[] = [];
+        let i = 1;
+        while (i < data.length) {
+            let previous = data[i - 1];
+            let current = data[i];
+            annualGrowthRates.push({
+                cik: cik,
+                announcedDate: current.announcedDate,
+                period: current.period,
+                value: ((current.value - previous.value)/previous.value) * 100
+            });
+            i++;
+        }
+        return annualGrowthRates;
+    }
+    
 }
 
 export default Calculator;

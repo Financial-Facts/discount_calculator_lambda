@@ -1,10 +1,10 @@
 import Discount from "@/resources/entities/discount/IDiscount";
 import Calculator from "./helpers/calculator/calculator";
 import { historicalPriceService, statementService } from "../../bootstrap";
-import QuarterlyData from "@/resources/entities/models/QuarterlyData";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import Statements from "@/resources/entities/statements/statements";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
+import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 
 class StickerPriceService {
 
@@ -39,15 +39,13 @@ class StickerPriceService {
     }
     
     private checkHasSufficientStickerPriceData(data: StickerPriceData): void {
-        this.checkHasSufficientQuarterlyData(data.quarterlyEPS, 'EPS');
-        this.checkHasSufficientQuarterlyData(data.quarterlyLongTermDebt, 'Long Term debt');
-        this.checkHasSufficientQuarterlyData(data.quarterlyNetIncome, 'Net Income');
-        this.checkHasSufficientQuarterlyData(data.quarterlyOutstandingShares, 'Outstanding Shares');
-        this.checkHasSufficientQuarterlyData(data.quarterlyShareholderEquity, 'Shareholder Equity');
+        this.checkHasSufficientPeriodicData(data.quarterlyEPS, 'EPS');
+        this.checkHasSufficientPeriodicData(data.quarterlyOutstandingShares, 'Outstanding Shares');
+        this.checkHasSufficientPeriodicData(data.quarterlyShareholderEquity, 'Shareholder Equity');
     }
 
-    private checkHasSufficientQuarterlyData(data: QuarterlyData[], type: string): void {
-        if (data.length < 40) {
+    private checkHasSufficientPeriodicData(data: PeriodicData[], type: string): void {
+        if (data.length !== 44) {
             throw new InsufficientDataException(`Insufficent sticker price data value: ${type}`);
         }
     }
@@ -74,6 +72,7 @@ class StickerPriceService {
                 return {
                     cik: sheets.cik,
                     announcedDate: sheets.date,
+                    period: sheets.period,
                     value: sheets.totalStockholdersEquity
                 }
             }),
@@ -81,30 +80,58 @@ class StickerPriceService {
                 return {
                     cik: sheets.cik,
                     announcedDate: sheets.date,
+                    period: sheets.period,
                     value: sheets.weightedAverageShsOut
-                }
-            }),
-            quarterlyLongTermDebt: statements.balanceSheets.map(sheets => {
-                return {
-                    cik: sheets.cik,
-                    announcedDate: sheets.date,
-                    value: sheets.longTermDebt
                 }
             }),
             quarterlyEPS: statements.incomeStatements.map(sheets => {
                 return {
                     cik: sheets.cik,
                     announcedDate: sheets.date,
+                    period: sheets.period,
                     value: sheets.eps
                 }
             }),
-            quarterlyNetIncome: statements.incomeStatements.map(sheets => {
+            quarterlyOperatingIncome: statements.incomeStatements.map(sheets => {
                 return {
                     cik: sheets.cik,
                     announcedDate: sheets.date,
-                    value: sheets.netIncome
+                    period: sheets.period,
+                    value: sheets.operatingIncome
                 }
             }),
+            quarterlyTaxExpense: statements.incomeStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.incomeTaxExpense
+                }
+            }),
+            quarterlyNetDebt: statements.balanceSheets.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.netDebt
+                }
+            }),
+            quarterlyTotalEquity: statements.balanceSheets.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.totalEquity
+                }
+            }),
+            quarterlyRevenue: statements.incomeStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.revenue
+                }
+            })
         }
     }
 }
