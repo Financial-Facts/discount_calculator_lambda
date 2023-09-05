@@ -14,7 +14,8 @@ class RoicFunction extends AbstractFunction {
         const quarterlyTotalEquity = data.quarterlyTotalEquity;
         const quarterlyIC = this.calculateQuarterlyIC(data.cik, quarterlyNetDebt, quarterlyTotalEquity);
 
-        return processPeriodicDatasets(data.cik, quarterlyNOPAT, quarterlyIC, (a, b) => (a / b) * 100);
+        const quarterlyROIC = processPeriodicDatasets(data.cik, quarterlyNOPAT, quarterlyIC, (a, b) => (a / b) * 100);
+        return annualizeByAdd(data.cik, quarterlyROIC);
     }
 
     annualize(cik: string, PeriodicData: PeriodicData[]): PeriodicData[] {
