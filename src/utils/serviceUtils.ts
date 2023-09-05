@@ -2,7 +2,7 @@ import CONSTANTS from "../resources/ResourceConstants";
 
 export function buildHeadersWithBasicAuth(): { Authorization: string, 'Content-Type': string } {
     return {
-        Authorization: '',
+        Authorization: process.env.ffs_auth as string,
         'Content-Type': CONSTANTS.GLOBAL.JSON
     }
 }

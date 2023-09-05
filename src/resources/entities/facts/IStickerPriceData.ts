@@ -1,4 +1,4 @@
-import QuarterlyData from "../models/QuarterlyData"
+import { PeriodicData } from "../models/PeriodicData"
 
 export default interface StickerPriceData {
 
@@ -6,10 +6,14 @@ export default interface StickerPriceData {
     symbol: string
     name: string
     benchmarkRatioPrice: number
-    quarterlyShareholderEquity: QuarterlyData[]
-    quarterlyOutstandingShares: QuarterlyData[]
-    quarterlyEPS: QuarterlyData[]
-    quarterlyLongTermDebt: QuarterlyData[]
-    quarterlyNetIncome: QuarterlyData[]
+    quarterlyShareholderEquity: PeriodicData[]
+    quarterlyOutstandingShares: PeriodicData[]
+    quarterlyEPS: PeriodicData[]
+    quarterlyOperatingIncome: PeriodicData[]
+    quarterlyTaxExpense: PeriodicData[]
+    quarterlyNetDebt: PeriodicData[]
+    quarterlyTotalEquity: PeriodicData[]
+    quarterlyRevenue: PeriodicData[]
+
     
 }
