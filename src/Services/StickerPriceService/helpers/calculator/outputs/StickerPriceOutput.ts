@@ -24,7 +24,7 @@ class StickerPriceOutput implements AbstractOutput {
         // check if two times equity growth rate is less than historical PE
         forwardPE = Math.min(input.equityGrowthRate * 2, forwardPE);
 
-        // check analysts estimates, if they're less, use those
+        // ToDo: check analysts estimates, if they're less, use those
 
         // Cap estimated EPS growth at 15%
         if (input.equityGrowthRate > 15) {
