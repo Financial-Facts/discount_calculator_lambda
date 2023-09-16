@@ -1,4 +1,4 @@
-import CONSTANTS from "../resources/ResourceConstants";
+import CONSTANTS from "../resources/resource.contants";
 
 export function buildHeadersWithBasicAuth(): { Authorization: string, 'Content-Type': string } {
     return {

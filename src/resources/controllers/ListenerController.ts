@@ -1,10 +1,10 @@
 import Controller from "@/utils/interfaces/IController";
 import { Router, Request, Response, NextFunction } from "express";
-import CONSTANTS from "../ResourceConstants";
+import CONSTANTS from "../resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, historicalPriceService } from "../../bootstrap";
-import { checkSimpleDiscountIsOnSale } from "../../Services/StickerPriceService/utils/DisqualificationUtils";
-import { SimpleDiscount } from "../services/discount/discount.typings";
+import { SimpleDiscount } from "@/services/discount/discount.typings";
+import { checkSimpleDiscountIsOnSale } from "@/services/sticker-price/utils/DisqualificationUtils";
 
 class ListenerController implements Controller {
 

@@ -1,8 +1,8 @@
-import HistoricalPriceService from "./Services/HistoricalPriceService/HistoricalPriceService";
-import DiscountService from "./resources/services/discount/discount.service";
-import CONSTANTS from "./Services/ServiceConstants";
-import StickerPriceService from "./Services/StickerPriceService/StickerPriceService";
-import StatementService from "./resources/services/StatementService";
+import CONSTANTS from "./resources/resource.contants";
+import DiscountService from "./services/discount/discount.service";
+import HistoricalPriceService from "./services/historical-price/HistoricalPriceService";
+import StatementService from "./services/statement/StatementService";
+import StickerPriceService from "./services/sticker-price/sticker-price.service";
 
 let discountService: DiscountService;
 let statementService: StatementService;

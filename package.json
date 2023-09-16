@@ -56,6 +56,8 @@
   "_moduleAliases": {
     "@/resources": "dist/src/resources",
     "@/utils": "dist/src/utils",
-    "@/middleware": "dist/src/middleware"
+    "@/middleware": "dist/src/middleware",
+    "@/services": "dist/src/services",
+    "@/bootstrap": "dist/src"
   }
 }
