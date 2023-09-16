@@ -1,23 +1,34 @@
 import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
+import AbstractOutput from "./AbstractOutput";
 
-class StickerPriceOutput {
+class StickerPriceOutput implements AbstractOutput {
 
-    public async submit(
+    public async submit(input: {
         cik: string, 
         equityGrowthRate: number,
         annualPE: PeriodicData[],
         currentQuarterlyEPS: number,
         analystGrowthEstimate?: number
-    ): Promise<TrailingPriceData> {
-        const forwardPE: number = annualPE.map(year => year.value).reduce((a, b) => a + b) / annualPE.length;
+    }): Promise<TrailingPriceData> {
+        let forwardPE: number = input.annualPE.map(year => year.value).reduce((a, b) => a + b) / input.annualPE.length;
 
         // If analyst estimates are lower than the predicted equity growth rate, go with them
-        if (!analystGrowthEstimate) {
-            analystGrowthEstimate = equityGrowthRate;
-        } else if (equityGrowthRate > analystGrowthEstimate) {
-            equityGrowthRate = analystGrowthEstimate;
+        if (!input.analystGrowthEstimate) {
+            input.analystGrowthEstimate = input.equityGrowthRate;
+        } else if (input.equityGrowthRate > input.analystGrowthEstimate) {
+            input.equityGrowthRate = input.analystGrowthEstimate;
+        }
+
+        // check if two times equity growth rate is less than historical PE
+        forwardPE = Math.min(input.equityGrowthRate * 2, forwardPE);
+
+        // check analysts estimates, if they're less, use those
+
+        // Cap estimated EPS growth at 15%
+        if (input.equityGrowthRate > 15) {
+            input.equityGrowthRate = 15;
         }
 
         // Calculate the sticker price of the stock today relative to what predicted price will be in the future
@@ -25,11 +36,11 @@ class StickerPriceOutput {
         const percent_return = 15
 
         // Plug in acquired values into Rule #1 equation
-        const timeToDouble = Math.log(2)/Math.log(1 + (equityGrowthRate/100));
+        const timeToDouble = Math.log10(2) / Math.log10(1 + (input.equityGrowthRate/100));
         const numOfDoubles = num_years/timeToDouble;
-        const futurePrice = forwardPE * currentQuarterlyEPS * (Math.pow(2, numOfDoubles));
+        const futurePrice = forwardPE * input.currentQuarterlyEPS * (Math.pow(2, numOfDoubles));
 
-        const returnTimeToDouble = Math.log(2)/Math.log(1 + (percent_return/100));
+        const returnTimeToDouble = Math.log10(2)/Math.log10(1 + (percent_return/100));
         const numberOfEquityDoubles = num_years/returnTimeToDouble;
         const stickerPrice = futurePrice/(Math.pow(2, numberOfEquityDoubles));
 
@@ -38,7 +49,7 @@ class StickerPriceOutput {
         }
         
         return {
-            cik: cik,
+            cik: input.cik,
             stickerPrice: stickerPrice,
             salePrice: stickerPrice/2
         }

@@ -6,7 +6,7 @@ import DiscountManager from './backlog-manager/DiscountManager';
 
 class PriceCheckConsumer {
 
-    private batchCapacity = +(process.env.price_check_consumer_capacity ?? 2);
+    private batchCapacity = +(process.env.price_check_consumer_capacity ?? 1);
     private frequency = +(process.env.price_check_consumer_frequency ?? 1);
 
     private sqsUrl = process.env.discount_check_sqs_url ?? CONSTANTS.GLOBAL.EMPTY;
@@ -31,7 +31,13 @@ class PriceCheckConsumer {
                             processing.push(this.processEvent(event));
                         } catch (err: any) {
                             const cik = message.Body;
-                            processing.push(this.discountManager.intiateDiscountCheck(cik));
+                            if (cik.includes('\n')) {
+                                const cikList = cik.split('\n').map(cik => cik.trim());
+                                console.log(`Processing cikList ${cikList}`);
+                                this.processCikList(cikList);
+                            } else {
+                                processing.push(this.discountManager.intiateDiscountCheck(cik));
+                            }
                         }
                     }
                 }
@@ -64,6 +70,13 @@ class PriceCheckConsumer {
                 console.log(`In price check consumer, processing: ${cik}`);
                 return this.discountManager.intiateDiscountCheck(cik);
             }
+        }
+    }
+
+    private async processCikList(cikList: string[]): Promise<void> {
+        for (let cik of cikList) {
+            await this.discountManager.intiateDiscountCheck(cik);
+            await new Promise(f => setTimeout(f, 1000 * this.frequency));
         }
     }
 

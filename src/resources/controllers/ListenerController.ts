@@ -4,6 +4,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import CONSTANTS from "../ResourceConstants";
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, historicalPriceService } from "../../bootstrap";
+import { checkSimpleDiscountIsOnSale } from "../../Services/StickerPriceService/utils/DisqualificationUtils";
 
 class ListenerController implements Controller {
 
@@ -52,14 +53,12 @@ class ListenerController implements Controller {
                         for(let i = 0; i < simpleDiscounts.length; i++) {
                             const simpleDiscount = simpleDiscounts[i];
                             const currentPrice = prices[i];
-                            if (currentPrice < simpleDiscount.ttmSalePrice ||
-                                currentPrice < simpleDiscount.tfySalePrice ||
-                                currentPrice < simpleDiscount.ttySalePrice) {
-                                    if (simpleDiscount.active) {
-                                        unchanged.push(`${simpleDiscount.cik} status remains active`);
-                                    } else {
-                                        discountUpdateMap[simpleDiscount.cik] = true;
-                                    }
+                            if (checkSimpleDiscountIsOnSale(currentPrice, simpleDiscount)) {
+                                if (simpleDiscount.active) {
+                                    unchanged.push(`${simpleDiscount.cik} status remains active`);
+                                } else {
+                                    discountUpdateMap[simpleDiscount.cik] = true;
+                                }
                             } else {
                                 if (!simpleDiscount.active) {
                                     unchanged.push(`${simpleDiscount.cik} status remains inactive`);

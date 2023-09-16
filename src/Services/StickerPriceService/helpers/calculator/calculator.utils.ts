@@ -12,14 +12,15 @@ export function buildBigFive(
         annualROIC: annualROIC,
         annualEPS: annualEPS,
         annualEquity: annualizeByLastQuarter(data.cik, data.quarterlyTotalEquity),
-        annualRevenue: annualizeByAdd(data.cik, data.quarterlyRevenue)
+        annualRevenue: annualizeByAdd(data.cik, data.quarterlyRevenue),
+        annualOperatingCashFlow: annualizeByAdd(data.cik, data.quarterlyOperatingCashFlow)
     }
 }
 
 export function buildStickerPriceInput(
     data: StickerPriceData,
-    annualBVPS: PeriodicData[],
     annualPE: PeriodicData[],
+    annualBVPS: PeriodicData[],
     annualEPS: PeriodicData[]
 ): StickerPriceInput {
     return {
@@ -50,7 +51,7 @@ function convertToAnnualGrowthRates(cik: string, data: PeriodicData[]): Periodic
             cik: cik,
             announcedDate: current.announcedDate,
             period: current.period,
-            value: ((current.value - previous.value)/previous.value) * 100
+            value: ((current.value - previous.value) / Math.abs(previous.value)) * 100
         });
         i++;
     }

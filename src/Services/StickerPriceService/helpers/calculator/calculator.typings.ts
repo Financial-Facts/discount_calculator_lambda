@@ -15,4 +15,5 @@ export interface BigFive {
     annualRevenue: PeriodicData[],
     annualEPS: PeriodicData[],
     annualEquity: PeriodicData[],
+    annualOperatingCashFlow: PeriodicData[]
 }
