@@ -30,28 +30,6 @@ class StatementService {
             throw new HttpException(err.status, CONSTANTS.STATEMENTS.FETCH_ERROR + err.message);
         }
     }
-
-    public async saveStatements(cik: string, statements: Statements): Promise<string[]> {
-        console.log('In statement service saving statements for cik: ' + cik);
-        try {
-            const url = `${this.financialFactsServiceStatementV1Url}`;
-            return fetch(url, {
-                method: 'POST',
-                body: JSON.stringify(statements),
-                headers: buildHeadersWithBasicAuth()
-            }).then(async (response: Response) => {
-                if (response.status !== 200) {
-                    const text = await response.text();
-                    throw new HttpException(response.status, CONSTANTS.STATEMENTS.FETCH_ERROR + text);
-                }
-                return response.json();
-            }).then((body: string[]) => {
-                return body;
-            });
-        } catch (err: any) {
-            throw new HttpException(err.status, CONSTANTS.STATEMENTS.SAVE_ERROR + err.message);
-        }
-    }
 }
 
 export default StatementService;
