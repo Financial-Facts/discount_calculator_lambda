@@ -1,6 +1,6 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import { BigFive, StickerPriceInput } from "../helpers/calculator/calculator.typings";
-import { Discount, SimpleDiscount } from "../../../services/discount/discount.typings";
+import { Discount, SimpleDiscount } from "../../discount/discount.typings";
 import { PeriodicData } from "../sticker-price.typings";
 
 export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {

@@ -1,8 +1,7 @@
-import PriceData from "./models/PriceData";
-import { buildHistoricalPriceInput, mapCSVToPriceData } from "./utils/HistoricalPriceUtils";
+import { buildHistoricalPriceInput, mapCSVToPriceData } from "./historical-price.utils";
 import fetch, { Response } from "node-fetch";
 import ThirdPartyDataFailureException from "@/utils/exceptions/ThirdPartyDataFailureException";
-import HistoricalPriceInput from "./models/HistoricalPriceInput";
+import { HistoricalPriceInput, PriceData } from "./historical-price.typings";
 
 class HistoricalPriceService {
 

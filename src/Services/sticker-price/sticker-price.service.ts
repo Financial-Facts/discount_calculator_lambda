@@ -1,7 +1,7 @@
 import Calculator from "./helpers/calculator/calculator";
 import { historicalPriceService, statementService } from "../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import { checkDiscountIsOnSale } from "./utils/DisqualificationUtils";
+import { checkDiscountIsOnSale } from "./utils/disqualification.utils";
 import { Discount } from "../../services/discount/discount.typings";
 import { Statements } from "../../services/statement/statement.typings";
 import StickerPriceData, { PeriodicData } from "./sticker-price.typings";

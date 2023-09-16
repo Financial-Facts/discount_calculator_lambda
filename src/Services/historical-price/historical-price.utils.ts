@@ -1,6 +1,5 @@
-import { Frequency } from "../models/Frequency";
-import HistoricalPriceInput from "../models/HistoricalPriceInput";
-import PriceData from "../models/PriceData";
+import { HistoricalPriceInput, Frequency, PriceData } from "./historical-price.typings";
+
 
 
 export function buildHistoricalPriceInput(symbol: string, fromDate: Date, toDate: Date): HistoricalPriceInput {

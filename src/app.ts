@@ -2,12 +2,12 @@ import express, { Application } from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import morgan from 'morgan';
-import Controller from '@/utils/interfaces/IController';
 import ErrorMiddleware from '@/middleware/ErrorHandler.middleware';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
-import Consumer from './utils/interfaces/IConsumer';
+import Controller from './resources/controllers/controller.typings';
+import Consumer from './resources/consumers/consumer.typings';
 
 class App {
 

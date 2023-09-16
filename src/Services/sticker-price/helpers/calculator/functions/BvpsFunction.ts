@@ -1,5 +1,5 @@
 import StickerPriceData, { PeriodicData } from "../../../../../services/sticker-price/sticker-price.typings";
-import { processPeriodicDatasets, annualizeByLastQuarter } from "../../../../../services/sticker-price/utils/QuarterlyDataUtils";
+import { processPeriodicDatasets, annualizeByLastQuarter } from "../../../utils/periodic-data.utils";
 import AbstractFunction from "./AbstractFunction";
 
 

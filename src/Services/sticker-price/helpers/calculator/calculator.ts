@@ -1,7 +1,7 @@
 import { Discount, TrailingPriceData } from "@/services/discount/discount.typings";
 import StickerPriceData, { PeriodicData } from "../../sticker-price.typings";
-import { checkValuesMeetRequirements } from "../../utils/DisqualificationUtils";
-import { annualizeByAdd } from "../../utils/QuarterlyDataUtils";
+import { checkValuesMeetRequirements } from "../../utils/disqualification.utils";
+import { annualizeByAdd } from "../../utils/periodic-data.utils";
 import { BigFive, StickerPriceInput } from "./calculator.typings";
 import { buildBigFive, buildStickerPriceInput } from "./calculator.utils";
 import BvpsFunction from "./functions/BvpsFunction";

@@ -1,7 +1,7 @@
 import CONSTANTS from "@/resources/resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
-import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import { SimpleDiscount, Discount } from "./discount.typings";
+import { buildHeadersWithBasicAuth } from "./discount.utils";
 
 class DiscountService {
 

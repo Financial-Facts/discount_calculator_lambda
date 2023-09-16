@@ -6,11 +6,6 @@ export function days_between(d1: Date, d2: Date): number {
     return Math.ceil(diff / (1000 * 3600 * 24));
 }
 
-// Returns the median date between two dates
-export function median_date(d1: Date, d2: Date): Date {
-     return new Date((d1.getTime() + d2.getTime()) / 2);
-}
-
 // Annualizes PeriodicData by adding together values
 export function annualizeByAdd(cik: string, data: PeriodicData[]): PeriodicData[] {
     const annualData: PeriodicData[] = [];
@@ -27,14 +22,6 @@ export function annualizeByAdd(cik: string, data: PeriodicData[]): PeriodicData[
         i = i + 4;
     }
     return annualData;
-}
-
-// Annualizes PeriodicData by taking the average of the quarters
-export function annualizeByMean(cik: string, data: PeriodicData[]): PeriodicData[] {
-    return annualizeByAdd(cik, data).map(year => {
-        year.value = year.value/4;
-        return year;
-    });
 }
 
 // Annualizes data using last quarter in the FY

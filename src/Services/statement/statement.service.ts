@@ -1,7 +1,7 @@
 import CONSTANTS from "@/resources/resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
-import { buildHeadersWithBasicAuth } from "@/utils/serviceUtils";
 import { Statements } from "./statement.typings";
+import { buildHeadersWithBasicAuth } from "../discount/discount.utils";
 
 class StatementService {
 

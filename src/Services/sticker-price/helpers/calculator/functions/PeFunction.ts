@@ -1,11 +1,10 @@
-import HistoricalPriceInput from "@/services/historical-price/models/HistoricalPriceInput";
-import PriceData from "@/services/historical-price/models/PriceData";
-import { buildHistoricalPriceInput } from "@/services/historical-price/utils/HistoricalPriceUtils";
+import { buildHistoricalPriceInput } from "@/services/historical-price/historical-price.utils";
 import StickerPriceData, { PeriodicData } from "@/services/sticker-price/sticker-price.typings";
-import { annualizeByAdd, days_between } from "@/services/sticker-price/utils/QuarterlyDataUtils";
+import { annualizeByAdd, days_between } from "@/services/sticker-price/utils/periodic-data.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import AbstractFunction from "./AbstractFunction";
 import { historicalPriceService } from "../../../../../bootstrap";
+import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
 
 
 

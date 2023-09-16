@@ -1,5 +1,5 @@
 import StickerPriceData, { PeriodicData } from "../../sticker-price.typings";
-import { annualizeByLastQuarter, annualizeByAdd } from "../../utils/QuarterlyDataUtils";
+import { annualizeByLastQuarter, annualizeByAdd } from "../../utils/periodic-data.utils";
 import { BigFive, StickerPriceInput } from "./calculator.typings";
 
 
