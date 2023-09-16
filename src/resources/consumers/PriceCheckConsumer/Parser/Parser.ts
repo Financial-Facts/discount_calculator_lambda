@@ -18,7 +18,8 @@ export default async function getLatestStatements(cik: string): Promise<Statemen
         const symbol = submissions.tickers[0];
         return {
             incomeStatements: buildIncomeStatements(cik, symbol, reports),
-            balanceSheets: buildBalanceSheets(cik, symbol, reports)
+            balanceSheets: buildBalanceSheets(cik, symbol, reports),
+            cashFlowStatements: []
         }
     });
 }

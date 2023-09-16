@@ -5,6 +5,7 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import Statements from "@/resources/entities/statements/statements";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
+import { checkDiscountIsOnSale } from "./utils/DisqualificationUtils";
 
 class StickerPriceService {
 
@@ -19,10 +20,7 @@ class StickerPriceService {
             .then(async (discount: Discount) => {
                 return historicalPriceService.getCurrentPrice(discount.symbol)
                     .then(async (price: number) => {
-                        if (this.salePriceExceedsZero(discount) && 
-                            this.anySalePriceExceedsValue(price, discount)) {
-                                discount.active = true;
-                        }
+                        discount.active = checkDiscountIsOnSale(price, discount);
                         return discount;
                     });
             });
@@ -34,7 +32,7 @@ class StickerPriceService {
             .then(async (statements: Statements) => {
                 const data = this.buildStickerPriceData(cik, statements);
                 this.checkHasSufficientStickerPriceData(data);
-                return this.calculator.calculateStickerPriceData(data);
+                return this.calculator.calculateDiscount(data);
             });
     }
     
@@ -48,18 +46,6 @@ class StickerPriceService {
         if (data.length !== 44) {
             throw new InsufficientDataException(`Insufficent sticker price data value: ${type}`);
         }
-    }
-
-    private salePriceExceedsZero(discount: Discount): boolean {
-        return discount.ttmPriceData.salePrice > 0 &&
-                discount.tfyPriceData.salePrice > 0 &&
-                discount.ttyPriceData.salePrice > 0;
-    }
-    
-    private anySalePriceExceedsValue(value: number, discount: Discount): boolean {
-        return discount.ttmPriceData.salePrice > value ||
-                discount.tfyPriceData.salePrice > value || 
-                discount.ttyPriceData.salePrice > value;
     }
 
     private buildStickerPriceData(cik: string, statements: Statements): StickerPriceData {
@@ -130,6 +116,22 @@ class StickerPriceService {
                     announcedDate: sheets.date,
                     period: sheets.period,
                     value: sheets.revenue
+                }
+            }),
+            quarterlyOperatingCashFlow: statements.cashFlowStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.operatingCashFlow
+                }
+            }),
+            quarterlyFreeCashFlow: statements.cashFlowStatements.map(sheets => {
+                return {
+                    cik: sheets.cik,
+                    announcedDate: sheets.date,
+                    period: sheets.period,
+                    value: sheets.freeCashFlow
                 }
             })
         }

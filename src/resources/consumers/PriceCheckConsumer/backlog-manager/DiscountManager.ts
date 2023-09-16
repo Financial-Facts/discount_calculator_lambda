@@ -46,7 +46,6 @@ class DiscountManager {
             })
     }
 
-
     private async checkForDiscount(cik: string): Promise<void> {
         console.log("In price check consumer checking for a discount on CIK: " + cik);
         return stickerPriceService.checkForSale(cik)

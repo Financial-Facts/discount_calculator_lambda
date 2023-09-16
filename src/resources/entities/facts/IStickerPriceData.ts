@@ -14,6 +14,8 @@ export default interface StickerPriceData {
     quarterlyNetDebt: PeriodicData[]
     quarterlyTotalEquity: PeriodicData[]
     quarterlyRevenue: PeriodicData[]
+    quarterlyOperatingCashFlow: PeriodicData[]
+    quarterlyFreeCashFlow: PeriodicData[]
 
     
 }

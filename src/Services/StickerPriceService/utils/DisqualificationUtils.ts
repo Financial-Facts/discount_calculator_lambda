@@ -1,6 +1,28 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import { BigFive, StickerPriceInput } from "../helpers/calculator/calculator.typings";
+import SimpleDiscount from "@/resources/entities/discount/ISimpleDiscount";
+import Discount from "@/resources/entities/discount/IDiscount";
+
+export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {
+    return checkDiscountDataMeetsRequirements(currentPrice,
+            discount.ttmPriceData.salePrice,
+            discount.tfyPriceData.salePrice,
+            discount.ttyPriceData.salePrice);
+}
+
+export function checkSimpleDiscountIsOnSale(currentPrice: number, discount: SimpleDiscount): boolean {
+    return checkDiscountDataMeetsRequirements(currentPrice,
+        discount.ttmSalePrice,
+        discount.tfySalePrice,
+        discount.ttySalePrice);
+}
+
+function checkDiscountDataMeetsRequirements(currentPrice: number, ttm: number, tfy: number, tty: number): boolean {
+    return currentPrice < ttm &&
+        currentPrice < tfy &&
+        currentPrice < tty;
+}
 
 export function checkValuesMeetRequirements(input: StickerPriceInput, bigFive: BigFive): void {
     checkRatesMeetRequirements(input.data.cik, input.growthRates);
@@ -23,6 +45,9 @@ function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): voi
     checkAverageGrowthRateExceedsValue(
         calculateAnnualGrowthRates(cik, bigFive.annualEquity),
         `Equity growth does not meet a minimum of 10% for ${cik}`);
+    checkAverageGrowthRateExceedsValue(
+        calculateAnnualGrowthRates(cik, bigFive.annualOperatingCashFlow),
+        `Operating cash flow growth does not meet a minimum of 10% for ${cik}`);
     
 }
 
@@ -78,7 +103,7 @@ function calculateAnnualGrowthRates(cik: string, data: PeriodicData[]): Periodic
             cik: cik,
             announcedDate: current.announcedDate,
             period: current.period,
-            value: ((current.value - previous.value)/previous.value) * 100
+            value: ((current.value - previous.value) / Math.abs(previous.value)) * 100
         });
         i++;
     }

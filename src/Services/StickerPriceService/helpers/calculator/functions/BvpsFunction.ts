@@ -9,7 +9,7 @@ class BvpsFunction extends AbstractFunction {
         const quarterly_shareholder_equity = data.quarterlyShareholderEquity;
         const quarterly_outstanding_shares = data.quarterlyOutstandingShares;
         const quarterlyBVPS = processPeriodicDatasets(data.cik,
-            quarterly_shareholder_equity, quarterly_outstanding_shares, (a, b) => a/b);
+        quarterly_shareholder_equity, quarterly_outstanding_shares, (a, b) => a/b);
         return annualizeByLastQuarter(data.cik, quarterlyBVPS);
     }
     
