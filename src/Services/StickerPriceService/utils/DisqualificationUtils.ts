@@ -1,8 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import { BigFive, StickerPriceInput } from "../helpers/calculator/calculator.typings";
-import SimpleDiscount from "@/resources/entities/discount/ISimpleDiscount";
-import Discount from "@/resources/entities/discount/IDiscount";
+import { Discount, SimpleDiscount } from "@/resources/services/discount/discount.typings";
 
 export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {
     return checkDiscountDataMeetsRequirements(currentPrice,

@@ -1,4 +1,3 @@
-import Discount from "@/resources/entities/discount/IDiscount";
 import Calculator from "./helpers/calculator/calculator";
 import { historicalPriceService, statementService } from "../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
@@ -6,6 +5,7 @@ import Statements from "@/resources/entities/statements/statements";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import { checkDiscountIsOnSale } from "./utils/DisqualificationUtils";
+import { Discount } from "@/resources/services/discount/discount.typings";
 
 class StickerPriceService {
 

@@ -1,7 +1,7 @@
-import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractOutput from "./AbstractOutput";
+import { TrailingPriceData } from "@/resources/services/discount/discount.typings";
 
 class StickerPriceOutput implements AbstractOutput {
 

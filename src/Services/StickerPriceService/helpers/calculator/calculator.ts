@@ -1,16 +1,15 @@
 import BvpsFunction from "./functions/BvpsFunction";
-import Discount from "@/resources/entities/discount/IDiscount";
 import PeFunction from "./functions/PeFunction";
 import RoicFunction from "./functions/RoicFunction";
 import StickerPriceData from "@/resources/entities/facts/IStickerPriceData";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
-import TrailingPriceData from "@/resources/entities/discount/models/TrailingPriceData";
 import { checkValuesMeetRequirements } from "../../../../Services/StickerPriceService/utils/DisqualificationUtils";
 import { PeriodicData } from "@/resources/entities/models/PeriodicData";
 import { annualizeByAdd } from "../../../../Services/StickerPriceService/utils/QuarterlyDataUtils";
 import { BigFive, StickerPriceInput } from "./calculator.typings";
 import { buildBigFive, buildStickerPriceInput } from "./calculator.utils";
 import BenchmarkRatioPriceOutput from "./outputs/BenchmarkRatioPriceOutput";
+import { Discount, TrailingPriceData } from "@/resources/services/discount/discount.typings";
 
 class Calculator {
 

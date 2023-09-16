@@ -1,5 +1,5 @@
 import HistoricalPriceService from "./Services/HistoricalPriceService/HistoricalPriceService";
-import DiscountService from "./resources/services/DiscountService";
+import DiscountService from "./resources/services/discount/discount.service";
 import CONSTANTS from "./Services/ServiceConstants";
 import StickerPriceService from "./Services/StickerPriceService/StickerPriceService";
 import StatementService from "./resources/services/StatementService";

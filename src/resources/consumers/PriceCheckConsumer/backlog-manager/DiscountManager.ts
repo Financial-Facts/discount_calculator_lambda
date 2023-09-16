@@ -1,8 +1,8 @@
-import Discount from "@/resources/entities/discount/IDiscount";
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, statementService, stickerPriceService } from "../../../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
+import { Discount } from "@/resources/services/discount/discount.typings";
 
 
 class DiscountManager {

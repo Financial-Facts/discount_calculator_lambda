@@ -1,4 +1,4 @@
-import SimpleDiscount from "../discount/ISimpleDiscount";
+import { SimpleDiscount } from "@/resources/services/discount/discount.typings";
 import Identity from "./Identity";
 
 export default interface IdentitiesAndDiscounts {
