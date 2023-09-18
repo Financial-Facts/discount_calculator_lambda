@@ -1,16 +1,15 @@
-import CONSTANTS from "@/resources/resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
 import { BalanceSheet, CashFlowStatement, IncomeStatement, Statements } from "./statement.typings";
 import { cleanStatements, simplifyCik } from "./statement.utils";
 
 class StatementService {
 
-    private financialFactsServiceStatementV1Url: string;
-    private fmpApiUrl: string = 'https://financialmodelingprep.com/api/v3/';
-    private apiKey: string = '';
+    private fmp_base_url;
+    private apiKey;
     
-    constructor(ffs_base_url: string) {
-        this.financialFactsServiceStatementV1Url = ffs_base_url + CONSTANTS.STATEMENTS.V1_ENDPOINT;
+    constructor(fmp_base_url: string, apiKey: string) {
+        this.fmp_base_url = fmp_base_url;
+        this.apiKey = apiKey;
     }
 
     // Fetch sticker price data for a company
@@ -33,7 +32,7 @@ class StatementService {
     private async getBalanceSheets(cik: string): Promise<BalanceSheet[]> {
         console.log(`In statement service getting balance sheets for ${cik}`);
         try {
-            const url = this.fmpApiUrl + this.buildURI(cik, 'balance-sheet-statement');
+            const url = this.fmp_base_url + this.buildURI(cik, 'balance-sheet-statement');
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
@@ -54,7 +53,7 @@ class StatementService {
     private async getIncomeStatements(cik: string): Promise<IncomeStatement[]> {
         console.log(`In statement service getting income statements for ${cik}`);
         try {
-            const url = this.fmpApiUrl + this.buildURI(cik, 'income-statement');
+            const url = this.fmp_base_url + this.buildURI(cik, 'income-statement');
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
@@ -75,7 +74,7 @@ class StatementService {
     private async getCashFlowStatements(cik: string): Promise<CashFlowStatement[]> {
         console.log(`In statement service getting cash flow statements for ${cik}`);
         try {
-            const url = this.fmpApiUrl + this.buildURI(cik, 'cash-flow-statement');
+            const url = this.fmp_base_url + this.buildURI(cik, 'cash-flow-statement');
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
@@ -94,7 +93,7 @@ class StatementService {
     }
 
     private buildURI(cik: string, identifier: string): string {
-        return `/${identifier}/${simplifyCik(cik)}?period=quarter&apikey=${this.apiKey}&limit=132`;
+        return `/api/v3/${identifier}/${simplifyCik(cik)}?period=quarter&apikey=${this.apiKey}&limit=132`;
     }
 
 }
