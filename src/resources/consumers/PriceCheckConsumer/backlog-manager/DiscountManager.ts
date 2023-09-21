@@ -3,7 +3,6 @@ import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataExce
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, statementService, stickerPriceService } from "../../../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import getLatestStatements from "../Parser/Parser";
 
 
 class DiscountManager {
@@ -23,8 +22,6 @@ class DiscountManager {
         try {
             if (this.apiEnabled) {
                 await this.checkForDiscount(cik);
-            } else {
-                await this.checkForNewFilings(cik).then(() => this.checkForDiscount(cik));
             }
         } catch (err: any) {
             if ((err instanceof DisqualifyingDataException || 
@@ -34,16 +31,6 @@ class DiscountManager {
             }
             console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
         }
-    }
-
-    private async checkForNewFilings(cik: string): Promise<void> {
-        return getLatestStatements(cik.slice(3))
-            .then(async statements => {
-                console.log(`Latest statements recieved for ${cik}`);
-                return statementService.saveStatements(cik, statements).then(status => {
-                    console.log(`Statements saved for ${cik} with status: ${status}`)
-                })
-            })
     }
 
     private async checkForDiscount(cik: string): Promise<void> {

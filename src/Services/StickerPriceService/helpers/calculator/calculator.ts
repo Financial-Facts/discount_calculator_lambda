@@ -47,6 +47,8 @@ class Calculator {
                 this.calculateBenchmarkRatioPrice(ttmRevenue, sharesOutstanding)])
             .then(async outputs => {
                 const [ trailingPriceData, benchmarkRatioPrice] = outputs;
+                console.log(trailingPriceData);
+                console.log(benchmarkRatioPrice);
                 const [ ttmPriceData, tfyPriceData, ttyPriceData ] = trailingPriceData;
                 return {
                     cik: data.cik,
