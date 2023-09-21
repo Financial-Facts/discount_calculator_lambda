@@ -1,10 +1,6 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Statement } from "./statement.typings";
 
-export function simplifyCik(cik: string): string {
-    return cik.substring(3);
-}
-
 export function cleanStatements <T extends Statement>(
     cik: string,
     statements: T[]

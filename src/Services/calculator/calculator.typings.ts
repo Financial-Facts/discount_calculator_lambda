@@ -1,5 +1,6 @@
-import StickerPriceData, { PeriodicData } from "@/services/sticker-price/sticker-price.typings";
+import { PeriodicData, StickerPriceData } from "@/services/sticker-price/sticker-price.typings";
 
+export type TimePeriod = 'Q' | 'A';
 
 export interface StickerPriceInput {
     data: StickerPriceData

@@ -1,10 +1,11 @@
 import { buildHistoricalPriceInput } from "@/services/historical-price/historical-price.utils";
-import StickerPriceData, { PeriodicData } from "@/services/sticker-price/sticker-price.typings";
+import { PeriodicData, QuarterlyData } from "@/services/sticker-price/sticker-price.typings";
 import { annualizeByAdd, days_between } from "@/services/sticker-price/utils/periodic-data.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import AbstractFunction from "./AbstractFunction";
-import { historicalPriceService } from "../../../../../bootstrap";
 import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
+import { historicalPriceService } from "../../../bootstrap";
+import { TimePeriod } from "../calculator.typings";
 
 
 
@@ -14,16 +15,24 @@ class PeFunction extends AbstractFunction {
         super();
     }
 
-    async calculate(data: StickerPriceData): Promise<PeriodicData[]> {
+    async calculate(data: {
+        cik: string,
+        timePeriod: TimePeriod,
+        symbol: string,
+        quarterlyData: QuarterlyData
+    }): Promise<PeriodicData[]> {
         const annualPE: PeriodicData[] = [];
-        const annualEPS = annualizeByAdd(data.cik, data.quarterlyEPS);
+        const isAnnual = data.timePeriod === 'A';
+        const periodicEPS = isAnnual ?
+            annualizeByAdd(data.cik, data.quarterlyData.quarterlyEPS) :
+            data.quarterlyData.quarterlyEPS;
         const historicalPriceInput =
-            this.buildHistoricalPriceInput(data.symbol, annualEPS);
+            this.buildHistoricalPriceInput(data.symbol, periodicEPS);
         return historicalPriceService.getHistoricalPrices(historicalPriceInput)
             .then(async (priceData: PriceData[]) => {
-                annualEPS.forEach(fy => {
+                periodicEPS.forEach(period => {
                     const price = priceData.find(day => {
-                        return days_between(new Date(day.date), new Date(fy.announcedDate)) <= 3;
+                        return days_between(new Date(day.date), new Date(period.announcedDate)) <= 3;
                     })?.close;
                     if (!price) {
                         console.log("Insufficient historical price data available for " + data.cik);
@@ -31,9 +40,9 @@ class PeFunction extends AbstractFunction {
                     }
                     annualPE.push({
                         cik: data.cik,
-                        announcedDate: fy.announcedDate,
-                        period: 'FY',
-                        value: fy.value !== 0 ? price/fy.value : 0
+                        announcedDate: period.announcedDate,
+                        period: isAnnual ? 'FY' : period.period,
+                        value: period.value !== 0 ? price/period.value : 0
                     });
                 });
                 return annualPE;

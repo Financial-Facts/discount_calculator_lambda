@@ -1,33 +1,20 @@
+import { BigFive, StickerPriceInput } from "@/services/calculator/calculator.typings";
 import { Discount, TrailingPriceData } from "@/services/discount/discount.typings";
-import StickerPriceData, { PeriodicData } from "../../sticker-price.typings";
-import { checkValuesMeetRequirements } from "../../utils/disqualification.utils";
-import { annualizeByAdd } from "../../utils/periodic-data.utils";
-import { BigFive, StickerPriceInput } from "./calculator.typings";
+import { calculatorService } from "../../../bootstrap";
+import { StickerPriceData, PeriodicData } from "../sticker-price.typings";
+import { checkValuesMeetRequirements } from "../utils/disqualification.utils";
+import { annualizeByAdd } from "../utils/periodic-data.utils";
 import { buildBigFive, buildStickerPriceInput } from "./calculator.utils";
-import BvpsFunction from "./functions/BvpsFunction";
-import PeFunction from "./functions/PeFunction";
-import RoicFunction from "./functions/RoicFunction";
-import BenchmarkRatioPriceOutput from "./outputs/BenchmarkRatioPriceOutput";
 import StickerPriceOutput from "./outputs/StickerPriceOutput";
-
 
 class Calculator {
 
-    // Functions
-    private bvpsFunction: BvpsFunction;
-    private peFunction: PeFunction;
-    private roicFunction: RoicFunction;
 
     // Outputs
     private stickerPriceOutput: StickerPriceOutput;
-    private benchmarkRatioPriceOutput: BenchmarkRatioPriceOutput;
 
     constructor() {
-        this.bvpsFunction = new BvpsFunction();
-        this.peFunction = new PeFunction();
-        this.roicFunction = new RoicFunction();
         this.stickerPriceOutput = new StickerPriceOutput();
-        this.benchmarkRatioPriceOutput = new BenchmarkRatioPriceOutput();
     }
 
     public async calculateDiscount(data: StickerPriceData): Promise<Discount> {
@@ -39,13 +26,15 @@ class Calculator {
         .then(async inputs => {
             const [input, bigFive] = inputs;
             checkValuesMeetRequirements(input, bigFive);
-            const ttmRevenue = bigFive.annualRevenue.slice(-1)[0].value;
-            const sharesOutstanding = data.quarterlyOutstandingShares.slice(-1)[0].value;
+            const benchmarkRatioPricePromise = calculatorService.calculateBenchmarkRatioPrice({
+                industry: data.industry,
+                quarterlyData: data
+            });
             return Promise.all([
                 this.calculateTrailingPriceData(input),
-                this.calculateBenchmarkRatioPrice(ttmRevenue, sharesOutstanding)])
-            .then(async outputs => {
-                const [ trailingPriceData, benchmarkRatioPrice] = outputs;
+                benchmarkRatioPricePromise
+            ]).then(async outputs => {
+                const [ trailingPriceData, benchmarkRatioPrice ] = outputs;
                 const [ ttmPriceData, tfyPriceData, ttyPriceData ] = trailingPriceData;
                 return {
                     cik: data.cik,
@@ -68,16 +57,27 @@ class Calculator {
     }
 
     private async calculateBigFive(data: StickerPriceData, annualEPS: PeriodicData[]): Promise<BigFive> {
-        return this.calculateAnnualROIC(data).then(annualROIC => buildBigFive(data, annualROIC, annualEPS));
+        const annualROIC = calculatorService.calculateROIC({
+            cik: data.cik,
+            timePeriod: 'A',
+            quarterlyData: data
+        });
+        return buildBigFive(data, annualROIC, annualEPS);
     }
 
     private async calculateStickerPriceInput(data: StickerPriceData, annualEPS: PeriodicData[]): Promise<StickerPriceInput> {
-        return Promise.all([
-            this.calculateAnnualPE(data),
-            this.calculateAnnualBVPS(data)
-        ]).then(async (periodicData: PeriodicData[][]) => {
-            const [ annualPE, annualBVPS ] = periodicData;
-            return buildStickerPriceInput(data, annualPE, annualBVPS, annualEPS)
+        return calculatorService.calculatePE({
+            cik: data.cik,
+            timePeriod: 'A',
+            symbol: data.symbol,
+            quarterlyData: data
+        }).then(annualPE => {
+            const annualBVPS = calculatorService.calculateBVPS({
+                cik: data.cik,
+                timePeriod: 'A',
+                quarterlyData: data
+            });
+            return buildStickerPriceInput(data, annualPE, annualBVPS, annualEPS);
         });
     }
 
@@ -89,7 +89,7 @@ class Calculator {
                 trailingPricePromises.push(this.stickerPriceOutput.submit({
                     cik: input.data.cik,
                     equityGrowthRate: input.growthRates[period],
-                    annualPE: input.annualPE.slice(0, 10),
+                    annualPE: input.annualPE.slice(-10),
                     currentQuarterlyEPS: input.annualEPS[input.annualEPS.length - 1].value,
                     analystGrowthEstimate: input.analystGrowthEstimate}));
                 });
@@ -98,25 +98,6 @@ class Calculator {
                 console.log("Finished calculating trailing price data for " + input.data.cik);
                 return trailingPriceData;
             });     
-    }
-
-    private async calculateBenchmarkRatioPrice(ttmRevenue: number, sharesOutstanding: number): Promise<number> {
-        return this.benchmarkRatioPriceOutput.submit({
-            ttmRevenue: ttmRevenue,
-            sharesOutstanding: sharesOutstanding
-        })
-    }
-
-    private async calculateAnnualBVPS(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
-        return this.bvpsFunction.calculate(stickerPriceData);
-    }
-
-    private async calculateAnnualPE(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
-        return this.peFunction.calculate(stickerPriceData);
-    }
-
-    private async calculateAnnualROIC(stickerPriceData: StickerPriceData): Promise<PeriodicData[]> {
-        return this.roicFunction.calculate(stickerPriceData);
     }
     
 }

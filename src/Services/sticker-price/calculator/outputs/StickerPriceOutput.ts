@@ -1,7 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractOutput from "./AbstractOutput";
-import { TrailingPriceData } from "../../../../../services/discount/discount.typings";
-import { PeriodicData } from "../../../../../services/sticker-price/sticker-price.typings";
+import { TrailingPriceData } from "@/services/discount/discount.typings";
+import { PeriodicData } from "../../sticker-price.typings";
 
 class StickerPriceOutput implements AbstractOutput {
 

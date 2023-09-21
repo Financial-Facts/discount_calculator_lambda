@@ -7,11 +7,16 @@ export interface PeriodicData {
     value: number
 }
 
-export default interface StickerPriceData {
+export type StickerPriceData = CompanyInfo & QuarterlyData;
+
+export interface CompanyInfo {
     cik: string
     symbol: string
     name: string
-    benchmarkRatioPrice: number
+    industry: string
+}
+
+export interface QuarterlyData {
     quarterlyShareholderEquity: PeriodicData[]
     quarterlyOutstandingShares: PeriodicData[]
     quarterlyEPS: PeriodicData[]

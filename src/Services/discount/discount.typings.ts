@@ -22,7 +22,7 @@ export interface SimpleDiscount {
     symbol: string;
     name: string;
     active: boolean;
-    ratioPrice?: number;
+    ratio_Price?: number;
     ttmSalePrice: number;
     tfySalePrice: number;
     ttySalePrice: number;

@@ -23,7 +23,7 @@ export interface Statements {
     cashFlowStatements: CashFlowStatement[]
 }
 
-interface IIncomeStatement {
+export interface IIncomeStatement {
     revenue: number,
     costOfRevenue: number,
     grossProfit: number,
@@ -56,7 +56,7 @@ interface IIncomeStatement {
     finalLink: string 
 }
 
-interface IBalanceSheet {
+export interface IBalanceSheet {
     cashAndCashEquivalents: number,
     shortTermInvestments: number,
     cashAndShortTermInvestments: number,
@@ -105,7 +105,7 @@ interface IBalanceSheet {
     finalLink: string
 }
 
-interface ICashFlowStatement {
+export interface ICashFlowStatement {
     netIncome: number,
     depreciationAndAmortization: number,
     deferredIncomeTax: number,

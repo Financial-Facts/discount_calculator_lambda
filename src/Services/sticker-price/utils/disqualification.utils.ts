@@ -1,26 +1,35 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
-import { BigFive, StickerPriceInput } from "../helpers/calculator/calculator.typings";
 import { Discount, SimpleDiscount } from "../../discount/discount.typings";
 import { PeriodicData } from "../sticker-price.typings";
+import { StickerPriceInput, BigFive } from "@/services/calculator/calculator.typings";
 
 export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {
     return checkDiscountDataMeetsRequirements(currentPrice,
-            discount.ttmPriceData.salePrice,
-            discount.tfyPriceData.salePrice,
-            discount.ttyPriceData.salePrice);
+        discount.ttmPriceData.salePrice,
+        discount.tfyPriceData.salePrice,
+        discount.ttyPriceData.salePrice,
+        discount.ratioPrice);
 }
 
 export function checkSimpleDiscountIsOnSale(currentPrice: number, discount: SimpleDiscount): boolean {
     return checkDiscountDataMeetsRequirements(currentPrice,
         discount.ttmSalePrice,
         discount.tfySalePrice,
-        discount.ttySalePrice);
+        discount.ttySalePrice,
+        discount.ratio_Price);
 }
 
-function checkDiscountDataMeetsRequirements(currentPrice: number, ttm: number, tfy: number, tty: number): boolean {
+function checkDiscountDataMeetsRequirements(
+    currentPrice: number,
+    ttm: number,
+    tfy: number,
+    tty: number,
+    ratioPrice?: number
+): boolean {
     return currentPrice < ttm &&
         currentPrice < tfy &&
-        currentPrice < tty;
+        currentPrice < tty &&
+        (ratioPrice ? currentPrice < ratioPrice : true);
 }
 
 export function checkValuesMeetRequirements(input: StickerPriceInput, bigFive: BigFive): void {
