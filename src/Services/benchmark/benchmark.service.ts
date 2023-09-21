@@ -1,6 +1,8 @@
 import HttpException from '@/utils/exceptions/HttpException';
 import { JSDOM } from 'jsdom';
 import ScrapeDataException from '@/utils/exceptions/ScrapeDataException';
+import { DiscountInput } from '../sticker-price/sticker-price.typings';
+import { calculatorService } from '../../bootstrap';
 
 class BenchmarkService {
 
@@ -15,7 +17,14 @@ class BenchmarkService {
         });
     }
 
-    public async fetchBenchmarkPsRatio(industry: string): Promise<number> {
+    public async getBenchmarkRatioPrice(data: DiscountInput): Promise<number> {
+        return calculatorService.calculateBenchmarkRatioPrice({
+            industry: data.industry,
+            quarterlyData: data
+        });
+    }
+
+    async fetchBenchmarkPsRatio(industry: string): Promise<number> {
         if (this.benchmarkIndustryMapping[industry] !== undefined) {
             console.log(`Industry '${industry}' exists in benchmark map...`);
             return this.benchmarkIndustryMapping[industry];

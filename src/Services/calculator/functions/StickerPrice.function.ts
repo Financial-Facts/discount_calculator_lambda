@@ -1,6 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import { PeriodicData } from "../../sticker-price/sticker-price.typings";
 import AbstractFunction from "./AbstractFunction";
+import { calculatorService } from "../../../bootstrap";
 
 
 class StickerPriceFunction extends AbstractFunction {
@@ -13,10 +14,10 @@ class StickerPriceFunction extends AbstractFunction {
         analystGrowthEstimate?: number
     }): number {
         const currentAnnualEps = data.annualEPS[data.annualEPS.length - 1].value;
-        let forwardPE: number = data.annualPE
-            .slice(-10)
-            .map(year => year.value)
-            .reduce((a, b) => a + b) / data.annualPE.length;
+        let forwardPE: number = calculatorService.calculateAverageOverPeriod({
+            periodicData: data.annualPE,
+            numPeriods: 10
+        });
 
         // If analyst estimates are lower than the predicted equity growth rate, go with them
         if (!data.analystGrowthEstimate) {

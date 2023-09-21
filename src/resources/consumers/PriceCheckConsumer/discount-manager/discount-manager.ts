@@ -1,8 +1,10 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
-import { discountService, stickerPriceService } from "../../../../bootstrap";
+import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "../../../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/discount.typings";
+import { checkDiscountIsOnSale } from "@/resources/resource.utils";
+import { buildDiscount, buildDiscountInput } from "@/services/discount/discount.utils";
 
 
 class DiscountManager {
@@ -28,10 +30,25 @@ class DiscountManager {
 
     private async checkForDiscount(cik: string): Promise<void> {
         console.log("In price check consumer checking for a discount on CIK: " + cik);
-        return stickerPriceService.checkForSale(cik)
-            .then(async (discount: Discount) => {
-                return this.saveDiscount(discount); 
-            });
+        return Promise.all([
+            statementService.getStatements(cik),
+            profileService.getCompanyProfile(cik)
+        ]).then(async companyData => {
+            const [ statements, profile ] = companyData;
+            const input = buildDiscountInput(cik, statements, profile);
+            return Promise.all([
+                stickerPriceService.getStickerPriceObject(cik, input),
+                benchmarkService.getBenchmarkRatioPrice(input)
+            ]).then(async calculatedData => {
+                    const [ stickerPrice, benchmarkRatioPrice ] = calculatedData;
+                    const discount = buildDiscount(stickerPrice, benchmarkRatioPrice);
+                    return historicalPriceService.getCurrentPrice(discount.symbol)
+                        .then(currentPrice => {
+                            discount.active = checkDiscountIsOnSale(currentPrice, discount);
+                            return this.saveDiscount(discount);
+                        });
+                });
+        })
     }
 
     private async saveDiscount(discount: Discount): Promise<void> {

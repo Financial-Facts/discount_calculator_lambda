@@ -1,21 +1,7 @@
-import { PeriodicData } from "../sticker-price/sticker-price.typings";
+import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
+import { StickerPrice } from "../sticker-price/sticker-price.typings";
 
-export interface Discount {
-    cik: string;
-    symbol: string;
-    name: string;
-    active: boolean;
-    ratioPrice?: number;
-    lastUpdated?: Date
-    ttmPriceData: TrailingPriceData
-    tfyPriceData: TrailingPriceData
-    ttyPriceData: TrailingPriceData
-    quarterlyBVPS: PeriodicData[]
-    quarterlyPE: PeriodicData[]
-    quarterlyEPS: PeriodicData[]
-    quarterlyROIC: PeriodicData[]
-    annualROIC: PeriodicData[]
-}
+export type Discount = StickerPrice & BenchmarkRatioPrice;
 
 export interface SimpleDiscount {
     cik: string;

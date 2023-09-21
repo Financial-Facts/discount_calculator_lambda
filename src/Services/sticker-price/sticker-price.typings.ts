@@ -7,7 +7,28 @@ export interface PeriodicData {
     value: number
 }
 
-export type StickerPriceData = CompanyInfo & QuarterlyData;
+export interface TrailingPriceData {
+    cik: string;
+    stickerPrice: number;
+    salePrice: number;
+}
+
+export interface StickerPrice {
+    cik: string;
+    symbol: string;
+    name: string;
+    active: boolean;
+    lastUpdated?: Date
+    ttmPriceData: TrailingPriceData
+    tfyPriceData: TrailingPriceData
+    ttyPriceData: TrailingPriceData
+    quarterlyBVPS: PeriodicData[]
+    quarterlyPE: PeriodicData[]
+    quarterlyEPS: PeriodicData[]
+    quarterlyROIC: PeriodicData[]
+}
+
+export type DiscountInput = CompanyInfo & QuarterlyData;
 
 export interface CompanyInfo {
     cik: string

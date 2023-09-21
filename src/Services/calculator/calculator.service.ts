@@ -73,7 +73,9 @@ class CalculatorService {
 
     public calculateAverageOverPeriod(data: {
         periodicData: PeriodicData[],
-        numPeriods: number
+        numPeriods: number,
+        minimum?: number,
+        errorMessage?: string
     }): number {
         return this.averageOverPeriodFunction.calculate(data);
     }

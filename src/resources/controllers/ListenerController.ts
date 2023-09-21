@@ -3,8 +3,8 @@ import CONSTANTS from "../resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
 import { discountService, historicalPriceService } from "../../bootstrap";
 import { SimpleDiscount } from "@/services/discount/discount.typings";
-import { checkSimpleDiscountIsOnSale } from "@/services/sticker-price/utils/disqualification.utils";
 import Controller from "./controller.typings";
+import { checkSimpleDiscountIsOnSale } from "../resource.utils";
 
 class ListenerController implements Controller {
 

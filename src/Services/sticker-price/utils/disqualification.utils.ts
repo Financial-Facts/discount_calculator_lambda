@@ -1,74 +1,30 @@
-import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
-import { Discount, SimpleDiscount } from "../../discount/discount.typings";
 import { PeriodicData } from "../sticker-price.typings";
-import { StickerPriceInput, BigFive } from "@/services/calculator/calculator.typings";
+import { BigFive } from "@/services/calculator/calculator.typings";
+import { calculatorService } from "../../../bootstrap";
 
-export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {
-    return checkDiscountDataMeetsRequirements(currentPrice,
-        discount.ttmPriceData.salePrice,
-        discount.tfyPriceData.salePrice,
-        discount.ttyPriceData.salePrice,
-        discount.ratioPrice);
-}
 
-export function checkSimpleDiscountIsOnSale(currentPrice: number, discount: SimpleDiscount): boolean {
-    return checkDiscountDataMeetsRequirements(currentPrice,
-        discount.ttmSalePrice,
-        discount.tfySalePrice,
-        discount.ttySalePrice,
-        discount.ratio_Price);
-}
-
-function checkDiscountDataMeetsRequirements(
-    currentPrice: number,
-    ttm: number,
-    tfy: number,
-    tty: number,
-    ratioPrice?: number
-): boolean {
-    return currentPrice < ttm &&
-        currentPrice < tfy &&
-        currentPrice < tty &&
-        (ratioPrice ? currentPrice < ratioPrice : true);
-}
-
-export function checkValuesMeetRequirements(input: StickerPriceInput, bigFive: BigFive): void {
-    checkRatesMeetRequirements(input.data.cik, input.growthRates);
-    checkAnnualAvgExceedsZero(input.data.cik, [
-        input.annualPE,
-        input.annualBVPS,
-        input.annualEPS
-    ]);
-    checkBigFiveExceedGrowthRateMinimum(input.data.cik, bigFive);
-}
-
-function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
+export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
     checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');
     checkAverageGrowthRateExceedsValue(
-        calculateAnnualGrowthRates(cik, bigFive.annualRevenue),
-        `Revenue growth does not meet a minimum of 10% for ${cik}`);
+        calculatorService.calculatePeriodicGrowthRates({
+            cik: cik,
+            periodicData: bigFive.annualRevenue
+        }), `Revenue growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
-        calculateAnnualGrowthRates(cik, bigFive.annualEPS),
-        `EPS growth does not meet a minimum of 10% for ${cik}`);
+        calculatorService.calculatePeriodicGrowthRates({
+            cik: cik,
+            periodicData: bigFive.annualEPS
+        }), `EPS growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
-        calculateAnnualGrowthRates(cik, bigFive.annualEquity),
-        `Equity growth does not meet a minimum of 10% for ${cik}`);
+        calculatorService.calculatePeriodicGrowthRates({
+            cik: cik,
+            periodicData: bigFive.annualEquity
+        }), `Equity growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
-        calculateAnnualGrowthRates(cik, bigFive.annualOperatingCashFlow),
-        `Operating cash flow growth does not meet a minimum of 10% for ${cik}`);
-    
-}
-
-function checkRatesMeetRequirements(cik: string, growthRates: Record<number, number>): void {
-    Object.values(growthRates).forEach(value => {
-        if (value < 10) {
-            throw new DisqualifyingDataException(`Growth rates do not meet a minimum of 10% for ${cik}`);
-        }
-    })
-}
-
-function checkAnnualAvgExceedsZero(cik: string, annualData: PeriodicData[][]): void {
-    checkAnnualDataAvgExceedsValue(annualData, 0, `Annual data is on average negative for ${cik}`);
+        calculatorService.calculatePeriodicGrowthRates({
+            cik: cik,
+            periodicData: bigFive.annualOperatingCashFlow
+        }), `Operating cash flow growth does not meet a minimum of 10% for ${cik}`); 
 }
 
 function checkPercentageExceedsMinimum(cik: string, data: PeriodicData[], type: string): void {
@@ -76,10 +32,12 @@ function checkPercentageExceedsMinimum(cik: string, data: PeriodicData[], type: 
 }
 
 function checkAverageGrowthRateExceedsValue(data: PeriodicData[], errorMessage: string) {
-    const average = data.map(year => year.value).reduce((a, b) => a + b) / data.length;
-    if (average < 10) {
-        throw new DisqualifyingDataException(errorMessage);
-    }
+    calculatorService.calculateAverageOverPeriod({
+        periodicData: data,
+        numPeriods: 10,
+        minimum: 10,
+        errorMessage: errorMessage
+    });
 }
 
 function checkAnnualDataAvgExceedsValue(
@@ -88,32 +46,13 @@ function checkAnnualDataAvgExceedsValue(
     errorMessage: string
 ): void {
     annualData.forEach(dataset => {
-        const averageOverPeriod = {
-            1: dataset.slice(-1)[0].value,
-            5: dataset.slice(-5).map(year => year.value).reduce((a, b) => a + b)/5,
-            10: dataset.slice(-10).map(year => year.value).reduce((a, b) => a + b)/10
-        }
-        if (averageOverPeriod[1] < value ||
-            averageOverPeriod[5] < value || 
-            averageOverPeriod[10] < value) {
-            throw new DisqualifyingDataException(errorMessage);
-        }
-    })
-}
-
-function calculateAnnualGrowthRates(cik: string, data: PeriodicData[]): PeriodicData[] {
-    const annualGrowthRates: PeriodicData[] = [];
-    let i = 1;
-    while (i < data.length) {
-        let previous = data[i - 1];
-        let current = data[i];
-        annualGrowthRates.push({
-            cik: cik,
-            announcedDate: current.announcedDate,
-            period: current.period,
-            value: ((current.value - previous.value) / Math.abs(previous.value)) * 100
+        [1, 5, 10].forEach(period => {
+            calculatorService.calculateAverageOverPeriod({ 
+                periodicData: dataset,
+                numPeriods: period,
+                minimum: value,
+                errorMessage: errorMessage
+            });
         });
-        i++;
-    }
-    return annualGrowthRates;
+    })
 }
