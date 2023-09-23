@@ -1,6 +1,6 @@
 import { Consumer } from 'sqs-consumer';
 import { SQSClient } from '@aws-sdk/client-sqs';
-import { SqsMsgBody } from './PriceCheckConsumer.typings';
+import { SqsMsgBody } from './price-check.typings';
 import DiscountManager from './discount-manager/discount-manager';
 import CONSTANTS from '@/resources/resource.contants';
 

@@ -1,7 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractFunction from "./AbstractFunction";
 import { calculatorService } from "../../../bootstrap";
-import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
 
 
 class StickerPriceFunction extends AbstractFunction {

@@ -4,9 +4,9 @@ import AbstractFunction from "./AbstractFunction";
 import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
 import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
-import { QuarterlyData, PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
-import { annualizeByAdd } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.util";
 import { days_between } from "../calculator.utils";
+import { QuarterlyData, PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { annualizeByAdd } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.utils";
 
 
 

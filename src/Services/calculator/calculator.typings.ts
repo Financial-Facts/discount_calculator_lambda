@@ -1,4 +1,4 @@
-import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
 
 export type TimePeriod = 'Q' | 'A';
 

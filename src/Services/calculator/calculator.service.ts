@@ -1,4 +1,4 @@
-import { PeriodicData, QuarterlyData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
+import { QuarterlyData, PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
 import { TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";

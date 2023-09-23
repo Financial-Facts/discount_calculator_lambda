@@ -5,7 +5,7 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
 import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
-import { checkHasSufficientData } from "./discount-manager.util";
+import { checkHasSufficientData } from "./discount-manager.utils";
 
 
 class DiscountManager {
