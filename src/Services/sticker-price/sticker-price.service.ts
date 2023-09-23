@@ -1,75 +1,26 @@
-import { DiscountInput, PeriodicData, StickerPrice, TrailingPriceData } from "./sticker-price.typings";
-import { checkBigFiveExceedGrowthRateMinimum } from "./utils/disqualification.utils";
+import { StickerPrice, StickerPriceInput, TrailingPriceData } from "./sticker-price.typings";
+import { checkBigFiveExceedGrowthRateMinimum } from "./sticker-price.utils";
 import { calculatorService } from "../../bootstrap";
-import { checkHasSufficientStickerPriceData } from "./utils/validation.utils";
-import { annualizeByAdd, annualizeByLastQuarter } from "./utils/periodic-data.utils";
-import { BigFive } from "../calculator/calculator.typings";
+import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 
 class StickerPriceService {
 
-    public async getStickerPriceObject(
-        cik: string,
-        data: DiscountInput
-    ): Promise<StickerPrice> {
-        console.log("In sticker price service getting discount data for cik: " + cik);
-        checkHasSufficientStickerPriceData(data);
-        return this.calculateStickerPriceObject(data);
-    }
-
-    private async calculateStickerPriceObject(data: DiscountInput): Promise<StickerPrice> {
+    public calculateStickerPriceObject(data: StickerPriceInput): StickerPrice {
         console.log("In calculator calculating sticker price for CIK: " + data.cik);
-        const annualEPS = annualizeByAdd(data.cik, data.quarterlyEPS);
-        const annualBVPS = this.calculateAnnualBVPS(data);
-        const annualPE = await this.calculateAnnualPE(data);
-        const bigFive = this.calculateBigFive(data, annualEPS);
-        checkBigFiveExceedGrowthRateMinimum(data.cik, bigFive);
+        checkBigFiveExceedGrowthRateMinimum(data.cik, {
+            annualEPS: data.annualEPS,
+            annualEquity: data.annualEquity,
+            annualOperatingCashFlow: data.annualOperatingCashFlow,
+            annualRevenue: data.annualRevenue,
+            annualROIC: data.annualROIC
+        });
         const [ ttmPriceData, tfyPriceData, ttyPriceData ] =
-            this.calculateTrailingPriceData(data.cik, annualBVPS, annualPE, annualEPS);
+            this.calculateTrailingPriceData(data.cik, data.annualBVPS, data.annualPE, data.annualEPS);
         return {
-            cik: data.cik,
-            symbol: data.symbol,
-            name: data.name,
-            active: false,
-            lastUpdated: new Date(),
             ttmPriceData: ttmPriceData,
             tfyPriceData: tfyPriceData,
             ttyPriceData: ttyPriceData,
-            quarterlyBVPS: annualBVPS,
-            quarterlyPE: annualPE,
-            quarterlyEPS: bigFive.annualEPS,
-            quarterlyROIC: bigFive.annualROIC
-        }
-    }
-
-    private calculateAnnualBVPS(data: DiscountInput): PeriodicData[] {
-        return calculatorService.calculateBVPS({
-            cik: data.cik,
-            timePeriod: 'A',
-            quarterlyData: data
-        });
-    }
-
-    private async calculateAnnualPE(data: DiscountInput): Promise<PeriodicData[]> {
-        return calculatorService.calculatePE({
-            cik: data.cik,
-            timePeriod: 'A',
-            symbol: data.symbol,
-            quarterlyData: data
-        });
-    }
-
-    private calculateBigFive(data: DiscountInput, annualEPS: PeriodicData[]): BigFive {
-        const annualROIC = calculatorService.calculateROIC({
-            cik: data.cik,
-            timePeriod: 'A',
-            quarterlyData: data
-        });
-        return {
-            annualROIC: annualROIC,
-            annualEPS: annualEPS,
-            annualEquity: annualizeByLastQuarter(data.cik, data.quarterlyTotalEquity),
-            annualRevenue: annualizeByAdd(data.cik, data.quarterlyRevenue),
-            annualOperatingCashFlow: annualizeByAdd(data.cik, data.quarterlyOperatingCashFlow)
+            input: data
         }
     }
 

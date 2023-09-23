@@ -1,8 +1,9 @@
 import HttpException from '@/utils/exceptions/HttpException';
 import { JSDOM } from 'jsdom';
 import ScrapeDataException from '@/utils/exceptions/ScrapeDataException';
-import { DiscountInput } from '../sticker-price/sticker-price.typings';
-import { calculatorService } from '../../bootstrap';
+import { benchmarkService, calculatorService } from '../../bootstrap';
+import { BenchmarkRatioPrice } from './benchmark.typings';
+import { QuarterlyData } from '@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings';
 
 class BenchmarkService {
 
@@ -17,11 +18,25 @@ class BenchmarkService {
         });
     }
 
-    public async getBenchmarkRatioPrice(data: DiscountInput): Promise<number> {
-        return calculatorService.calculateBenchmarkRatioPrice({
-            industry: data.industry,
-            quarterlyData: data
+    public async getBenchmarkRatioPrice(industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
+        const ttmRevenue = data.quarterlyRevenue.slice(-4).map(period => period.value).reduce((a, b) => a + b);
+        const sharesOutstanding = data.quarterlyOutstandingShares.slice(-1)[0].value;
+        const benchmarkPsRatio = await benchmarkService.fetchBenchmarkPsRatio(industry);
+        const benchmarkRatioPrice = calculatorService.calculateBenchmarkRatioPrice({
+            industry: industry,
+            benchmarkPsRatio: benchmarkPsRatio,
+            ttmRevenue: ttmRevenue,
+            sharesOutstanding: sharesOutstanding
         });
+        return {
+            ratioPrice: benchmarkRatioPrice,
+            input: {
+                industry: industry,
+                ttmRevenue: ttmRevenue,
+                sharesOutstanding: sharesOutstanding,
+                psBenchmarkRatio: benchmarkPsRatio
+            }
+        }
     }
 
     async fetchBenchmarkPsRatio(industry: string): Promise<number> {

@@ -16,7 +16,8 @@ class ProfileService {
     public async getCompanyProfile(cik: string): Promise<CompanyProfile> {
         console.log(`In profile service getting company profile for ${cik}`);
         try {
-            const url = this.fmp_base_url + buildURI(cik, 'profile', this.apiKey);
+            const url = this.fmp_base_url + buildURI(cik, 'profile', this.apiKey, 'annual');
+            console.log(url);
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {

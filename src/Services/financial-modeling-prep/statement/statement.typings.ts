@@ -1,4 +1,4 @@
-import { Period } from "services/service.typings";
+import { Period } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 
 export interface Statement {
     cik: string,

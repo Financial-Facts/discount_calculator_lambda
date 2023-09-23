@@ -1,7 +1,6 @@
-import { PeriodicData } from "../sticker-price.typings";
 import { BigFive } from "@/services/calculator/calculator.typings";
-import { calculatorService } from "../../../bootstrap";
-
+import { calculatorService } from "../../bootstrap";
+import { PeriodicData, QuarterlyData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 
 export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
     checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');

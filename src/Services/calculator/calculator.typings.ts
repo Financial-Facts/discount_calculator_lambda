@@ -1,4 +1,4 @@
-import { PeriodicData } from "@/services/sticker-price/sticker-price.typings";
+import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 
 export type TimePeriod = 'Q' | 'A';
 

@@ -1,4 +1,4 @@
-import { PeriodicData } from "../../sticker-price/sticker-price.typings";
+import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 
 abstract class AbstractFunction {
 

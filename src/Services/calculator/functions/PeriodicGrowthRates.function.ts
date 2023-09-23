@@ -1,6 +1,4 @@
-import { PeriodicData } from "../../sticker-price/sticker-price.typings";
-import { annualizeByLastQuarter, processPeriodicDatasets } from "../../sticker-price/utils/periodic-data.utils";
-import { TimePeriod } from "../calculator.typings";
+import { PeriodicData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 import AbstractFunction from "./AbstractFunction";
 
 

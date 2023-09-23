@@ -1,4 +1,4 @@
-import { QuarterlyData, PeriodicData } from "../sticker-price/sticker-price.typings";
+import { PeriodicData, QuarterlyData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
 import { TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";
@@ -64,10 +64,12 @@ class CalculatorService {
         return this.roicFunction.calculate(data);
     }
 
-    public async calculateBenchmarkRatioPrice(data: {
+    public calculateBenchmarkRatioPrice(data: {
         industry: string,
-        quarterlyData: QuarterlyData
-    }): Promise<number> {
+        benchmarkPsRatio: number,
+        ttmRevenue: number,
+        sharesOutstanding: number
+    }): number {
         return this.benchmarkRatioPriceFunction.calculate(data);
     }
 

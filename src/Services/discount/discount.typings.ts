@@ -1,7 +1,21 @@
 import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
 import { StickerPrice } from "../sticker-price/sticker-price.typings";
 
-export type Discount = StickerPrice & BenchmarkRatioPrice;
+export interface Discount {
+    cik: string
+    symbol: string
+    name: string
+    lastUpdated: Date
+    active: boolean
+    stickerPrice: StickerPrice
+    benchmarkRatioPrice: BenchmarkRatioPrice
+}
+
+export interface Identity {
+    cik: string
+    symbol: string
+    name: string
+}
 
 export interface SimpleDiscount {
     cik: string;
@@ -12,10 +26,4 @@ export interface SimpleDiscount {
     ttmSalePrice: number;
     tfySalePrice: number;
     ttySalePrice: number;
-}
-
-export interface TrailingPriceData {
-    cik: string;
-    stickerPrice: number;
-    salePrice: number;
 }

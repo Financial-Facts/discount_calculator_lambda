@@ -4,7 +4,8 @@ import { benchmarkService, discountService, historicalPriceService, profileServi
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
-import { buildDiscount, buildDiscountInput } from "@/services/discount/discount.utils";
+import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
+import { checkHasSufficientData } from "./discount-manager.util";
 
 
 class DiscountManager {
@@ -35,19 +36,22 @@ class DiscountManager {
             profileService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
-            const input = buildDiscountInput(cik, statements, profile);
+            const quarterlyData = buildQuarterlyData(statements);
+            checkHasSufficientData(quarterlyData);
+            const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             return Promise.all([
-                stickerPriceService.getStickerPriceObject(cik, input),
-                benchmarkService.getBenchmarkRatioPrice(input)
+                stickerPriceService.calculateStickerPriceObject(stickerPriceInput),
+                benchmarkService.getBenchmarkRatioPrice(profile.industry, quarterlyData)
             ]).then(async calculatedData => {
-                    const [ stickerPrice, benchmarkRatioPrice ] = calculatedData;
-                    const discount = buildDiscount(stickerPrice, benchmarkRatioPrice);
-                    return historicalPriceService.getCurrentPrice(discount.symbol)
-                        .then(currentPrice => {
-                            discount.active = checkDiscountIsOnSale(currentPrice, discount);
-                            return this.saveDiscount(discount);
-                        });
-                });
+                const [ stickerPrice, benchmarkRatioPrice ] = calculatedData;
+                const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
+                return historicalPriceService.getCurrentPrice(discount.symbol)
+                    .then(currentPrice => {
+                        discount.active = checkDiscountIsOnSale(currentPrice, discount);
+                        console.log(discount);
+                        return this.saveDiscount(discount);
+                    });
+            });
         })
     }
 

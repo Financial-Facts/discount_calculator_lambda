@@ -1,8 +1,12 @@
 import CONSTANTS from "@/resources/resource.contants";
 import { CompanyProfile } from "../financial-modeling-prep/profile/profile.typings";
 import { Statements } from "../financial-modeling-prep/statement/statement.typings";
-import { DiscountInput, StickerPrice } from "../sticker-price/sticker-price.typings";
+import { StickerPrice, StickerPriceInput } from "../sticker-price/sticker-price.typings";
 import { Discount } from "./discount.typings";
+import { calculatorService } from "../../bootstrap";
+import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
+import { QuarterlyData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
+import { annualizeByAdd, annualizeByLastQuarter } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.util";
 
 export function buildHeadersWithBasicAuth(): { Authorization: string, 'Content-Type': string } {
     return {
@@ -11,29 +15,33 @@ export function buildHeadersWithBasicAuth(): { Authorization: string, 'Content-T
     }
 }
 
-export function buildDiscount(stickerPrice: StickerPrice, benchmarkRatioPrice: number): Discount {
-    return {
-        cik: stickerPrice.cik,
-        symbol: stickerPrice.symbol,
-        name: stickerPrice.name,
-        active: false,
-        lastUpdated: stickerPrice.lastUpdated,
-        ttmPriceData: stickerPrice.ttmPriceData,
-        tfyPriceData: stickerPrice.tfyPriceData,
-        ttyPriceData: stickerPrice.ttyPriceData,
-        quarterlyBVPS: stickerPrice.quarterlyBVPS,
-        quarterlyPE: stickerPrice.quarterlyPE,
-        quarterlyEPS: stickerPrice.quarterlyEPS,
-        quarterlyROIC: stickerPrice.quarterlyROIC,
-        ratioPrice: benchmarkRatioPrice
-    }
-}
-export function buildDiscountInput(cik: string, statements: Statements, profile: CompanyProfile): DiscountInput {
+export function buildDiscount(
+    cik: string,
+    profile: CompanyProfile,
+    stickerPrice: StickerPrice,
+    benchmarkRatioPrice: BenchmarkRatioPrice
+): Discount {
     return {
         cik: cik,
-        symbol: statements.balanceSheets[0].symbol,
+        symbol: profile.symbol,
         name: profile.companyName,
-        industry: profile.industry,
+        active: false,
+        lastUpdated: new Date(),
+        stickerPrice: {
+            ttmPriceData: stickerPrice.ttmPriceData,
+            tfyPriceData: stickerPrice.tfyPriceData,
+            ttyPriceData: stickerPrice.ttyPriceData,
+            input: stickerPrice.input
+        },
+        benchmarkRatioPrice: {
+            ratioPrice: benchmarkRatioPrice.ratioPrice,
+            input: benchmarkRatioPrice.input
+        }
+    }
+}
+
+export function buildQuarterlyData(statements: Statements): QuarterlyData {
+    return {
         quarterlyShareholderEquity: statements.balanceSheets.map(sheets => {
             return {
                 cik: sheets.cik,
@@ -114,5 +122,31 @@ export function buildDiscountInput(cik: string, statements: Statements, profile:
                 value: sheets.freeCashFlow
             }
         })
+    }
+}
+
+export async function buildStickerPriceInput(cik: string, symbol: string, data: QuarterlyData): Promise<StickerPriceInput> {
+    return {
+        cik: cik,
+        annualBVPS: calculatorService.calculateBVPS({
+            cik: cik,
+            timePeriod: 'A',
+            quarterlyData: data
+        }),
+        annualPE: await calculatorService.calculatePE({
+            cik: cik,
+            timePeriod: 'A',
+            symbol: symbol,
+            quarterlyData: data
+        }),
+        annualROIC: calculatorService.calculateROIC({
+            cik: cik,
+            timePeriod: 'A',
+            quarterlyData: data
+        }),
+        annualEPS: annualizeByAdd(cik, data.quarterlyEPS),
+        annualEquity: annualizeByLastQuarter(cik, data.quarterlyTotalEquity),
+        annualRevenue: annualizeByAdd(cik, data.quarterlyRevenue),
+        annualOperatingCashFlow: annualizeByAdd(cik, data.quarterlyOperatingCashFlow)
     }
 }

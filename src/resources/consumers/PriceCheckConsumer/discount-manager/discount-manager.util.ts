@@ -1,9 +1,17 @@
-import { PeriodicData } from "../sticker-price.typings";
+import { PeriodicData, QuarterlyData } from "@/resources/consumers/PriceCheckConsumer/discount-manager/discount-manager.typings";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
-// Returns the number of days between two dates
-export function days_between(d1: Date, d2: Date): number {
-    const diff = Math.abs(d1.getTime() - d2.getTime());
-    return Math.ceil(diff / (1000 * 3600 * 24));
+
+export function checkHasSufficientData(data: QuarterlyData): void {
+    checkHasSufficientPeriodicData(data.quarterlyEPS, 'EPS');
+    checkHasSufficientPeriodicData(data.quarterlyOutstandingShares, 'Outstanding Shares');
+    checkHasSufficientPeriodicData(data.quarterlyShareholderEquity, 'Shareholder Equity');
+}
+
+function checkHasSufficientPeriodicData(data: PeriodicData[], type: string): void {
+    if (data.length !== 44) {
+        throw new InsufficientDataException(`Insufficent sticker price data value: ${type}`);
+    }
 }
 
 // Annualizes PeriodicData by adding together values
