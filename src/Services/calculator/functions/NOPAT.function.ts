@@ -1,7 +1,8 @@
-import { QuarterlyData, PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { QuarterlyData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
 import { processPeriodicDatasets, annualizeByAdd } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.utils";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
+import { PeriodicData } from "@/src/types";
 
 
 class NopatFunction extends AbstractFunction {

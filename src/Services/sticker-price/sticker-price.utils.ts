@@ -1,6 +1,6 @@
 import { BigFive } from "@/services/calculator/calculator.typings";
 import { calculatorService } from "../../bootstrap";
-import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
     checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');

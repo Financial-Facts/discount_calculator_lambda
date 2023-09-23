@@ -1,4 +1,4 @@
-import { QuarterlyData, PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { QuarterlyData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
 import { TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";
@@ -9,6 +9,7 @@ import PeFunction from "./functions/PE.function";
 import PeriodicGrowthRatesFunction from "./functions/PeriodicGrowthRates.function";
 import RoicFunction from "./functions/ROIC.function";
 import StickerPriceFunction from "./functions/StickerPrice.function";
+import { PeriodicData } from "@/src/types";
 
 
 class CalculatorService {

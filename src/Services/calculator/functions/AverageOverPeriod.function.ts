@@ -1,6 +1,6 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractFunction from "./AbstractFunction";
-import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 
 class AverageOverPeriodFunction extends AbstractFunction {

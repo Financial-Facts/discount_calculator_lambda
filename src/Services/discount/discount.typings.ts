@@ -11,12 +11,6 @@ export interface Discount {
     benchmarkRatioPrice: BenchmarkRatioPrice
 }
 
-export interface Identity {
-    cik: string
-    symbol: string
-    name: string
-}
-
 export interface SimpleDiscount {
     cik: string;
     symbol: string;

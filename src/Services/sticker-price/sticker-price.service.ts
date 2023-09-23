@@ -1,7 +1,7 @@
 import { StickerPrice, StickerPriceInput, TrailingPriceData } from "./sticker-price.typings";
 import { checkBigFiveExceedGrowthRateMinimum } from "./sticker-price.utils";
 import { calculatorService } from "../../bootstrap";
-import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 class StickerPriceService {
 

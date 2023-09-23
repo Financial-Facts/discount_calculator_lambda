@@ -60,6 +60,6 @@
     "@/utils": "dist/src/utils",
     "@/middleware": "dist/src/middleware",
     "@/services": "dist/src/services",
-    "@/bootstrap": "dist/src"
+    "@/src": "dist/src"
   }
 }

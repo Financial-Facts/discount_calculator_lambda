@@ -1,5 +1,6 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import { QuarterlyData, PeriodicData } from "./discount-manager.typings";
+import { QuarterlyData } from "./discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 
 export function checkHasSufficientData(data: QuarterlyData): void {

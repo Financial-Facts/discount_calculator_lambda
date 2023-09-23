@@ -1,4 +1,4 @@
-import { PeriodicData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 export interface TrailingPriceData {
     cik: string;

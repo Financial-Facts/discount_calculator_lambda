@@ -6,8 +6,8 @@ import ErrorMiddleware from '@/middleware/ErrorHandler.middleware';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
-import Controller from './resources/controllers/controller.typings';
-import Consumer from './resources/consumers/consumer.typings';
+import { Consumer, Controller } from './types';
+
 
 class App {
 
