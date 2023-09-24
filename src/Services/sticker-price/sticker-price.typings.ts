@@ -18,6 +18,7 @@ export interface StickerPriceInput {
 }
 
 export interface StickerPrice {
+    cik: string
     ttmPriceData: TrailingPriceData
     tfyPriceData: TrailingPriceData
     ttyPriceData: TrailingPriceData

@@ -29,12 +29,14 @@ export function buildDiscount(
         active: false,
         lastUpdated: new Date(),
         stickerPrice: {
+            cik: cik,
             ttmPriceData: stickerPrice.ttmPriceData,
             tfyPriceData: stickerPrice.tfyPriceData,
             ttyPriceData: stickerPrice.ttyPriceData,
             input: stickerPrice.input
         },
         benchmarkRatioPrice: {
+            cik: cik,
             ratioPrice: benchmarkRatioPrice.ratioPrice,
             input: benchmarkRatioPrice.input
         }
