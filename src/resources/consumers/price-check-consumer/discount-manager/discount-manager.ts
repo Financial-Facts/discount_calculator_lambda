@@ -41,14 +41,13 @@ class DiscountManager {
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             return Promise.all([
                 stickerPriceService.calculateStickerPriceObject(stickerPriceInput),
-                benchmarkService.getBenchmarkRatioPrice(profile.industry, quarterlyData)
+                benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData)
             ]).then(async calculatedData => {
                 const [ stickerPrice, benchmarkRatioPrice ] = calculatedData;
                 const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
                 return historicalPriceService.getCurrentPrice(discount.symbol)
                     .then(currentPrice => {
                         discount.active = checkDiscountIsOnSale(currentPrice, discount);
-                        console.log(discount);
                         return this.saveDiscount(discount);
                     });
             });
@@ -84,7 +83,7 @@ class DiscountManager {
 
     private async loadExistingDiscountCikSet(): Promise<void> {
         return discountService.getBulkSimpleDiscounts()
-            .then(async simpleDiscounts => {
+            .then(simpleDiscounts => {
                 simpleDiscounts.forEach(simpleDiscount => {
                     this.existingDiscountCikSet.add(simpleDiscount.cik);
                 });

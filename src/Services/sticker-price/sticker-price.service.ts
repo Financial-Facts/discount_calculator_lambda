@@ -17,6 +17,7 @@ class StickerPriceService {
         const [ ttmPriceData, tfyPriceData, ttyPriceData ] =
             this.calculateTrailingPriceData(data.cik, data.annualBVPS, data.annualPE, data.annualEPS);
         return {
+            cik: data.cik,
             ttmPriceData: ttmPriceData,
             tfyPriceData: tfyPriceData,
             ttyPriceData: ttyPriceData,
@@ -37,6 +38,7 @@ class StickerPriceService {
         return [1, 5, 10].map(numPeriods => {
             const stickerPrice = calculatorService.calculateStickerPrice({
                 cik: cik,
+                numPeriods: numPeriods,
                 equityGrowthRate: calculatorService.calculateAverageOverPeriod({
                     periodicData: annualGrowthRates,
                     numPeriods: numPeriods,

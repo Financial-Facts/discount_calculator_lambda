@@ -92,6 +92,7 @@ class CalculatorService {
 
     public calculateStickerPrice(data: {
         cik: string, 
+        numPeriods: number,
         equityGrowthRate: number,
         annualPE: PeriodicData[],
         annualEPS: PeriodicData[],

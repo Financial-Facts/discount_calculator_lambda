@@ -8,6 +8,7 @@ class StickerPriceFunction extends AbstractFunction {
 
     calculate(data: {
         cik: string, 
+        numPeriods: number,
         equityGrowthRate: number,
         annualPE: PeriodicData[],
         annualEPS: PeriodicData[],
@@ -16,7 +17,7 @@ class StickerPriceFunction extends AbstractFunction {
         const currentAnnualEps = data.annualEPS[data.annualEPS.length - 1].value;
         let forwardPE: number = calculatorService.calculateAverageOverPeriod({
             periodicData: data.annualPE,
-            numPeriods: 10
+            numPeriods: data.numPeriods
         });
 
         // If analyst estimates are lower than the predicted equity growth rate, go with them

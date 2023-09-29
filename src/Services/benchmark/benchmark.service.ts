@@ -18,7 +18,7 @@ class BenchmarkService {
         });
     }
 
-    public async getBenchmarkRatioPrice(industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
+    public async getBenchmarkRatioPrice(cik: string, industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
         const ttmRevenue = data.quarterlyRevenue.slice(-4).map(period => period.value).reduce((a, b) => a + b);
         const sharesOutstanding = data.quarterlyOutstandingShares.slice(-1)[0].value;
         const benchmarkPsRatio = await benchmarkService.fetchBenchmarkPsRatio(industry);
@@ -29,8 +29,10 @@ class BenchmarkService {
             sharesOutstanding: sharesOutstanding
         });
         return {
+            cik: cik,
             ratioPrice: benchmarkRatioPrice,
             input: {
+                cik: cik,
                 industry: industry,
                 ttmRevenue: ttmRevenue,
                 sharesOutstanding: sharesOutstanding,

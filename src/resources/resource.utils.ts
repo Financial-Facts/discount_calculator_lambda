@@ -23,8 +23,6 @@ function checkDiscountDataMeetsRequirements(
     tty: number,
     ratioPrice?: number
 ): boolean {
-    return currentPrice < ttm &&
-        currentPrice < tfy &&
-        currentPrice < tty &&
+    return currentPrice < tty &&
         (ratioPrice ? currentPrice < ratioPrice : true);
 }
