@@ -1,16 +1,16 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
-import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "../../../../bootstrap";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
 import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
 import { checkHasSufficientData } from "./discount-manager.utils";
+import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
 
 
 class DiscountManager {
 
-    private existingDiscountCikSet: Set<string>;
+    existingDiscountCikSet: Set<string>;
 
     constructor() {
         this.existingDiscountCikSet = new Set<string>();

@@ -2,10 +2,8 @@ import express, { Application } from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import morgan from 'morgan';
-import ErrorMiddleware from '@/middleware/ErrorHandler.middleware';
+import ErrorMiddleware from '@/middleware/error-handler.middleware';
 import helmet from 'helmet';
-import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from '../swagger.json';
 import { Consumer, Controller } from './types';
 
 
@@ -21,7 +19,6 @@ class App {
         this.initializeControllers(controllers);
         this.initializeConsumer(consumers);
         this.initializeErrorHandling();
-        this.initializeSwagger();
     }
 
     private initializeMiddleware(): void {
@@ -47,10 +44,6 @@ class App {
 
     private initializeErrorHandling(): void {
         this.express.use(ErrorMiddleware);
-    }
-
-    private initializeSwagger(): void {
-        this.express.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
     }
 
     public listen(): void {

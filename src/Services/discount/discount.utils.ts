@@ -5,8 +5,8 @@ import { StickerPrice, StickerPriceInput } from "../sticker-price/sticker-price.
 import { Discount } from "./discount.typings";
 import { calculatorService } from "../../bootstrap";
 import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
-import { QuarterlyData } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.typings";
-import { annualizeByAdd, annualizeByLastQuarter } from "@/resources/consumers/price-check-consumer/discount-manager/discount-manager.utils";
+import { QuarterlyData } from "@/resources/price-check-consumer/discount-manager/discount-manager.typings";
+import { annualizeByAdd, annualizeByLastQuarter } from "@/resources/price-check-consumer/discount-manager/discount-manager.utils";
 
 
 export function buildHeadersWithBasicAuth(): { Authorization: string, 'Content-Type': string } {

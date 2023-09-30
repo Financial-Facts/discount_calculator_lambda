@@ -1,10 +1,10 @@
 import { Router, Request, Response, NextFunction } from "express";
-import CONSTANTS from "../resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
-import { discountService, historicalPriceService } from "../../bootstrap";
 import { SimpleDiscount } from "@/services/discount/discount.typings";
-import { checkSimpleDiscountIsOnSale } from "../resource.utils";
 import { Controller } from "@/src/types";
+import { discountService, historicalPriceService } from "../bootstrap";
+import CONSTANTS from "./resource.contants";
+import { checkSimpleDiscountIsOnSale } from "./resource.utils";
 
 class ListenerController implements Controller {
 
