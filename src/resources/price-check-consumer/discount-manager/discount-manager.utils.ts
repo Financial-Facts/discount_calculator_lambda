@@ -38,7 +38,7 @@ export function annualizeByLastQuarter(cik: string, data: PeriodicData[]): Perio
     const lastQuarter = data[data.length - 1].period;
     return data.filter(quarter => quarter.period === lastQuarter).map(quarter => {
         return {
-            cik: quarter.cik,
+            cik: cik,
             announcedDate: quarter.announcedDate,
             period: quarter.period,
             value: quarter.value
