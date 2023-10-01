@@ -2,9 +2,9 @@ import 'dotenv/config';
 import 'module-alias/register';
 import App from './app';
 import initializeEnv from '@/utils/initializeEnv';
-import ListenerController from './resources/controllers/ListenerController';
-import PriceCheckConsumer from './resources/consumers/PriceCheckConsumer/PriceCheckConsumer';
 import bootstrap from './bootstrap';
+import ListenerController from './resources/listener.controller';
+import PriceCheckConsumer from './resources/price-check-consumer/price-check.consumer';
 
 
 initializeEnv().then(() => {
