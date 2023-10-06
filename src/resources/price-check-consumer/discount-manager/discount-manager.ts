@@ -4,28 +4,32 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
 import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
-import { checkHasSufficientData } from "./discount-manager.utils";
 import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
+import { checkHasSufficientStatements } from "./discount-manager.utils";
 
 
 class DiscountManager {
 
+    isReady: Promise<void>;
     existingDiscountCikSet: Set<string>;
-
+    
     constructor() {
         this.existingDiscountCikSet = new Set<string>();
-        this.loadExistingDiscountCikSet();
+        this.isReady = this.loadExistingDiscountCikSet();
     }
 
     public async intiateDiscountCheck(cik: string): Promise<void> {
         return this.checkForDiscount(cik)
-        .catch((err: any) => {
-            if ((err instanceof DisqualifyingDataException || 
-                err instanceof InsufficientDataException) &&
-                this.existingDiscountCikSet.has(cik)) {
-                this.deleteDiscount(cik, err.message);
-            }
-            console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+        .catch(async (err: any) => {
+            return this.isReady.then(() => {
+                if ((err instanceof DisqualifyingDataException || 
+                    err instanceof InsufficientDataException) &&
+                    this.existingDiscountCikSet.has(cik)) {
+                    return this.deleteDiscount(cik, err.message);
+                }
+                console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+                throw err;
+            })
         });
     }
 
@@ -36,8 +40,8 @@ class DiscountManager {
             profileService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
+            checkHasSufficientStatements(cik, statements);
             const quarterlyData = buildQuarterlyData(statements);
-            checkHasSufficientData(quarterlyData);
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             return Promise.all([
                 stickerPriceService.calculateStickerPriceObject(stickerPriceInput),
@@ -57,10 +61,12 @@ class DiscountManager {
     private async saveDiscount(discount: Discount): Promise<void> {
         const cik = discount.cik;
         return discountService.save(discount)
-            .then(response => {
+            .then(async response => {
                 if (response) {
-                    console.log("Sticker price sale saved for cik: " + cik);
-                    this.existingDiscountCikSet.add(discount.cik);
+                    return this.isReady.then(() => {
+                        console.log("Sticker price sale saved for cik: " + cik);
+                        this.existingDiscountCikSet.add(discount.cik);
+                    });
                 }
             }).catch((err: HttpException) => {
                 console.log("Sticker price save failed for cik: " + cik + " with err: " + err);
@@ -69,9 +75,11 @@ class DiscountManager {
 
     private async deleteDiscount(cik: string, reason: string): Promise<void> {
         return discountService.delete(cik)
-            .then(() => {
-                console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
-                this.existingDiscountCikSet.delete(cik);
+            .then(async () => {
+                return this.isReady.then(() => {
+                    console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
+                    this.existingDiscountCikSet.delete(cik);
+                });
             }).catch((deleteEx: HttpException) => {
                 if (deleteEx.status !== 404) {
                     console.log(`Deleting discount for ${cik} failed due to: ${deleteEx.message}`);

@@ -1,15 +1,10 @@
-import { cleanEnv, port } from "envalid";
 import  { GetParametersByPathResult, SSM } from '@aws-sdk/client-ssm';
 import EnvInitializationException from "./exceptions/EnvInitializationException";
 import { AWSError } from "sqs-consumer";
 import CONSTANTS from "@/resources/resource.contants";
 
 async function initializeEnv(): Promise<void> {
-    return setEnvParameters().then(() => {
-        cleanEnv(process.env, {
-            service_port: port({ default: 3000 })
-        });
-    });
+    return setEnvParameters();
 }
 
 async function setEnvParameters(): Promise<void> {

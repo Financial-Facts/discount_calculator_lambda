@@ -13,9 +13,7 @@ class BenchmarkService {
     constructor(benchmarkSourceUrl: string) {
         this.benchmarkSourceUrl = benchmarkSourceUrl;
         this.benchmarkIndustryMapping = {};
-        this.loadBenchmarkIndustryMap().then(() => {
-            console.log('Benchmark industry map has been loaded!');
-        });
+        this.loadBenchmarkIndustryMap();
     }
 
     public async getBenchmarkRatioPrice(cik: string, industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
@@ -57,6 +55,8 @@ class BenchmarkService {
                     .then(document => {
                         this.extractData(document);
                     });
+            }).finally(() => {
+                console.log('Benchmark industry map has been loaded!');
             });
     }
 

@@ -60,6 +60,11 @@ class PriceCheckConsumer {
             console.error(err.message);
           });
           
+          app.on('empty', () => {
+            console.log('Polling complete - queue is empty!');
+            app.stop();
+          });
+
           app.start();
     }
 

@@ -1,17 +1,13 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import { QuarterlyData } from "./discount-manager.typings";
 import { PeriodicData } from "@/src/types";
+import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 
 
-export function checkHasSufficientData(data: QuarterlyData): void {
-    checkHasSufficientPeriodicData(data.quarterlyEPS, 'EPS');
-    checkHasSufficientPeriodicData(data.quarterlyOutstandingShares, 'Outstanding Shares');
-    checkHasSufficientPeriodicData(data.quarterlyShareholderEquity, 'Shareholder Equity');
-}
-
-function checkHasSufficientPeriodicData(data: PeriodicData[], type: string): void {
-    if (data.length !== 44) {
-        throw new InsufficientDataException(`Insufficent sticker price data value: ${type}`);
+export function checkHasSufficientStatements(cik: string, data: Statements): void {
+    if (data.incomeStatements.length !== 44 ||
+        data.balanceSheets.length !== 44 ||
+        data.cashFlowStatements.length !== 44) {
+        throw new InsufficientDataException(`${cik} has insufficent statements available`);
     }
 }
 

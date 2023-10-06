@@ -1,21 +1,22 @@
 import 'dotenv/config';
 import 'module-alias/register';
-import App from './app';
 import initializeEnv from '@/utils/initializeEnv';
 import bootstrap from './bootstrap';
-import ListenerController from './resources/listener.controller';
 import PriceCheckConsumer from './resources/price-check-consumer/price-check.consumer';
+import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
+export const handler = async (event: APIGatewayEvent, context: Context): Promise<void> => {
+    console.log('Initializing environment');
+    return initializeEnv().then(async () => {
+        bootstrap();
 
-initializeEnv().then(() => {
-    bootstrap();
-    const app = new App(
-        [
-            new ListenerController()
-        ], [
+        console.log('Initializing polling');
+        const polling = [
             new PriceCheckConsumer()
-        ],
-        Number(+(process.env.service_port ?? 3000)));
-    
-    app.listen();
-})
+        ].map(consumer => consumer.startPolling());
+        return Promise.all(polling).then(() => {
+            console.log('Polling complete for all consumers');
+        });
+    });
+};
+
