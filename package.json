@@ -6,9 +6,9 @@
   "scripts": {
     "test": "ts-mocha --paths -p ./tsconfig.json test/**/*.spec.ts --exit",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
-    "start": "node dist/src/index.js",
-    "dev": "tsc-watch --onSuccess \"node ./dist/src/index.js\"",
-    "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
+    "start": "node dist/index.js",
+    "dev": "tsc-watch --onSuccess \"node ./dist/index.js\"",
+    "build": "esbuild index.ts --minify --sourcemap --platform=node --target=es2016 --outfile=dist/index.js"
   },
   "extends": "@istanbuljs/nyc-config-typescript",
   "check-coverage": true,
