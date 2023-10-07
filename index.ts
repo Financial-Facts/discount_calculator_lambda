@@ -1,8 +1,7 @@
-import 'dotenv/config';
 import 'module-alias/register';
 import initializeEnv from '@/utils/initializeEnv';
-import bootstrap from './bootstrap';
-import PriceCheckConsumer from './resources/price-check-consumer/price-check.consumer';
+import bootstrap from './src/bootstrap';
+import PriceCheckConsumer from '@/resources/price-check-consumer/price-check.consumer';
 import { APIGatewayEvent, Context } from 'aws-lambda';
 
 export const handler = async (event: APIGatewayEvent, context: Context): Promise<void> => {
