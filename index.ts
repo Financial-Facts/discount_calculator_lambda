@@ -2,9 +2,8 @@ import 'module-alias/register';
 import initializeEnv from '@/utils/initializeEnv';
 import bootstrap from './src/bootstrap';
 import PriceCheckConsumer from '@/resources/price-check-consumer/price-check.consumer';
-import { APIGatewayEvent, Context } from 'aws-lambda';
 
-export const handler = async (event: APIGatewayEvent, context: Context): Promise<void> => {
+export const handler = async (): Promise<void> => {
     console.log('Initializing environment');
     return initializeEnv().then(async () => {
         bootstrap();
@@ -18,4 +17,3 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
         });
     });
 };
-

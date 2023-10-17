@@ -59,17 +59,7 @@ describe('Discount Manager', () => {
         let discountManager: DiscountManager;
 
         beforeEach(() => {
-            Sinon.resetHistory();
-            discountServiceStub.getBulkSimpleDiscounts.resolves(mockSimpleDiscounts);
-            statementServiceStub.getStatements.resolves(mockStatements);
-            utilsStub.annualizeByAdd.callThrough();
-            utilsStub.processPeriodicDatasets.callThrough();
-            historicalPriceServiceStub.getHistoricalPrices.resolves(mockHistoricalPrices);
-            stickerPriceServiceStub.calculateStickerPriceObject.resolves(mockStickerPrice);
-            benchmarkServiceStub.getBenchmarkRatioPrice.resolves(mockBenchmarkPrice);
-            historicalPriceServiceStub.getCurrentPrice.resolves(8);
-            discountServiceStub.save.resolves('Success');
-            discountServiceStub.delete.resolves('Success');
+            prepareStubs();
             discountManager = new DiscountManager();
         });
 
@@ -108,10 +98,35 @@ describe('Discount Manager', () => {
 
     describe('checkForDiscount', () => {
 
+        let discountManager: DiscountManager;
+
+        beforeEach(() => {
+            prepareStubs();
+            discountManager = new DiscountManager();
+        });
+
+        it('should get statements when checking for discount', async () => {
+            return discountManager
+        });
     });
 
     describe('saveDiscount', () => {
 
     });
 
-})
+    
+    function prepareStubs() {
+        Sinon.resetHistory();
+        discountServiceStub.getBulkSimpleDiscounts.resolves(mockSimpleDiscounts);
+        statementServiceStub.getStatements.resolves(mockStatements);
+        utilsStub.annualizeByAdd.callThrough();
+        utilsStub.processPeriodicDatasets.callThrough();
+        historicalPriceServiceStub.getHistoricalPrices.resolves(mockHistoricalPrices);
+        stickerPriceServiceStub.calculateStickerPriceObject.resolves(mockStickerPrice);
+        benchmarkServiceStub.getBenchmarkRatioPrice.resolves(mockBenchmarkPrice);
+        historicalPriceServiceStub.getCurrentPrice.resolves(8);
+        discountServiceStub.save.resolves('Success');
+        discountServiceStub.delete.resolves('Success');
+    }
+
+});

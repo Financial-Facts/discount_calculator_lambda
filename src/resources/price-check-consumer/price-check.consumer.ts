@@ -1,8 +1,9 @@
 import { Consumer } from 'sqs-consumer';
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { SQSClient, Message } from '@aws-sdk/client-sqs';
 import { SqsMsgBody } from './price-check.typings';
 import DiscountManager from './discount-manager/discount-manager';
 import CONSTANTS from '@/resources/resource.contants';
+import { removeS3KeySuffix, sleep, watchForEmptyQueue } from '../resource.utils';
 
 class PriceCheckConsumer {
 
@@ -12,81 +13,59 @@ class PriceCheckConsumer {
     private sqsUrl = process.env.discount_check_sqs_url ?? CONSTANTS.GLOBAL.EMPTY;
     private discountManager: DiscountManager;
 
-
     constructor() {
         this.discountManager = new DiscountManager();
     }
 
     public async startPolling(): Promise<void> {
         console.log('Initializing polling for price check consumer...');
-        const app = Consumer.create({
-            queueUrl: this.sqsUrl,
-            handleMessageBatch: async messages => {
-                const processing: Promise<void>[] = [];
-                for (let message of messages) {
-                    console.log(`Message retrieved from SQS: ${JSON.stringify(message)}`)
-                    if (message.Body) {
-                        try {
-                            const event: SqsMsgBody = JSON.parse(message.Body);
-                            processing.push(this.processEvent(event));
-                        } catch (err: any) {
-                            const cik = message.Body;
-                            if (cik.includes('\n')) {
-                                const cikList = cik.split('\n').map(cik => cik.trim());
-                                console.log(`Processing cikList ${cikList}`);
-                                this.processCikList(cikList);
-                            } else {
-                                processing.push(this.discountManager.intiateDiscountCheck(cik));
-                            }
-                        }
-                    }
-                }
-                await Promise.all(processing);
-                await new Promise(f => setTimeout(f, 1000 * this.frequency));
-            },
-            sqs: new SQSClient({
-              region: 'us-east-1'
-            })
-          });
-
-          app.updateOption('waitTimeSeconds', 20);
-          app.updateOption('batchSize', this.batchCapacity);
-
-          app.on('error', (err) => {
-            console.error(err.message);
-          });
-          
-          app.on('processing_error', (err) => {
-            console.error(err.message);
-          });
-          
-          app.on('empty', () => {
-            console.log('Polling complete - queue is empty!');
-            app.stop();
-          });
-
-          app.start();
+        const app = this.buildConsumer();
+        app.start();
+        return watchForEmptyQueue(app);
     }
 
-    private async processEvent(event: SqsMsgBody): Promise<void> {
+    private buildConsumer(): Consumer {
+        return Consumer.create({
+            queueUrl: this.sqsUrl,
+            handleMessageBatch: async messages => this.handleMessageBatch(messages),
+            sqs: new SQSClient({
+                region: 'us-east-1'
+            }),
+            'waitTimeSeconds': 20,
+            'batchSize': this.batchCapacity,
+        }).on('error', (err) => {
+            console.error(err.message);
+        }).on('processing_error', (err) => {
+            console.error(err.message);
+        })
+    }
+
+    private async handleMessageBatch(messages: Message[]): Promise<void> {
+        const processing: Promise<void>[] = [];
+        for (let message of messages) {
+            console.log(`Message retrieved from SQS: ${JSON.stringify(message)}`)
+            if (message.Body) {
+                try {
+                    const event: SqsMsgBody = JSON.parse(message.Body);
+                    processing.push(this.processSqsEvent(event));
+                } catch (err: any) {
+                    const cik = message.Body;
+                    processing.push(this.discountManager.intiateDiscountCheck(cik));
+                }
+            }
+        }
+        await Promise.all(processing);
+        await sleep(1000 * this.frequency);
+    }
+
+    private async processSqsEvent(event: SqsMsgBody): Promise<void> {
         for (let record of event.Records) {
             if (record.s3 && record.s3.object && record.s3.object.key) {
-                const cik = this.removeS3KeySuffix(record.s3.object.key);
+                const cik = removeS3KeySuffix(record.s3.object.key);
                 console.log(`In price check consumer, processing: ${cik}`);
                 return this.discountManager.intiateDiscountCheck(cik);
             }
         }
-    }
-
-    private async processCikList(cikList: string[]): Promise<void> {
-        for (let cik of cikList) {
-            await this.discountManager.intiateDiscountCheck(cik);
-            await new Promise(f => setTimeout(f, 1000 * this.frequency));
-        }
-    }
-
-    private removeS3KeySuffix(key: string): string {
-        return key.slice(0, -5);
     }
 
 }

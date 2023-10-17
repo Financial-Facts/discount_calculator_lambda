@@ -6,8 +6,8 @@
   "scripts": {
     "test": "ts-mocha --paths -p ./tsconfig.json test/**/*.spec.ts --exit",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
-    "start": "node dist/index.js",
-    "dev": "tsc-watch --onSuccess \"node ./dist/index.js\"",
+    "start": "ts-node main.ts",
+    "dev": "tsc-watch --onSuccess \"ts-node main.ts\"",
     "build": "tsc"
   },
   "extends": "@istanbuljs/nyc-config-typescript",
@@ -59,11 +59,11 @@
     "typescript": "^5.2.2"
   },
   "_moduleAliases": {
-    "@/resources": "src/resources",
-    "@/utils": "src/utils",
-    "@/middleware": "src/middleware",
-    "@/services": "src/services",
-    "@/src": "src",
-    "@/test": "test"
+    "@/resources": "./src/resources",
+    "@/utils": "./src/utils",
+    "@/middleware": "./src/middleware",
+    "@/services": "./src/services",
+    "@/src": "./src",
+    "@/test": "./test"
   }
 }

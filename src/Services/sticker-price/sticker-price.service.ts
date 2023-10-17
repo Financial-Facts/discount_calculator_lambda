@@ -42,7 +42,8 @@ class StickerPriceService {
                 equityGrowthRate: calculatorService.calculateAverageOverPeriod({
                     periodicData: annualGrowthRates,
                     numPeriods: numPeriods,
-                    minimum: 10
+                    minimum: 10,
+                    errorMessage: `Average annual growth rate over the passed ${numPeriods} year(s) does not exceed 10%`
                 }),
                 annualEPS: annualEPS,
                 annualPE: annualPE

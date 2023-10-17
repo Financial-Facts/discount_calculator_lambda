@@ -29,6 +29,13 @@ export default function bootstrap() {
     stickerPriceService = new StickerPriceService();
     calculatorService = new CalculatorService();
     benchmarkService = initBenchmarkService();
+    
+    console.log('BOOTSTRAPPED SERVICES WITH:')
+    console.log(`ffs url: ${process.env.ffs_base_url}`);
+    console.log(`fmp url: ${process.env.fmp_base_url}`);
+    console.log(`fmp key: ${process.env.fmp_api_key}`);
+    console.log(`historical source url: ${process.env.historical_data_source_url_v1}`);
+    console.log(`Benchmark source url: ${process.env.benchmark_source_url}`);
 }
 
 function initDiscountService(): DiscountService {

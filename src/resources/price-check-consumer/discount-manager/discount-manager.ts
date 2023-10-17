@@ -20,17 +20,16 @@ class DiscountManager {
 
     public async intiateDiscountCheck(cik: string): Promise<void> {
         return this.checkForDiscount(cik)
-        .catch(async (err: any) => {
-            return this.isReady.then(() => {
-                if ((err instanceof DisqualifyingDataException || 
-                    err instanceof InsufficientDataException) &&
-                    this.existingDiscountCikSet.has(cik)) {
-                    return this.deleteDiscount(cik, err.message);
-                }
-                console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
-                throw err;
-            })
-        });
+            .catch(async (err: any) => {
+                return this.isReady.then(async () => {
+                    if ((err instanceof DisqualifyingDataException || 
+                        err instanceof InsufficientDataException) &&
+                        this.existingDiscountCikSet.has(cik)) {
+                        await this.deleteDiscount(cik, err.message);
+                    }
+                    console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+                });
+            });
     }
 
     private async checkForDiscount(cik: string): Promise<void> {
@@ -43,19 +42,17 @@ class DiscountManager {
             checkHasSufficientStatements(cik, statements);
             const quarterlyData = buildQuarterlyData(statements);
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
-            return Promise.all([
-                stickerPriceService.calculateStickerPriceObject(stickerPriceInput),
-                benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData)
-            ]).then(async calculatedData => {
-                const [ stickerPrice, benchmarkRatioPrice ] = calculatedData;
-                const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
-                return historicalPriceService.getCurrentPrice(discount.symbol)
-                    .then(currentPrice => {
-                        discount.active = checkDiscountIsOnSale(currentPrice, discount);
-                        return this.saveDiscount(discount);
-                    });
-            });
-        })
+            const stickerPrice = stickerPriceService.calculateStickerPriceObject(stickerPriceInput);
+            return benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData)
+                .then(async benchmarkRatioPrice => {
+                    const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
+                    return historicalPriceService.getCurrentPrice(discount.symbol)
+                        .then(currentPrice => {
+                            discount.active = checkDiscountIsOnSale(currentPrice, discount);
+                            return this.saveDiscount(discount);
+                        });
+                });
+        });
     }
 
     private async saveDiscount(discount: Discount): Promise<void> {
