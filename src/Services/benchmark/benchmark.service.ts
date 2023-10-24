@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 import ScrapeDataException from '@/utils/exceptions/ScrapeDataException';
 import { benchmarkService, calculatorService } from '../../bootstrap';
 import { BenchmarkRatioPrice } from './benchmark.typings';
-import { QuarterlyData } from '@/resources/price-check-consumer/discount-manager/discount-manager.typings';
+import { QuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
 
 class BenchmarkService {
 

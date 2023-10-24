@@ -1,5 +1,5 @@
-import { QuarterlyData } from "@/resources/price-check-consumer/discount-manager/discount-manager.typings";
-import { processPeriodicDatasets, annualizeByAdd } from "@/resources/price-check-consumer/discount-manager/discount-manager.utils";
+import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { processPeriodicDatasets, annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
 import { PeriodicData } from "@/src/types";

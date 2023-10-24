@@ -6,8 +6,8 @@ import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
 import { days_between } from "../calculator.utils";
 import { PeriodicData } from "@/src/types";
-import { QuarterlyData } from "@/resources/price-check-consumer/discount-manager/discount-manager.typings";
-import { annualizeByAdd } from "@/resources/price-check-consumer/discount-manager/discount-manager.utils";
+import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
 
 
 

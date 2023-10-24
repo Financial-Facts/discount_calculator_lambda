@@ -1,9 +1,9 @@
-import DiscountManager from 'src/resources/price-check-consumer/discount-manager/discount-manager'
+import DiscountManager from '@/resources/discount-manager/discount-manager'
 import { assert } from "chai";
 import Sinon, { stub } from "sinon";
 import { mockBenchmarkPrice, mockHistoricalPrices, mockSimpleDiscounts, mockStatements, mockStickerPrice } from "./discount-manager.mocks";
 import { TEST_CONSTANTS } from "@/test/test.constants";
-import * as discountManagerUtils from '@/resources/price-check-consumer/discount-manager/discount-manager.utils';
+import * as discountManagerUtils from '@/resources/discount-manager/discount-manager.utils';
 import { discountServiceStub, statementServiceStub, profileServiceStub, historicalPriceServiceStub, stickerPriceServiceStub, benchmarkServiceStub } from '@/test/setup.spec';
 
 
