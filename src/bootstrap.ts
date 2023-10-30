@@ -1,11 +1,11 @@
-import BenchmarkService from "./services/benchmark/benchmark.service";
-import DiscountService from "./services/discount/discount.service";
-import HistoricalPriceService from "./services/historical-price/historical-price.service";
-import StatementService from "./services/financial-modeling-prep/statement/statement.service";
-import StickerPriceService from "./services/sticker-price/sticker-price.service";
-import EnvInitializationException from "./utils/exceptions/EnvInitializationException";
-import ProfileService from "./services/financial-modeling-prep/profile/profile.service";
-import CalculatorService from "./services/calculator/calculator.service";
+import BenchmarkService from "@/services/benchmark/benchmark.service";
+import DiscountService from "@/services/discount/discount.service";
+import HistoricalPriceService from "@/services/historical-price/historical-price.service";
+import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
+import StickerPriceService from "@/services/sticker-price/sticker-price.service";
+import EnvInitializationException from "@/utils/exceptions/EnvInitializationException";
+import ProfileService from "@/services/financial-modeling-prep/profile/profile.service";
+import CalculatorService from "@/services/calculator/calculator.service";
 
 let discountService: DiscountService;
 let statementService: StatementService;
