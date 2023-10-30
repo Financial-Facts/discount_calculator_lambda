@@ -1,20 +1,4 @@
 import { Discount } from "@/services/discount/discount.typings";
-import { Consumer } from "sqs-consumer";
-
-export async function watchForEmptyQueue(app: Consumer): Promise<void> {
-    let lastBatchRecievedTime = new Date();
-    app.on('message_received', () => {
-        lastBatchRecievedTime = new Date();
-    });
-    while (app.isRunning) {
-        const previousLastMessageTime = lastBatchRecievedTime;
-        await sleep(20 * 1000);
-        if (previousLastMessageTime.valueOf() === lastBatchRecievedTime.valueOf()) {
-            console.log('Have not received message in 20 seconds, discontinuing polling...');
-            app.stop();
-        }
-    }
-}
 
 export function removeS3KeySuffix(key: string): string {
     return key.slice(0, -5);
