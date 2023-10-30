@@ -9,11 +9,12 @@ class BenchmarkService {
 
     benchmarkSourceUrl: string;
     benchmarkIndustryMapping: Record<string, number>;
+    isReady: Promise<void>;
 
     constructor(benchmarkSourceUrl: string) {
         this.benchmarkSourceUrl = benchmarkSourceUrl;
         this.benchmarkIndustryMapping = {};
-        this.loadBenchmarkIndustryMap();
+        this.isReady = this.loadBenchmarkIndustryMap();
     }
 
     public async getBenchmarkRatioPrice(cik: string, industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
@@ -39,13 +40,15 @@ class BenchmarkService {
         }
     }
 
-    async fetchBenchmarkPsRatio(industry: string): Promise<number> {
-        if (this.benchmarkIndustryMapping[industry] !== undefined) {
-            console.log(`Industry '${industry}' exists in benchmark map...`);
-            return this.benchmarkIndustryMapping[industry];
-        }
-        console.log(`Industry '${industry}' does not exist in benchmark map, returning default...`);
-        return 1.69;
+    private async fetchBenchmarkPsRatio(industry: string): Promise<number> {
+        return this.isReady.then(() => {
+            if (this.benchmarkIndustryMapping[industry] !== undefined) {
+                console.log(`Industry '${industry}' exists in benchmark map...`);
+                return this.benchmarkIndustryMapping[industry];
+            }
+            console.log(`Industry '${industry}' does not exist in benchmark map, returning default...`);
+            return 1.69;
+        });
     }
 
     private async loadBenchmarkIndustryMap(): Promise<void> {
