@@ -7,7 +7,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - docker build --no-cache --platform=linux/amd64 --tag choochera/$IMAGE_REPO_NAME:latest discount_calculator_lambda
+      - docker build --no-cache --platform=linux/amd64 --tag choochera/$IMAGE_REPO_NAME:latest .
       - docker tag choochera/$IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
   post_build:
     commands:
