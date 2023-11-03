@@ -6,7 +6,8 @@
   "scripts": {
     "test": "ts-mocha --paths -p ./tsconfig.json test/**/*.spec.ts --exit",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
-    "dev": "tsc-watch",
+    "start": "ts-node -r tsconfig-paths/register main.ts",
+    "dev": "tsc-watch --onSuccess \"npm run start\"",
     "build": "tsc"
   },
   "extends": "@istanbuljs/nyc-config-typescript",
@@ -41,7 +42,8 @@
     "prettier": "^2.8.6",
     "sinon": "^16.0.0",
     "ts-mocha": "^10.0.0",
-    "tsc-watch": "^6.0.0"
+    "tsc-watch": "^6.0.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.385.0",

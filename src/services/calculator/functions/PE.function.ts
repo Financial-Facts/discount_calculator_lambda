@@ -44,7 +44,7 @@ class PeFunction extends AbstractFunction {
                         cik: data.cik,
                         announcedDate: period.announcedDate,
                         period: isAnnual ? 'FY' : period.period,
-                        value: period.value !== 0 ? price/period.value : 0
+                        value: period.value > 0 ? price/period.value : 0
                     });
                 });
                 return annualPE;
