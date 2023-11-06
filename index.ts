@@ -18,9 +18,11 @@ export const handler = async (event: SQSEvent): Promise<void> => {
     for(let record of event.Records) {
         try {
             const message: SqsMsgBody = JSON.parse(record.body);
-            processSqsEvent(message);
+            await processSqsEvent(message);
         } catch (err: any) {
-            processTestEvent(record);
+            if (err instanceof SyntaxError) {
+                await processTestEvent(record);                
+            }
         }
         await sleep(1000 * frequency);
     };
