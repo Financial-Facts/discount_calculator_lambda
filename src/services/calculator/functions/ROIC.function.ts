@@ -1,4 +1,4 @@
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { RoicInput } from "@/resources/discount-manager/discount-manager.typings";
 import { processPeriodicDatasets, annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
 import { calculatorService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
@@ -11,7 +11,7 @@ class RoicFunction extends AbstractFunction {
     calculate(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: RoicInput
     }): PeriodicData[] {
         const quarterlyNOPAT = calculatorService.calculateNOPAT({
             cik: data.cik,

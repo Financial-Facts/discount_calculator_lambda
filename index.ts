@@ -1,9 +1,10 @@
 import 'module-alias/register';
 import bootstrap from './src/bootstrap';
-import { SQSEvent } from 'aws-lambda';
+import { SQSEvent, SQSRecord } from 'aws-lambda';
 import DiscountManager from '@/resources/discount-manager/discount-manager';
 import { removeS3KeySuffix, sleep } from '@/resources/resource.utils';
 import { SqsMsgBody } from './src/types';
+import CONSTANTS from '@/resources/resource.contants';
 
 let manager: DiscountManager;
 let frequency: number;
@@ -19,8 +20,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
             const message: SqsMsgBody = JSON.parse(record.body);
             processSqsEvent(message);
         } catch (err: any) {
-            const cik = record.body;
-            await manager.intiateDiscountCheck(cik);
+            processTestEvent(record);
         }
         await sleep(1000 * frequency);
     };
@@ -35,5 +35,16 @@ async function processSqsEvent(event: SqsMsgBody): Promise<void> {
             console.log(`In price check consumer, processing: ${cik}`);
             return manager.intiateDiscountCheck(cik);
         }
+    }
+}
+
+async function processTestEvent(record: SQSRecord): Promise<void> {
+    const cikList = record.body
+        .split(CONSTANTS.GLOBAL.NEW_LINE)
+        .map(raw => raw.trim())
+        .filter(trimmed => trimmed !== CONSTANTS.GLOBAL.EMPTY);
+    for (let cik of cikList) {
+        await manager.intiateDiscountCheck(cik);
+        await sleep(1000 * frequency);
     }
 }

@@ -45,92 +45,82 @@ export function buildDiscount(
 
 export function buildQuarterlyData(statements: Statements): QuarterlyData {
     return {
-        quarterlyShareholderEquity: statements.balanceSheets.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.totalStockholdersEquity
-            }
-        }),
-        quarterlyOutstandingShares: statements.incomeStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.weightedAverageShsOut
-            }
-        }),
-        quarterlyEPS: statements.incomeStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.eps
-            }
-        }),
-        quarterlyOperatingIncome: statements.incomeStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.operatingIncome
-            }
-        }),
-        quarterlyTaxExpense: statements.incomeStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.incomeTaxExpense
-            }
-        }),
-        quarterlyNetDebt: statements.balanceSheets.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.netDebt
-            }
-        }),
-        quarterlyTotalEquity: statements.balanceSheets.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.totalEquity
-            }
-        }),
-        quarterlyRevenue: statements.incomeStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.revenue
-            }
-        }),
-        quarterlyOperatingCashFlow: statements.cashFlowStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.operatingCashFlow
-            }
-        }),
-        quarterlyFreeCashFlow: statements.cashFlowStatements.map(sheets => {
-            return {
-                cik: sheets.cik,
-                announcedDate: sheets.date,
-                period: sheets.period,
-                value: sheets.freeCashFlow
-            }
-        })
+        quarterlyShareholderEquity: statements.balanceSheets.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.totalStockholdersEquity
+        })),
+        quarterlyOutstandingShares: statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.weightedAverageShsOut
+        })),
+        quarterlyEPS: statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.eps
+        })),
+        quarterlyOperatingIncome: statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.operatingIncome
+        })),
+        quarterlyTaxExpense: statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.incomeTaxExpense
+        })),
+        quarterlyNetDebt: statements.balanceSheets.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.netDebt
+        })),
+        quarterlyTotalEquity: statements.balanceSheets.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.totalEquity
+        })),
+        quarterlyRevenue: statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.revenue
+        })),
+        quarterlyOperatingCashFlow: statements.cashFlowStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.operatingCashFlow
+        })),
+        quarterlyFreeCashFlow: statements.cashFlowStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.freeCashFlow
+        })),
+        quarterlyLongTermDebt: statements.balanceSheets.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.longTermDebt
+        }))
     }
 }
 
 export async function buildStickerPriceInput(cik: string, symbol: string, data: QuarterlyData): Promise<StickerPriceInput> {
     return {
         cik: cik,
+        debtYears: calculatorService.calculateDebtYears({
+            cik: cik,
+            quarterlyData: data
+        }),
         annualBVPS: calculatorService.calculateBVPS({
             cik: cik,
             timePeriod: 'A',

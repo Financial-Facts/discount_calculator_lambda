@@ -3,25 +3,26 @@ import EnvInitializationException from "@/utils/exceptions/EnvInitializationExce
 import { SSM, GetParametersByPathResult } from "@aws-sdk/client-ssm";
 import { SQSEvent } from "aws-lambda";
 import { handler } from "index";
+import words from 'random-words'
 
 const event: SQSEvent = {
     "Records": [
         {
-            "messageId": "562626f4-eba8-4141-b2f4-0b2376771399",
-            "receiptHandle": "AQEBo732lRVkVonFOczaeUMpc6NcWJ/MVLZ5Uqkysp4rEmptW4NPCoTCzwA3CVkga6Uf3vR2cCnq1YgZLxF6r24oOs/SN/7+nt+TheA4TQlx6tSBJWMfcveFl6OE27r/dVEyvag1fs0oFE2gh6D9H0Xd9PtslG2JoVgoSYd3ntkJE91vopfaZLBlOVyPIZLDQUHyOgC8VJ8WUg/oXk26y2rwh+6HGk5ZEbqj5b5yB9wMJIc886fKoeNPDMzkt9c1v4gudxsHNjunIoANVz3Pc/2U8FPs942Oo5Hni8ssLuHqE47w+Swu7u48EmWpB0d9Fpoj5snJcbSgI4IA6DxnhBj2ntoEKHV/yVz+Ach7GlI1/7oW4+qo7jOj6nvKtHjHg9MH3j+FB08LB5RZnflHRVpEGQ==",
+            "messageId": words(1)[0],
+            "receiptHandle": words(1)[0],
             "body": "<INSERT CIK>",
             "attributes": {
-                "ApproximateReceiveCount": "9",
-                "AWSTraceHeader": "Root=1-6544b6a7-7471377772400a4a75d1d94f;Parent=5bff94e0518db43b;Sampled=0",
-                "SentTimestamp": "1699002139971",
-                "SenderId": "AROA4R74ZO52XAB5OD7T4:S3-PROD-END",
-                "ApproximateFirstReceiveTimestamp": "1699002139971"
+                "ApproximateReceiveCount": words(1)[0],
+                "AWSTraceHeader": words(1)[0],
+                "SentTimestamp": words(1)[0],
+                "SenderId": words(1)[0],
+                "ApproximateFirstReceiveTimestamp": words(1)[0]
             },
             "messageAttributes": {},
-            "md5OfBody": "0b62e3ae39bff0363ff3607eba1206e1",
-            "eventSource": "aws:sqs",
-            "eventSourceARN": "arn:aws:sqs:us-east-1:385849856427:discount-check-queue",
-            "awsRegion": "us-east-1"
+            "md5OfBody": words(1)[0],
+            "eventSource": words(1)[0],
+            "eventSourceARN": words(1)[0],
+            "awsRegion": words(1)[0]
         }
     ]
 }

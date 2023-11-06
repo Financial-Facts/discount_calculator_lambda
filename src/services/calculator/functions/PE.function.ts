@@ -6,7 +6,7 @@ import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
 import { days_between } from "../calculator.utils";
 import { PeriodicData } from "@/src/types";
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { PeInput } from "@/resources/discount-manager/discount-manager.typings";
 import { annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
 
 
@@ -21,7 +21,7 @@ class PeFunction extends AbstractFunction {
         cik: string,
         timePeriod: TimePeriod,
         symbol: string,
-        quarterlyData: QuarterlyData
+        quarterlyData: PeInput
     }): Promise<PeriodicData[]> {
         const annualPE: PeriodicData[] = [];
         const isAnnual = data.timePeriod === 'A';

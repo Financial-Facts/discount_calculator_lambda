@@ -1,6 +1,13 @@
 import { BigFive } from "@/services/calculator/calculator.typings";
 import { calculatorService } from "../../bootstrap";
 import { PeriodicData } from "@/src/types";
+import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
+
+export function checkDebtYearsExceedsMinimum(cik: string, debtYears: number, maximum: number = 3): void {
+    if (debtYears > maximum) {
+        throw new DisqualifyingDataException(`${cik} has greater debt years than the maximum ${maximum}`)
+    }
+}
 
 export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
     checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');

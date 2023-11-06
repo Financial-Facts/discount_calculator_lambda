@@ -1,6 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractFunction from "./AbstractFunction";
 import { PeriodicData } from "@/src/types";
+import { getLastPeriodValue } from "@/resources/discount-manager/discount-manager.utils";
 
 
 class AverageOverPeriodFunction extends AbstractFunction {
@@ -13,7 +14,7 @@ class AverageOverPeriodFunction extends AbstractFunction {
     }): number {
         const periodicData = data.periodicData;
         const numPeriods = data.numPeriods;
-        const average = numPeriods <= 0 ? 0 : numPeriods === 1 ? periodicData.slice(-1)[0].value :
+        const average = numPeriods <= 0 ? 0 : numPeriods === 1 ? getLastPeriodValue(periodicData) :
         periodicData.slice(0 - numPeriods)
                 .map(period => period.value)
                 .reduce((a, b) => a + b) / numPeriods;

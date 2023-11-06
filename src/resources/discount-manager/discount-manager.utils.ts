@@ -2,6 +2,21 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import { PeriodicData } from "@/src/types";
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 
+export function reduceTTM(
+    data: PeriodicData[],
+    equation: ((input1: number, input2: number) => number)
+): number {
+    return data
+        .slice(-4)
+        .map(period => period.value)
+        .reduce((a, b) => equation(a, b));
+}
+
+export function getLastPeriodValue(
+    data: PeriodicData[]
+): number {
+    return data.slice(-1)[0].value;
+}
 
 export function checkHasSufficientStatements(cik: string, data: Statements): void {
     if (data.incomeStatements.length !== 44 ||

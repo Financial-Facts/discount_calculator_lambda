@@ -1,4 +1,4 @@
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { IcInput, QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
 import { processPeriodicDatasets, annualizeByLastQuarter } from "@/resources/discount-manager/discount-manager.utils";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
@@ -10,7 +10,7 @@ class IcFunction extends AbstractFunction {
     calculate(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: IcInput
     }): PeriodicData[] {
         const quarterlyNetDebt = data.quarterlyData.quarterlyNetDebt;
         const quarterlyTotalEquity = data.quarterlyData.quarterlyTotalEquity;

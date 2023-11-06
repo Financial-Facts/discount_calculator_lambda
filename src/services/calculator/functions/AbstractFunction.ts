@@ -1,8 +1,8 @@
-import { PeriodicData } from "@/src/types";
+import { Output } from "../calculator.typings";
 
 abstract class AbstractFunction {
 
-    abstract calculate(input: any): Promise<PeriodicData[] | number> | PeriodicData[] | number;
+    abstract calculate(input: any): Output | Promise<Output>;
 
 }
 

@@ -8,6 +8,7 @@ export interface TrailingPriceData {
 
 export interface StickerPriceInput {
     cik: string
+    debtYears: number,
     annualBVPS: PeriodicData[]
     annualPE: PeriodicData[]
     annualROIC: PeriodicData[]

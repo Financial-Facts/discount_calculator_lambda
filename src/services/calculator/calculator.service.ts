@@ -1,4 +1,4 @@
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { BenchmarkRatioPriceInput, BvpsInput, DebtYearsInput, IcInput, NopatInput, PeInput, QuarterlyData, RoicInput } from "@/resources/discount-manager/discount-manager.typings";
 import { TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";
@@ -10,6 +10,8 @@ import PeriodicGrowthRatesFunction from "./functions/PeriodicGrowthRates.functio
 import RoicFunction from "./functions/ROIC.function";
 import StickerPriceFunction from "./functions/StickerPrice.function";
 import { PeriodicData } from "@/src/types";
+import DebtYearsFunction from "./functions/DebtYears.function";
+import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
 
 
 class CalculatorService {
@@ -19,6 +21,7 @@ class CalculatorService {
     private roicFunction = new RoicFunction();
     private nopatFunction = new NopatFunction();
     private icFunction = new IcFunction();
+    private debtYearsFunction = new DebtYearsFunction();
     private benchmarkRatioPriceFunction = new BenchmarkRatioPriceFunction();
     private periodicGrowthRatesFunction = new PeriodicGrowthRatesFunction();
     private averageOverPeriodFunction = new AverageOverPeriodFunction();
@@ -27,7 +30,7 @@ class CalculatorService {
     public calculateBVPS(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: BvpsInput
     }): PeriodicData[] {
         return this.bvpsFunction.calculate(data);
     }
@@ -36,7 +39,7 @@ class CalculatorService {
         cik: string,
         timePeriod: TimePeriod,
         symbol: string,
-        quarterlyData: QuarterlyData
+        quarterlyData: PeInput
     }): Promise<PeriodicData[]> {
         return this.peFunction.calculate(data);
     }
@@ -44,7 +47,7 @@ class CalculatorService {
     public calculateNOPAT(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: NopatInput
     }): PeriodicData[] {
         return this.nopatFunction.calculate(data);
     }
@@ -52,7 +55,7 @@ class CalculatorService {
     public calculateIC(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: IcInput
     }): PeriodicData[] {
         return this.icFunction.calculate(data);
     }
@@ -60,17 +63,23 @@ class CalculatorService {
     public calculateROIC(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: RoicInput
     }): PeriodicData[] {
         return this.roicFunction.calculate(data);
     }
 
-    public calculateBenchmarkRatioPrice(data: {
-        industry: string,
-        benchmarkPsRatio: number,
-        ttmRevenue: number,
-        sharesOutstanding: number
+    public calculateDebtYears(data: {
+        cik: string,
+        quarterlyData: DebtYearsInput
     }): number {
+        return this.debtYearsFunction.calculate(data);
+    }
+
+    public async calculateBenchmarkRatioPrice(data: {
+        cik: string,
+        industry: string,
+        quarterlyData: BenchmarkRatioPriceInput
+    }): Promise<BenchmarkRatioPrice> {
         return this.benchmarkRatioPriceFunction.calculate(data);
     }
 

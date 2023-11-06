@@ -1,5 +1,5 @@
 import { StickerPrice, StickerPriceInput, TrailingPriceData } from "./sticker-price.typings";
-import { checkBigFiveExceedGrowthRateMinimum } from "./sticker-price.utils";
+import { checkBigFiveExceedGrowthRateMinimum, checkDebtYearsExceedsMinimum } from "./sticker-price.utils";
 import { calculatorService } from "../../bootstrap";
 import { PeriodicData } from "@/src/types";
 
@@ -7,13 +7,7 @@ class StickerPriceService {
 
     public calculateStickerPriceObject(data: StickerPriceInput): StickerPrice {
         console.log("In calculator calculating sticker price for CIK: " + data.cik);
-        checkBigFiveExceedGrowthRateMinimum(data.cik, {
-            annualEPS: data.annualEPS,
-            annualEquity: data.annualEquity,
-            annualOperatingCashFlow: data.annualOperatingCashFlow,
-            annualRevenue: data.annualRevenue,
-            annualROIC: data.annualROIC
-        });
+       this.checkDataMeetsRequirements(data);
         const [ ttmPriceData, tfyPriceData, ttyPriceData ] =
             this.calculateTrailingPriceData(data.cik, data.annualBVPS, data.annualPE, data.annualEPS);
         return {
@@ -23,6 +17,17 @@ class StickerPriceService {
             ttyPriceData: ttyPriceData,
             input: data
         }
+    }
+
+    private checkDataMeetsRequirements(data: StickerPriceInput): void {
+        checkDebtYearsExceedsMinimum(data.cik, data.debtYears);
+        checkBigFiveExceedGrowthRateMinimum(data.cik, {
+            annualEPS: data.annualEPS,
+            annualEquity: data.annualEquity,
+            annualOperatingCashFlow: data.annualOperatingCashFlow,
+            annualRevenue: data.annualRevenue,
+            annualROIC: data.annualROIC
+        });
     }
 
     private calculateTrailingPriceData(

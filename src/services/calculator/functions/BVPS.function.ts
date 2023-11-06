@@ -1,4 +1,4 @@
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { BvpsInput } from "@/resources/discount-manager/discount-manager.typings";
 import { processPeriodicDatasets, annualizeByLastQuarter } from "@/resources/discount-manager/discount-manager.utils";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
@@ -10,7 +10,7 @@ class BvpsFunction extends AbstractFunction {
     calculate(data: {
         cik: string,
         timePeriod: TimePeriod,
-        quarterlyData: QuarterlyData
+        quarterlyData: BvpsInput
     }): PeriodicData[] {
         const quarterlyData = data.quarterlyData;
         const quarterly_shareholder_equity = quarterlyData.quarterlyShareholderEquity;

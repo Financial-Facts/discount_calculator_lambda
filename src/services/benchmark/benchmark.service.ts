@@ -18,29 +18,14 @@ class BenchmarkService {
     }
 
     public async getBenchmarkRatioPrice(cik: string, industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
-        const ttmRevenue = data.quarterlyRevenue.slice(-4).map(period => period.value).reduce((a, b) => a + b);
-        const sharesOutstanding = data.quarterlyOutstandingShares.slice(-1)[0].value;
-        const benchmarkPsRatio = await benchmarkService.fetchBenchmarkPsRatio(industry);
-        const benchmarkRatioPrice = calculatorService.calculateBenchmarkRatioPrice({
-            industry: industry,
-            benchmarkPsRatio: benchmarkPsRatio,
-            ttmRevenue: ttmRevenue,
-            sharesOutstanding: sharesOutstanding
-        });
-        return {
+        return calculatorService.calculateBenchmarkRatioPrice({
             cik: cik,
-            ratioPrice: benchmarkRatioPrice,
-            input: {
-                cik: cik,
-                industry: industry,
-                ttmRevenue: ttmRevenue,
-                sharesOutstanding: sharesOutstanding,
-                psBenchmarkRatio: benchmarkPsRatio
-            }
-        }
+            industry: industry,
+            quarterlyData: data
+        });
     }
 
-    private async fetchBenchmarkPsRatio(industry: string): Promise<number> {
+    public async fetchBenchmarkPsRatio(industry: string): Promise<number> {
         return this.isReady.then(() => {
             if (this.benchmarkIndustryMapping[industry] !== undefined) {
                 console.log(`Industry '${industry}' exists in benchmark map...`);
@@ -103,8 +88,8 @@ class BenchmarkService {
 
     private cleanIndustryText(industry: string): string {
         return industry
-            .replace('&amp;', '&')
-            .replace(' - ', '—');
+            .replaceAll('&amp;', '&')
+            .replaceAll(' - ', '—');
     }
 }
 
