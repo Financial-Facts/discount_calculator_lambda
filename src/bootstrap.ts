@@ -18,8 +18,6 @@ let profileService: ProfileService;
 let calculatorService: CalculatorService;
 
 export default function bootstrap() {
-    // Discount Manager
-    discountManager = initDiscountManager();
 
     // FFS Services
     discountService = initDiscountService();
@@ -34,6 +32,9 @@ export default function bootstrap() {
     stickerPriceService = new StickerPriceService();
     calculatorService = new CalculatorService();
     benchmarkService = initBenchmarkService();
+    
+    // Discount Manager
+    discountManager = initDiscountManager();
     
     console.log('BOOTSTRAPPED SERVICES WITH:')
     console.log(`revisit machine arn: ${process.env.revisit_machine_arn}`);
