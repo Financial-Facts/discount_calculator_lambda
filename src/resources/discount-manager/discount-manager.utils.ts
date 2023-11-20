@@ -1,6 +1,8 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { PeriodicData } from "@/src/types";
-import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
+import { Statement, Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
+import { days_between } from "@/utils/global.utils";
+import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 
 export function reduceTTM(
     data: PeriodicData[],
@@ -18,12 +20,30 @@ export function getLastPeriodValue(
     return data.slice(-1)[0].value;
 }
 
-export function checkHasSufficientStatements(cik: string, data: Statements): void {
+export function validateStatements(cik: string, data: Statements): void {
+    checkHasSufficientStatements(cik, data);
+    checkStatementsHaveBeenUpdated(cik, data);
+}
+
+function checkHasSufficientStatements(cik: string, data: Statements): void {
     if (data.incomeStatements.length !== 44 ||
         data.balanceSheets.length !== 44 ||
         data.cashFlowStatements.length !== 44) {
         throw new InsufficientDataException(`${cik} has insufficent statements available`);
     }
+}
+
+function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
+    if (!isUpToDate(data.balanceSheets) ||
+        !isUpToDate(data.incomeStatements) ||
+        !isUpToDate(data.cashFlowStatements)) {
+        throw new DataNotUpdatedException(`Data for ${cik} has not yet been updated!`);
+    }
+}
+
+function isUpToDate<T extends Statement>(statements: T[]): boolean {
+    const lastReportedData: Date = statements.slice(-1)[0].fillingDate;
+    return days_between(lastReportedData, new Date()) < 0;
 }
 
 // Annualizes PeriodicData by adding together values

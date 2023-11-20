@@ -4,10 +4,10 @@ import AbstractFunction from "./AbstractFunction";
 import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
 import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
-import { days_between } from "../calculator.utils";
 import { PeriodicData } from "@/src/types";
 import { PeInput } from "@/resources/discount-manager/discount-manager.typings";
 import { annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
+import { days_between } from "@/utils/global.utils";
 
 
 

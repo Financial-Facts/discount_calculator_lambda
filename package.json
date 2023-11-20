@@ -46,6 +46,7 @@
     "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
+    "@aws-sdk/client-sfn": "^3.454.0",
     "@aws-sdk/client-ssm": "^3.385.0",
     "@types/module-alias": "^2.0.2",
     "compression": "^1.7.4",

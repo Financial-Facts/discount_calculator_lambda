@@ -5,15 +5,20 @@ import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
 import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
 import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
-import { checkHasSufficientStatements } from "./discount-manager.utils";
-
+import { validateStatements } from "./discount-manager.utils";
+import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
+import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 
 class DiscountManager {
 
     isReady: Promise<void>;
     existingDiscountCikSet: Set<string>;
+    sfnClient: SFNClient;
+    revisitMachineArn: string;
     
-    constructor() {
+    constructor(revisitMachineArn: string) {
+        this.sfnClient = new SFNClient({ region: 'us-east-1' });
+        this.revisitMachineArn = revisitMachineArn;
         this.existingDiscountCikSet = new Set<string>();
         this.isReady = this.loadExistingDiscountCikSet();
     }
@@ -22,24 +27,27 @@ class DiscountManager {
         return this.checkForDiscount(cik)
             .catch(async (err: any) => {
                 return this.isReady.then(async () => {
+                    console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
                     if ((err instanceof DisqualifyingDataException || 
                         err instanceof InsufficientDataException) &&
                         this.existingDiscountCikSet.has(cik)) {
-                        await this.deleteDiscount(cik, err.message);
+                        return this.deleteDiscount(cik, err.message);
                     }
-                    console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+                    if (err instanceof DataNotUpdatedException) {
+                        return this.triggerRevisit(cik);
+                    }
                 });
             });
     }
 
     private async checkForDiscount(cik: string): Promise<void> {
-        console.log("In price check consumer checking for a discount on CIK: " + cik);
+        console.log(`In discount manager checking for a discount on ${cik}`);
         return Promise.all([
             statementService.getStatements(cik),
             profileService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
-            checkHasSufficientStatements(cik, statements);
+            validateStatements(cik, statements);
             const quarterlyData = buildQuarterlyData(statements);
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             const stickerPrice = stickerPriceService.calculateStickerPriceObject(stickerPriceInput);
@@ -55,18 +63,29 @@ class DiscountManager {
         });
     }
 
+    private async triggerRevisit(cik: string): Promise<void> {
+        console.log(`Triggering revisit for ${cik}`);
+        const stateMachineCommand = new StartExecutionCommand({
+            stateMachineArn: this.revisitMachineArn,
+            input: JSON.stringify({ cik: cik })
+        })
+        this.sfnClient.send(stateMachineCommand)
+            .then(() => console.log(`Revisit successfully triggered for ${cik}`))
+            .catch(err => console.log(`Revisit failed to triggerd for ${cik} due to error: ${err}`));
+    }
+
     private async saveDiscount(discount: Discount): Promise<void> {
         const cik = discount.cik;
         return discountService.save(discount)
             .then(async response => {
                 if (response) {
                     return this.isReady.then(() => {
-                        console.log("Sticker price sale saved for cik: " + cik);
+                        console.log(`Sticker price sale saved for ${cik}`);
                         this.existingDiscountCikSet.add(discount.cik);
                     });
                 }
             }).catch((err: HttpException) => {
-                console.log("Sticker price save failed for cik: " + cik + " with err: " + err);
+                console.log(`Sticker price save failed for ${cik} with err: ${err}`);
             });
     }
 
