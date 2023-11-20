@@ -2,3 +2,5 @@ dist
 node_modules
 parameters.json
 reports
+coverage
+.nyc_output

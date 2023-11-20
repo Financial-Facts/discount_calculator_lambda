@@ -1,12 +1,14 @@
-import BenchmarkService from "./services/benchmark/benchmark.service";
-import DiscountService from "./services/discount/discount.service";
-import HistoricalPriceService from "./services/historical-price/historical-price.service";
-import StatementService from "./services/financial-modeling-prep/statement/statement.service";
-import StickerPriceService from "./services/sticker-price/sticker-price.service";
-import EnvInitializationException from "./utils/exceptions/EnvInitializationException";
-import ProfileService from "./services/financial-modeling-prep/profile/profile.service";
-import CalculatorService from "./services/calculator/calculator.service";
+import BenchmarkService from "@/services/benchmark/benchmark.service";
+import DiscountService from "@/services/discount/discount.service";
+import HistoricalPriceService from "@/services/historical-price/historical-price.service";
+import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
+import StickerPriceService from "@/services/sticker-price/sticker-price.service";
+import EnvInitializationException from "@/utils/exceptions/EnvInitializationException";
+import ProfileService from "@/services/financial-modeling-prep/profile/profile.service";
+import CalculatorService from "@/services/calculator/calculator.service";
+import DiscountManager from "./resources/discount-manager/discount-manager";
 
+let discountManager: DiscountManager;
 let discountService: DiscountService;
 let statementService: StatementService;
 let historicalPriceService: HistoricalPriceService;
@@ -16,6 +18,7 @@ let profileService: ProfileService;
 let calculatorService: CalculatorService;
 
 export default function bootstrap() {
+
     // FFS Services
     discountService = initDiscountService();
 
@@ -29,6 +32,25 @@ export default function bootstrap() {
     stickerPriceService = new StickerPriceService();
     calculatorService = new CalculatorService();
     benchmarkService = initBenchmarkService();
+    
+    // Discount Manager
+    discountManager = initDiscountManager();
+    
+    console.log('BOOTSTRAPPED SERVICES WITH:')
+    console.log(`revisit machine arn: ${process.env.revisit_machine_arn}`);
+    console.log(`ffs url: ${process.env.ffs_base_url}`);
+    console.log(`fmp url: ${process.env.fmp_base_url}`);
+    console.log(`fmp key: ${process.env.fmp_api_key}`);
+    console.log(`historical source url: ${process.env.historical_data_source_url_v1}`);
+    console.log(`Benchmark source url: ${process.env.benchmark_source_url}`);
+}
+
+function initDiscountManager(): DiscountManager {
+    const revisitMachineArn = process.env.revisit_machine_arn;
+    if (!revisitMachineArn) {
+        throw new EnvInitializationException('Revisit state machine ARN not provided');
+    }
+    return new DiscountManager(revisitMachineArn);
 }
 
 function initDiscountService(): DiscountService {
@@ -65,6 +87,7 @@ function initBenchmarkService(): BenchmarkService {
 }
 
 export { 
+    discountManager,
     discountService,
     statementService,
     historicalPriceService,
