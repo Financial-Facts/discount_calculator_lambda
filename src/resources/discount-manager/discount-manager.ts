@@ -14,9 +14,9 @@ class DiscountManager {
     isReady: Promise<void>;
     existingDiscountCikSet: Set<string>;
     sfnClient: SFNClient;
-    revisitMachineArn: string;
+    revisitMachineArn: string | undefined;
     
-    constructor(revisitMachineArn: string) {
+    constructor(revisitMachineArn?: string) {
         this.sfnClient = new SFNClient({ region: 'us-east-1' });
         this.revisitMachineArn = revisitMachineArn;
         this.existingDiscountCikSet = new Set<string>();
@@ -47,7 +47,7 @@ class DiscountManager {
             profileService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
-            validateStatements(cik, statements);
+            validateStatements(cik, statements, !!this.revisitMachineArn);
             const quarterlyData = buildQuarterlyData(statements);
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             const stickerPrice = stickerPriceService.calculateStickerPriceObject(stickerPriceInput);
@@ -56,6 +56,10 @@ class DiscountManager {
                     const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
                     return historicalPriceService.getCurrentPrice(discount.symbol)
                         .then(currentPrice => {
+                            const tenYearStickerPrice = discount.stickerPrice.ttyPriceData.stickerPrice;
+                            if (currentPrice > tenYearStickerPrice) {
+                                throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${tenYearStickerPrice}`);
+                            }
                             discount.active = checkDiscountIsOnSale(currentPrice, discount);
                             return this.saveDiscount(discount);
                         });

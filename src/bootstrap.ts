@@ -47,9 +47,6 @@ export default function bootstrap() {
 
 function initDiscountManager(): DiscountManager {
     const revisitMachineArn = process.env.revisit_machine_arn;
-    if (!revisitMachineArn) {
-        throw new EnvInitializationException('Revisit state machine ARN not provided');
-    }
     return new DiscountManager(revisitMachineArn);
 }
 

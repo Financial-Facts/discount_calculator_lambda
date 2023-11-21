@@ -20,9 +20,11 @@ export function getLastPeriodValue(
     return data.slice(-1)[0].value;
 }
 
-export function validateStatements(cik: string, data: Statements): void {
+export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
     checkHasSufficientStatements(cik, data);
-    checkStatementsHaveBeenUpdated(cik, data);
+    if (checkUpdated) {
+        checkStatementsHaveBeenUpdated(cik, data);
+    }
 }
 
 function checkHasSufficientStatements(cik: string, data: Statements): void {
