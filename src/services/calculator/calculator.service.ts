@@ -1,5 +1,5 @@
-import { BenchmarkRatioPriceInput, BvpsInput, DebtYearsInput, IcInput, NopatInput, PeInput, QuarterlyData, RoicInput } from "@/resources/discount-manager/discount-manager.typings";
-import { TimePeriod } from "./calculator.typings";
+import { BenchmarkRatioPriceInput, BvpsInput, DebtYearsInput, IcInput, NopatInput, PeInput, RoicInput } from "@/resources/discount-manager/discount-manager.typings";
+import { EnterpriseValueInput, TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";
 import BenchmarkRatioPriceFunction from "./functions/BenchmarkRatioPrice.function";
@@ -12,6 +12,9 @@ import StickerPriceFunction from "./functions/StickerPrice.function";
 import { PeriodicData } from "@/src/types";
 import DebtYearsFunction from "./functions/DebtYears.function";
 import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
+import DcfFunction from "./functions/DCF.function";
+import TerminalValueFunction from "./functions/TerminalValue.function";
+import EnterpriseValueFunction from "./functions/EnterpriseValue.function";
 
 
 class CalculatorService {
@@ -26,6 +29,9 @@ class CalculatorService {
     private periodicGrowthRatesFunction = new PeriodicGrowthRatesFunction();
     private averageOverPeriodFunction = new AverageOverPeriodFunction();
     private stickerPriceFunction = new StickerPriceFunction();
+    private discountedCashFlowFunction = new DcfFunction();
+    private terminalValueFunction = new TerminalValueFunction();
+    private enterpriseValueFunction = new EnterpriseValueFunction();
 
     public calculateBVPS(data: {
         cik: string,
@@ -108,6 +114,31 @@ class CalculatorService {
         analystGrowthEstimate?: number
     }): number {
         return this.stickerPriceFunction.calculate(data);
+    }
+
+    public calculateDiscountedCashFlowPrice(data: {
+        enterpriseValue: number,
+        totalCash: number,
+        totalDebt: number,
+        dilutedSharesOutstanding: number,
+    }): number {
+        return this.discountedCashFlowFunction.calculate(data);
+    }
+
+    public calculateTerminalValue(data: {
+        wacc: number,
+        riskFreeRate: number,
+        ttmFreeCashFlow: number
+    }): number {
+        return this.terminalValueFunction.calculate(data);
+    }
+
+    public calculateEnterpriseValue(data: {
+        wacc: number,
+        terminalValue: number,
+        periodicData: EnterpriseValueInput
+    }): number {
+        return this.enterpriseValueFunction.calculate(data);
     }
     
 }

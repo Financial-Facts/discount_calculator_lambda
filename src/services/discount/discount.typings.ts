@@ -1,4 +1,5 @@
 import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
+import { DiscountedCashFlowPrice } from "../financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
 import { StickerPrice } from "../sticker-price/sticker-price.typings";
 
 export interface Discount {
@@ -9,6 +10,7 @@ export interface Discount {
     active: boolean
     stickerPrice: StickerPrice
     benchmarkRatioPrice: BenchmarkRatioPrice
+    discountCashFlowPrice: DiscountedCashFlowPrice
 }
 
 export interface SimpleDiscount {

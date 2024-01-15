@@ -7,10 +7,12 @@ import EnvInitializationException from "@/utils/exceptions/EnvInitializationExce
 import ProfileService from "@/services/financial-modeling-prep/profile/profile.service";
 import CalculatorService from "@/services/calculator/calculator.service";
 import DiscountManager from "./resources/discount-manager/discount-manager";
+import DiscountedCashFlowService from "./services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.service";
 
 let discountManager: DiscountManager;
 let discountService: DiscountService;
 let statementService: StatementService;
+let discountedCashFlowService: DiscountedCashFlowService;
 let historicalPriceService: HistoricalPriceService;
 let stickerPriceService: StickerPriceService;
 let benchmarkService: BenchmarkService;
@@ -26,6 +28,7 @@ export default function bootstrap() {
     const fmpServices = initFinancialModelingPrepServices();
     profileService = fmpServices.profileService;
     statementService = fmpServices.statementService;
+    discountedCashFlowService = fmpServices.discountedCashFlowService;
 
     // Business Logic Services
     historicalPriceService = initHistoricalPriceService();
@@ -55,7 +58,11 @@ function initDiscountService(): DiscountService {
     return new DiscountService(ffs_base_url);
 }
 
-function initFinancialModelingPrepServices(): { profileService: ProfileService, statementService: StatementService } {
+function initFinancialModelingPrepServices(): {
+    profileService: ProfileService,
+    statementService: StatementService,
+    discountedCashFlowService: DiscountedCashFlowService
+} {
     const fmp_base_url = process.env.fmp_base_url;
     const fmp_api_key = process.env.fmp_api_key;
     if (!fmp_base_url || !fmp_api_key) {
@@ -63,7 +70,8 @@ function initFinancialModelingPrepServices(): { profileService: ProfileService, 
     }
     return {
         profileService: new ProfileService(fmp_base_url, fmp_api_key),
-        statementService: new StatementService(fmp_base_url, fmp_api_key)
+        statementService: new StatementService(fmp_base_url, fmp_api_key),
+        discountedCashFlowService: new DiscountedCashFlowService(fmp_base_url, fmp_api_key)
     }
 }
 
@@ -91,7 +99,8 @@ export {
     stickerPriceService,
     profileService,
     benchmarkService,
-    calculatorService
+    calculatorService,
+    discountedCashFlowService
 }
 
 
