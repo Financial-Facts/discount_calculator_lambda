@@ -4,10 +4,11 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import { Discount } from "@/services/discount/discount.typings";
 import { checkDiscountIsOnSale } from "@/resources/resource.utils";
 import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
-import { benchmarkService, discountService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
+import { benchmarkService, discountService, discountedCashFlowService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
 import { validateStatements } from "./discount-manager.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
+
 
 class DiscountManager {
 
@@ -51,19 +52,22 @@ class DiscountManager {
             const quarterlyData = buildQuarterlyData(statements);
             const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
             const stickerPrice = stickerPriceService.calculateStickerPriceObject(stickerPriceInput);
-            return benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData)
-                .then(async benchmarkRatioPrice => {
-                    const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice);
-                    return historicalPriceService.getCurrentPrice(discount.symbol)
-                        .then(currentPrice => {
-                            const tenYearStickerPrice = discount.stickerPrice.ttyPriceData.stickerPrice;
-                            if (currentPrice > tenYearStickerPrice) {
-                                throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${tenYearStickerPrice}`);
-                            }
-                            discount.active = checkDiscountIsOnSale(currentPrice, discount);
-                            return this.saveDiscount(discount);
-                        });
-                });
+            return Promise.all([
+                benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData),
+                discountedCashFlowService.getDiscountCashFlowPrice(cik, profile.symbol, quarterlyData)
+            ]).then(async prices => {
+                const [ benchmarkRatioPrice, discountedCashFlowPrice ] = prices;
+                const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice, discountedCashFlowPrice);
+                return historicalPriceService.getCurrentPrice(discount.symbol)
+                    .then(currentPrice => {
+                        const tenYearStickerPrice = discount.stickerPrice.ttyPriceData.stickerPrice;
+                        if (currentPrice > tenYearStickerPrice) {
+                            throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${tenYearStickerPrice}`);
+                        }
+                        discount.active = checkDiscountIsOnSale(currentPrice, discount);
+                        return this.saveDiscount(discount);
+                    });
+            });
         });
     }
 

@@ -4,6 +4,10 @@ import { StickerPrice } from "../sticker-price/sticker-price.typings";
 
 export type TimePeriod = 'Q' | 'A';
 
+export interface EnterpriseValueInput {
+    periodicFreeCashFlow: PeriodicData[]
+}
+
 export interface BigFive {
     annualROIC: PeriodicData[],
     annualRevenue: PeriodicData[],
