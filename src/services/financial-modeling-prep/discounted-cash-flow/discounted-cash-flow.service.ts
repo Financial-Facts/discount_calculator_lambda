@@ -46,8 +46,9 @@ class DiscountedCashFlowService {
 
                 return {
                     cik: cik,
-                    dcfPrice: dcfPrice,
+                    price: dcfPrice,
                     input: {
+                        cik: cik,
                         freeCashFlowHistorical: quarterlyData.quarterlyFreeCashFlow,
                         freeCashFlowProjected: projections,
                         wacc: data.wacc,
@@ -63,7 +64,7 @@ class DiscountedCashFlowService {
     }
 
     private async getDiscountedCashFlowData(symbol: string): Promise<DiscountedCashFlowData> {
-        console.log(`In rate service getting discounted cash flow data`);
+        console.log(`In discounted cash flow service getting discounted cash flow data`);
         try {
             const url = `${this.fmp_base_url}/api/v4/advanced_discounted_cash_flow?symbol=${symbol}&apikey=${this.apiKey}`;
             return fetch(url)

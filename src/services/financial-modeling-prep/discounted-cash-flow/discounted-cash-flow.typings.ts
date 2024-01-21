@@ -1,12 +1,9 @@
-import { PeriodicData } from "@/src/types"
+import { PeriodicData, Valuation } from "@/src/types"
 
-export interface DiscountedCashFlowPrice {
-    cik: string
-    dcfPrice: number
-    input: DiscountedCashFlowInput 
-}
+export type DiscountedCashFlowPrice = Valuation<DiscountedCashFlowInput>;
 
 export interface DiscountedCashFlowInput {
+    cik: string
     freeCashFlowHistorical: PeriodicData[]
     freeCashFlowProjected: PeriodicData[]
     wacc: number

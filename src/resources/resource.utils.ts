@@ -10,8 +10,8 @@ export async function sleep(millis: number): Promise<void> {
 
 export function checkDiscountIsOnSale(currentPrice: number, discount: Discount): boolean {
     return checkDiscountDataMeetsRequirements(currentPrice,
-        discount.stickerPrice.ttyPriceData.salePrice,
-        discount.benchmarkRatioPrice.ratioPrice);
+        discount.stickerPrice.price,
+        discount.benchmarkRatioPrice.price);
 }
 
 function checkDiscountDataMeetsRequirements(
@@ -19,6 +19,6 @@ function checkDiscountDataMeetsRequirements(
     tty: number,
     ratioPrice?: number
 ): boolean {
-    return currentPrice < tty &&
+    return currentPrice < (tty / 2) &&
         (ratioPrice ? currentPrice < ratioPrice : true);
 }

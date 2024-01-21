@@ -19,7 +19,7 @@ class BenchmarkRatioPriceFunction extends AbstractFunction {
         const benchmarkRatioPrice = (ttmRevenue / sharesOutstanding) * benchmarkPsRatio;
         return {
             cik: data.cik,
-            ratioPrice: benchmarkRatioPrice,
+            price: benchmarkRatioPrice,
             input: {
                 cik: data.cik,
                 industry: data.industry,

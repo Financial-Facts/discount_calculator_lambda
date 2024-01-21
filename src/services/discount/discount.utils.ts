@@ -22,7 +22,7 @@ export const buildDiscount = (
     profile: CompanyProfile,
     stickerPrice: StickerPrice,
     benchmarkRatioPrice: BenchmarkRatioPrice,
-    discountCashFlowPrice: DiscountedCashFlowPrice
+    discountedCashFlowPrice: DiscountedCashFlowPrice
 ): Discount => ({
     cik: cik,
     symbol: profile.symbol,
@@ -31,7 +31,7 @@ export const buildDiscount = (
     lastUpdated: new Date(),
     stickerPrice,
     benchmarkRatioPrice,
-    discountCashFlowPrice
+    discountedCashFlowPrice
 })
 
 export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({

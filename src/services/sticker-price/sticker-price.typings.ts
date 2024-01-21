@@ -1,10 +1,6 @@
-import { PeriodicData } from "@/src/types";
+import { PeriodicData, Valuation } from "@/src/types";
 
-export interface TrailingPriceData {
-    cik: string;
-    stickerPrice: number;
-    salePrice: number;
-}
+export type StickerPrice = Valuation<StickerPriceInput>;
 
 export interface StickerPriceInput {
     cik: string
@@ -16,12 +12,4 @@ export interface StickerPriceInput {
     annualEquity: PeriodicData[]
     annualRevenue: PeriodicData[]
     annualOperatingCashFlow: PeriodicData[]
-}
-
-export interface StickerPrice {
-    cik: string
-    ttmPriceData: TrailingPriceData
-    tfyPriceData: TrailingPriceData
-    ttyPriceData: TrailingPriceData
-    input: StickerPriceInput
 }

@@ -1,5 +1,11 @@
 export type Period = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'FY';
 
+export interface Valuation<T> {
+    cik: string,
+    price: number,
+    input: T
+}
+
 export interface PeriodicData {
     cik: string
     announcedDate: Date
