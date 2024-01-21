@@ -60,11 +60,12 @@ class DiscountManager {
                 const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice, discountedCashFlowPrice);
                 return historicalPriceService.getCurrentPrice(discount.symbol)
                     .then(currentPrice => {
-                        const tenYearStickerPrice = discount.stickerPrice.ttyPriceData.stickerPrice;
-                        if (currentPrice > tenYearStickerPrice) {
-                            throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${tenYearStickerPrice}`);
+                        const stickerPrice = discount.stickerPrice.price;
+                        if (currentPrice > stickerPrice) {
+                            throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${stickerPrice}`);
                         }
                         discount.active = checkDiscountIsOnSale(currentPrice, discount);
+                        console.log(discount);
                         return this.saveDiscount(discount);
                     });
             });

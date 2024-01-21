@@ -10,7 +10,7 @@ export interface Discount {
     active: boolean
     stickerPrice: StickerPrice
     benchmarkRatioPrice: BenchmarkRatioPrice
-    discountCashFlowPrice: DiscountedCashFlowPrice
+    discountedCashFlowPrice: DiscountedCashFlowPrice
 }
 
 export interface SimpleDiscount {
