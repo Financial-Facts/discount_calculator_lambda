@@ -1,6 +1,6 @@
 import { DebtYearsInput} from "@/resources/discount-manager/discount-manager.typings";
-import { getLastPeriodValue, reduceTTM } from "@/resources/discount-manager/discount-manager.utils";
 import AbstractFunction from "./AbstractFunction";
+import { getLastPeriodValue, reduceTTM } from "@/utils/processing.utils";
 
 class DebtYearsFunction extends AbstractFunction {
 

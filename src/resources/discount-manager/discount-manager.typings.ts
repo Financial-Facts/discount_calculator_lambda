@@ -1,18 +1,11 @@
 import { PeriodicData } from "@/src/types"
 
 export type QuarterlyData =
-    BvpsInput &
-    PeInput &
     NopatInput &
     IcInput &
-    RoicInput & 
-    DebtYearsInput &
-    BenchmarkRatioPriceInput &
-    BigFiveInput;
-
-export interface BigFiveInput {
-    quarterlyOperatingCashFlow: PeriodicData[]
-}
+    BenchmarkRatioPriceQuarterlyData &
+    StickerPriceQuarterlyData &
+    DiscountedCashFlowQuarterlyData;
 
 export interface BvpsInput {
     quarterlyShareholderEquity: PeriodicData[]
@@ -38,9 +31,24 @@ export interface DebtYearsInput {
     quarterlyLongTermDebt: PeriodicData[]
 }
 
-export interface BenchmarkRatioPriceInput {
+export type RoicInput = NopatInput & IcInput;
+
+export type StickerPriceQuarterlyData =
+    DebtYearsInput &
+    BvpsInput &
+    PeInput &
+    RoicInput & {
+        quarterlyRevenue: PeriodicData[],
+        quarterlyOperatingCashFlow: PeriodicData[]
+    }
+
+export interface BenchmarkRatioPriceQuarterlyData {
     quarterlyRevenue: PeriodicData[]
     quarterlyOutstandingShares: PeriodicData[]
 }
 
-export type RoicInput = NopatInput & IcInput;
+export interface DiscountedCashFlowQuarterlyData {
+    quarterlyRevenue: PeriodicData[]
+    quarterlyOperatingCashFlow: PeriodicData[]
+    quarterlyCapitalExpenditure: PeriodicData[]
+}

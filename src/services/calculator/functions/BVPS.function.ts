@@ -1,8 +1,9 @@
 import { BvpsInput } from "@/resources/discount-manager/discount-manager.typings";
-import { processPeriodicDatasets, annualizeByLastQuarter } from "@/resources/discount-manager/discount-manager.utils";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
 import { PeriodicData } from "@/src/types";
+import { annualizeByLastQuarter } from "@/utils/annualize.utils";
+import { processPeriodicDatasets } from "@/utils/processing.utils";
 
 
 class BvpsFunction extends AbstractFunction {

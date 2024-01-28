@@ -1,10 +1,12 @@
 import HttpException from "@/utils/exceptions/HttpException";
-import { DiscountedCashFlowData, DiscountedCashFlowPrice } from "./discounted-cash-flow.typings";
+import { DiscountedCashFlowData, DiscountedCashFlowInput, DiscountedCashFlowPrice } from "./discounted-cash-flow.typings";
 import { calculatorService } from "@/src/bootstrap";
-import { QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { DiscountedCashFlowQuarterlyData, QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
+import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
+import { annualizeByAdd } from "@/utils/annualize.utils";
+import { processPeriodicDatasets, getLastPeriodValue } from "@/utils/processing.utils";
+import { projectByAverageGrowth, projectByAveragePercentOfValue } from "@/utils/projection.utils";
 import { PeriodicData } from "@/src/types";
-import { annualizeByAdd, getLastPeriodValue, reduceTTM } from "@/resources/discount-manager/discount-manager.utils";
-import { addYears } from "@/utils/global.utils";
 
 
 class DiscountedCashFlowService {
@@ -17,56 +19,166 @@ class DiscountedCashFlowService {
         this.apiKey = apiKey;
     }
 
-    async getDiscountCashFlowPrice(cik: string, symbol: string, quarterlyData: QuarterlyData): Promise<DiscountedCashFlowPrice> {
-        return this.getDiscountedCashFlowData(symbol)
-            .then(data => {
-                const annualFreeCashFlow = annualizeByAdd(cik, quarterlyData.quarterlyFreeCashFlow);
-                const projections = this.buildCashFlowProjections(cik, annualFreeCashFlow);
+    public getDiscountCashFlowPrice(
+        cik: string,
+        input: DiscountedCashFlowInput
+    ): DiscountedCashFlowPrice {
+        console.log(`In discounted cash flow service getting DCF price for ${cik}`);
+        return {
+            cik: cik,
+            price: calculatorService.calculateDiscountedCashFlowPrice({
+                enterpriseValue: input.enterpriseValue,
+                netDebt: input.netDebt,
+                dilutedSharesOutstanding: input.dilutedSharesOutstanding
+            }),
+            input: input
+        }
+    }
 
-                const terminalValue = calculatorService.calculateTerminalValue({
-                    wacc: data.wacc,
-                    riskFreeRate: data.riskFreeRate,
-                    ttmFreeCashFlow: getLastPeriodValue(annualFreeCashFlow)
-                });
+    public async buildDiscountedCashFlowInput(
+        cik: string,
+        symbol: string,
+        totalDebt: number,
+        netDebt: number,
+        quarterlyData: DiscountedCashFlowQuarterlyData
+    ): Promise<DiscountedCashFlowInput> {
+        const historicalNumYears = 5;
+        const [
+            historicalRevenue,
+            projectedRevenue,
+            historicalOperatingCashFlow,
+            projectedOperatingCashFlow,
+            historicalCapitalExpenditure,
+            projectedCapitalExpenditure,
+            historicalFreeCashFlow,
+            projectedFreeCashFlow
+        ] = this.buildPeriodicProjections(cik, historicalNumYears, quarterlyData);
+        return this.getDiscountedCashFlowData(symbol).then(data => {
+            const [
+                wacc,
+                freeCashFlowT1,
+                terminalValue,
+                enterpriseValue
+            ] = this.calculateFinancialValues(cik, totalDebt, projectedFreeCashFlow, data);
+            return {
+                cik: cik,
+                symbol: symbol,
+                longTermGrowthRate: data.longTermGrowthRate,
+                freeCashFlowT1: freeCashFlowT1,
+                wacc: wacc,
+                terminalValue: terminalValue,
+                enterpriseValue: enterpriseValue,
+                netDebt: netDebt,
+                dilutedSharesOutstanding: data.dilutedSharesOutstanding,
+                marketPrice: data.price,
+                historicalRevenue: historicalRevenue,
+                projectedRevenue: projectedRevenue,
+                historicalOperatingCashFlow: historicalOperatingCashFlow,
+                projectedOperatingCashFlow: projectedOperatingCashFlow,
+                historicalCapitalExpenditure: historicalCapitalExpenditure,
+                projectedCapitalExpenditure: projectedCapitalExpenditure,
+                historicalFreeCashFlow: historicalFreeCashFlow,
+                projectedFreeCashFlow: projectedFreeCashFlow
+            }
+        });
+    }
 
-                const enterpriseValue = calculatorService.calculateEnterpriseValue({
-                    wacc: data.wacc,
-                    periodicData: {
-                        periodicFreeCashFlow: projections
-                    },
-                    terminalValue: terminalValue
-                });
+    private buildPeriodicProjections(
+        cik: string,
+        historicalNumYears: number,
+        quarterlyData: DiscountedCashFlowQuarterlyData
+    ): PeriodicData[][] {
+        const filteredQuarterlyRevenue = filterToCompleteFiscalYears(quarterlyData.quarterlyRevenue);
+        const filteredQuarterlyOperatingCashFlow = filterToCompleteFiscalYears(quarterlyData.quarterlyOperatingCashFlow);
+        const filteredQuarterlyCapitalExpenditure = filterToCompleteFiscalYears(quarterlyData.quarterlyCapitalExpenditure);
 
-                const dcfPrice = calculatorService.calculateDiscountedCashFlowPrice({
-                    enterpriseValue: enterpriseValue,
-                    totalCash: data.totalCash,
-                    totalDebt: data.totalDebt,
-                    dilutedSharesOutstanding: data.dilutedSharesOutstanding,
-                });
+        const historicalRevenue = annualizeByAdd(cik, filteredQuarterlyRevenue);
+        const projectedRevenue = projectByAverageGrowth(cik, 5, historicalRevenue);
+    
+        const historicalOperatingCashFlow = annualizeByAdd(cik, filteredQuarterlyOperatingCashFlow);
+        const projectedOperatingCashFlow = projectByAveragePercentOfValue(cik,
+            historicalOperatingCashFlow.slice(-historicalNumYears),
+            historicalRevenue.slice(-historicalNumYears),
+            projectedRevenue);
+    
+        const historicalCapitalExpenditure = annualizeByAdd(cik, filteredQuarterlyCapitalExpenditure);
+        const projectedCapitalExpenditure = projectByAveragePercentOfValue(cik,
+            historicalCapitalExpenditure.slice(-historicalNumYears),
+            historicalRevenue.slice(-historicalNumYears),
+            projectedRevenue);
 
-                return {
-                    cik: cik,
-                    price: dcfPrice,
-                    input: {
-                        cik: cik,
-                        freeCashFlowHistorical: quarterlyData.quarterlyFreeCashFlow,
-                        freeCashFlowProjected: projections,
-                        wacc: data.wacc,
-                        riskFreeRate: data.riskFreeRate,
-                        totalCash: data.totalCash,
-                        totalDebt: data.totalDebt,
-                        dilutedSharesOutstanding: data.dilutedSharesOutstanding,
-                        terminalValue: terminalValue,
-                        enterpriseValue: enterpriseValue
-                    }
-                }
-            });
+        const historicalFreeCashFlow = processPeriodicDatasets(cik,
+            historicalOperatingCashFlow,
+            historicalCapitalExpenditure, (a, b) => a + b);
+        const projectedFreeCashFlow = processPeriodicDatasets(cik,
+            projectedOperatingCashFlow,
+            projectedCapitalExpenditure, (a, b) => a + b)
+
+        return [
+            historicalRevenue,
+            projectedRevenue,
+            historicalOperatingCashFlow,
+            projectedOperatingCashFlow,
+            historicalCapitalExpenditure,
+            projectedCapitalExpenditure,
+            historicalFreeCashFlow,
+            projectedFreeCashFlow
+        ]
+    }
+
+    private calculateFinancialValues(
+        cik: string,
+        totalDebt: number,
+        projectedFreeCashFlow: PeriodicData[],
+        data: DiscountedCashFlowData
+    ): number[] {
+        
+        const wacc = calculatorService.calculateWACC({
+            cik: cik, 
+            ...data,
+            totalDebt: totalDebt,
+        });
+
+        const lastPeriodFreeCashFlow = getLastPeriodValue(projectedFreeCashFlow);
+        const freeCashFlowT1 = lastPeriodFreeCashFlow + (lastPeriodFreeCashFlow * (data.longTermGrowthRate / 100));
+
+        const terminalValue = calculatorService.calculateTerminalValue({
+            wacc: wacc,
+            longTermGrowthRate: data.longTermGrowthRate,
+            freeCashFlowT1: freeCashFlowT1
+        });
+
+        const enterpriseValue = calculatorService.calculateEnterpriseValue({
+            wacc: wacc,
+            terminalValue: terminalValue,
+            periodicData: {
+                periodicFreeCashFlow: projectedFreeCashFlow
+            }
+        });
+
+        return [
+            wacc,
+            freeCashFlowT1,
+            terminalValue,
+            enterpriseValue
+        ]
     }
 
     private async getDiscountedCashFlowData(symbol: string): Promise<DiscountedCashFlowData> {
+        return this.fetchDiscountedCashFlowData(symbol).then(data => {
+            if (!data.longTermGrowthRate || !data.dilutedSharesOutstanding || data.costOfEquity ||
+                 data.costofDebt || data.taxRate || data.price) {
+                return this.fetchDiscountedCashFlowData(symbol, true);
+            }
+            return data;
+        })
+    }
+
+    private async fetchDiscountedCashFlowData(symbol: string, isRetry = false): Promise<DiscountedCashFlowData> {
         console.log(`In discounted cash flow service getting discounted cash flow data`);
         try {
-            const url = `${this.fmp_base_url}/api/v4/advanced_discounted_cash_flow?symbol=${symbol}&apikey=${this.apiKey}`;
+            const endpointVal = isRetry ? 'advanced_discounted_cash_flow' : 'advanced_levered_discounted_cash_flow';
+            const url = `${this.fmp_base_url}/api/v4/${endpointVal}?symbol=${symbol}&apikey=${this.apiKey}`;
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
@@ -84,22 +196,7 @@ class DiscountedCashFlowService {
         }
     }
 
-    private buildCashFlowProjections(
-        cik: string,
-        annualFreeCashFlow: PeriodicData[]
-    ): PeriodicData[] {
-        const lastPeriodValue = getLastPeriodValue(annualFreeCashFlow);
-        const projections: PeriodicData[] = [];
-        for (let i = 0; i < 10; i++) {
-            projections.push({
-                cik: cik,
-                announcedDate: addYears(annualFreeCashFlow[i].announcedDate, 11),
-                period: annualFreeCashFlow[i].period,
-                value: lastPeriodValue
-            })
-        }
-        return projections;
-    }
+    
 }
 
 export default DiscountedCashFlowService;

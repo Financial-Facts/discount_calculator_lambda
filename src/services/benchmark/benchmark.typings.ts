@@ -1,8 +1,8 @@
 import { Valuation } from "@/src/types";
 
-export type BenchmarkRatioPrice = Valuation<BenchmarkPriceInput>;
+export type BenchmarkRatioPrice = Valuation<BenchmarkRatioPriceInput>;
 
-export interface BenchmarkPriceInput {
+export interface BenchmarkRatioPriceInput {
     cik: string
     industry: string
     ttmRevenue: number

@@ -1,4 +1,4 @@
-import { BenchmarkRatioPriceInput, BvpsInput, DebtYearsInput, IcInput, NopatInput, PeInput, RoicInput } from "@/resources/discount-manager/discount-manager.typings";
+import { BvpsInput, DebtYearsInput, IcInput, NopatInput, PeInput, RoicInput } from "@/resources/discount-manager/discount-manager.typings";
 import { EnterpriseValueInput, TimePeriod } from "./calculator.typings";
 import AverageOverPeriodFunction from "./functions/AverageOverPeriod.function";
 import BvpsFunction from "./functions/BVPS.function";
@@ -11,10 +11,10 @@ import RoicFunction from "./functions/ROIC.function";
 import StickerPriceFunction from "./functions/StickerPrice.function";
 import { PeriodicData } from "@/src/types";
 import DebtYearsFunction from "./functions/DebtYears.function";
-import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
 import DcfFunction from "./functions/DCF.function";
 import TerminalValueFunction from "./functions/TerminalValue.function";
 import EnterpriseValueFunction from "./functions/EnterpriseValue.function";
+import WaccFunction from "./functions/WACC.function";
 
 
 class CalculatorService {
@@ -32,6 +32,7 @@ class CalculatorService {
     private discountedCashFlowFunction = new DcfFunction();
     private terminalValueFunction = new TerminalValueFunction();
     private enterpriseValueFunction = new EnterpriseValueFunction();
+    private waccFunction = new WaccFunction();
 
     public calculateBVPS(data: {
         cik: string,
@@ -81,11 +82,11 @@ class CalculatorService {
         return this.debtYearsFunction.calculate(data);
     }
 
-    public async calculateBenchmarkRatioPrice(data: {
-        cik: string,
-        industry: string,
-        quarterlyData: BenchmarkRatioPriceInput
-    }): Promise<BenchmarkRatioPrice> {
+    public calculateBenchmarkRatioPrice(data: {
+        benchmarkPsRatio: number,
+        ttmRevenue: number,
+        sharesOutstanding: number
+    }): number {
         return this.benchmarkRatioPriceFunction.calculate(data);
     }
 
@@ -118,8 +119,7 @@ class CalculatorService {
 
     public calculateDiscountedCashFlowPrice(data: {
         enterpriseValue: number,
-        totalCash: number,
-        totalDebt: number,
+        netDebt: number,
         dilutedSharesOutstanding: number,
     }): number {
         return this.discountedCashFlowFunction.calculate(data);
@@ -127,8 +127,8 @@ class CalculatorService {
 
     public calculateTerminalValue(data: {
         wacc: number,
-        riskFreeRate: number,
-        ttmFreeCashFlow: number
+        longTermGrowthRate: number,
+        freeCashFlowT1: number
     }): number {
         return this.terminalValueFunction.calculate(data);
     }
@@ -139,6 +139,19 @@ class CalculatorService {
         periodicData: EnterpriseValueInput
     }): number {
         return this.enterpriseValueFunction.calculate(data);
+    }
+
+    public calculateWACC(data: {
+        cik: string,
+        price: number,
+        dilutedSharesOutstanding: number,
+        totalDebt: number, 
+        totalEquity: number,
+        costOfEquity: number,
+        costofDebt: number,
+        taxRate: number
+    }): number {
+        return this.waccFunction.calculate(data);
     }
     
 }

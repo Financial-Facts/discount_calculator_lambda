@@ -1,18 +1,32 @@
-import { PeriodicData, Valuation } from "@/src/types"
+import { Valuation, PeriodicData } from "@/src/types";
 
 export type DiscountedCashFlowPrice = Valuation<DiscountedCashFlowInput>;
 
-export interface DiscountedCashFlowInput {
-    cik: string
-    freeCashFlowHistorical: PeriodicData[]
-    freeCashFlowProjected: PeriodicData[]
+export type DiscountedCashFlowInput = DiscountedCashFlowIdentity & DiscountedCashFlowPeriodicData & {
     wacc: number
-    riskFreeRate: number
-    totalCash: number
-    totalDebt: number
-    dilutedSharesOutstanding: number
+    longTermGrowthRate: number
     terminalValue: number
+    freeCashFlowT1: number
     enterpriseValue: number
+    netDebt: number
+    dilutedSharesOutstanding: number
+    marketPrice: number
+};
+
+export interface DiscountedCashFlowIdentity {
+    cik: string
+    symbol: string
+}
+
+export interface DiscountedCashFlowPeriodicData {
+    historicalRevenue: PeriodicData[]
+    projectedRevenue: PeriodicData[]
+    historicalOperatingCashFlow: PeriodicData[]
+    projectedOperatingCashFlow: PeriodicData[]
+    historicalCapitalExpenditure: PeriodicData[]
+    projectedCapitalExpenditure: PeriodicData[]
+    historicalFreeCashFlow: PeriodicData[]
+    projectedFreeCashFlow: PeriodicData[]
 }
 
 export interface DiscountedCashFlowData {
@@ -20,20 +34,6 @@ export interface DiscountedCashFlowData {
     symbol: string
     revenue: number
     revenuePercentage: number
-    ebitda: number
-    ebitdaPercentage: number
-    ebit: number
-    ebitPercentage: number
-    depreciation: number
-    depreciationPercentage: number
-    totalCash: number
-    totalCashPercentage: number
-    receivables: number
-    receivablesPercentage: number
-    inventories: number
-    inventoriesPercentage: number
-    payable: number
-    payablePercentage: number
     capitalExpenditure: number
     capitalExpenditurePercentage: number
     price: number
@@ -51,11 +51,11 @@ export interface DiscountedCashFlowData {
     debtWeighting: number
     equityWeighting: number
     wacc: number
-    taxRateCash: number
-    ebiat: number
-    ufcf: number
-    sumPvUfcf: number
+    operatingCashFlow: number
+    pvLfcf: number
+    sumPvLfcf: number
     longTermGrowthRate: number
+    freeCashFlow: number
     terminalValue: number
     presentTerminalValue: number
     enterpriseValue: number
@@ -63,4 +63,5 @@ export interface DiscountedCashFlowData {
     equityValue: number
     equityValuePerShare: number
     freeCashFlowT1: number
+    operatingCashFlowPercentage: number
 }

@@ -1,7 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractFunction from "./AbstractFunction";
 import { PeriodicData } from "@/src/types";
-import { getLastPeriodValue } from "@/resources/discount-manager/discount-manager.utils";
+import { getLastPeriodValue } from "@/utils/processing.utils";
 
 
 class AverageOverPeriodFunction extends AbstractFunction {

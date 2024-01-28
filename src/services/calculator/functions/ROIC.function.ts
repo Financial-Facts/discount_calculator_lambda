@@ -1,9 +1,10 @@
 import { RoicInput } from "@/resources/discount-manager/discount-manager.typings";
-import { processPeriodicDatasets, annualizeByAdd } from "@/resources/discount-manager/discount-manager.utils";
 import { calculatorService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
 import AbstractFunction from "./AbstractFunction";
 import { PeriodicData } from "@/src/types";
+import { annualizeByAdd } from "@/utils/annualize.utils";
+import { processPeriodicDatasets } from "@/utils/processing.utils";
 
 
 class RoicFunction extends AbstractFunction {

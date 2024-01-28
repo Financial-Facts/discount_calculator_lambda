@@ -2,12 +2,18 @@ import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataExce
 import HttpException from "@/utils/exceptions/HttpException";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/discount.typings";
-import { checkDiscountIsOnSale } from "@/resources/resource.utils";
-import { buildDiscount, buildQuarterlyData, buildStickerPriceInput } from "@/services/discount/discount.utils";
 import { benchmarkService, discountService, discountedCashFlowService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
-import { validateStatements } from "./discount-manager.utils";
+import { buildDiscount, buildQuarterlyData, validateStatements } from "./discount-manager.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
+import { StickerPriceInput } from "@/services/sticker-price/sticker-price.typings";
+import { BenchmarkRatioPriceInput } from "@/services/benchmark/benchmark.typings";
+import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
+import { QuarterlyData } from "./discount-manager.typings";
+import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
+import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
+import { getLastPeriodValue, getLastQ4Value, getLastStatement } from "@/utils/processing.utils";
+import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
 
 
 class DiscountManager {
@@ -49,27 +55,46 @@ class DiscountManager {
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
             validateStatements(cik, statements, !!this.revisitMachineArn);
-            const quarterlyData = buildQuarterlyData(statements);
-            const stickerPriceInput =  await buildStickerPriceInput(cik, profile.symbol, quarterlyData);
-            const stickerPrice = stickerPriceService.calculateStickerPriceObject(stickerPriceInput);
-            return Promise.all([
-                benchmarkService.getBenchmarkRatioPrice(cik, profile.industry, quarterlyData),
-                discountedCashFlowService.getDiscountCashFlowPrice(cik, profile.symbol, quarterlyData)
-            ]).then(async prices => {
-                const [ benchmarkRatioPrice, discountedCashFlowPrice ] = prices;
-                const discount = buildDiscount(cik, profile, stickerPrice, benchmarkRatioPrice, discountedCashFlowPrice);
-                return historicalPriceService.getCurrentPrice(discount.symbol)
-                    .then(currentPrice => {
-                        const stickerPrice = discount.stickerPrice.price;
-                        if (currentPrice > stickerPrice) {
-                            throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${stickerPrice}`);
-                        }
-                        discount.active = checkDiscountIsOnSale(currentPrice, discount);
-                        console.log(discount);
-                        return this.saveDiscount(discount);
-                    });
-            });
+            return this.buildValuationInputs(cik, statements, profile)
+                .then(inputs => {
+                    const [stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
+                    const marketPrice = discountedCashFlowInput.marketPrice;
+                    const discount = buildDiscount(cik, profile,
+                        stickerPriceService.getStickerPrice(stickerPriceInput),
+                        benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
+                        discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
+
+                    if (marketPrice > discount.stickerPrice.price) {
+                        throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${discount.stickerPrice.price}`);
+                    }
+                    discount.active = 
+                        marketPrice <  discount.stickerPrice.price &&
+                        marketPrice < discount.benchmarkRatioPrice.price && 
+                        marketPrice < discount.discountedCashFlowPrice.price;
+                    console.log(discount);
+                    return this.saveDiscount(discount);
+                });
         });
+    }
+
+    private async buildValuationInputs(
+        cik: string,
+        statements: Statements,
+        profile: CompanyProfile
+    ): Promise<[ StickerPriceInput, BenchmarkRatioPriceInput, DiscountedCashFlowInput ]> {
+        const symbol = profile.symbol;
+        const industry = profile.industry;
+        const quarterlyData = buildQuarterlyData(statements);
+
+        const lastQ4BalanceSheet = getLastQ4Value(statements.balanceSheets);
+        const netDebt = lastQ4BalanceSheet.netDebt;
+        const totalDebt = lastQ4BalanceSheet.totalDebt;
+
+        return Promise.all([
+            stickerPriceService.buildStickerPriceInput(cik, symbol, quarterlyData),
+            benchmarkService.buildBenchmarkRatioPriceInput(cik, industry, quarterlyData),
+            discountedCashFlowService.buildDiscountedCashFlowInput(cik, symbol, totalDebt, netDebt, quarterlyData)
+        ]);
     }
 
     private async triggerRevisit(cik: string): Promise<void> {

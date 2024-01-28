@@ -5,11 +5,10 @@ class DcfFunction extends AbstractFunction {
 
     calculate(data: {
         enterpriseValue: number,
-        totalCash: number,
-        totalDebt: number,
+        netDebt: number,
         dilutedSharesOutstanding: number
     }): number {
-        const intrinsicValue = data.enterpriseValue + data.totalCash - data.totalDebt;
+        const intrinsicValue = data.enterpriseValue - data.netDebt;
         return intrinsicValue / data.dilutedSharesOutstanding;
     }
     

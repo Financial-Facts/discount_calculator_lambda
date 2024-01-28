@@ -1,4 +1,4 @@
-import { buildHistoricalPriceInput, mapCSVToPriceData } from "./historical-price.utils";
+import { mapCSVToPriceData } from "./historical-price.utils";
 import fetch, { Response } from "node-fetch";
 import ThirdPartyDataFailureException from "@/utils/exceptions/ThirdPartyDataFailureException";
 import { HistoricalPriceInput, PriceData } from "./historical-price.typings";
@@ -28,24 +28,6 @@ class HistoricalPriceService {
                 return response.text();
             }).then(async (body: string) => {
                 return mapCSVToPriceData(body);
-            });
-    }
-
-    public async getCurrentPrice(symbol: string): Promise<number> {
-        console.log("In historical price service getting current price for symbol: " + symbol);
-        const to = new Date();
-        const from = new Date();
-        from.setDate(from.getDate() - 4);
-        const input: HistoricalPriceInput = buildHistoricalPriceInput(symbol, from, to);
-        return this.getHistoricalPrices(input)
-            .then(priceData => {
-                if (priceData && priceData.length > 0) {
-                    const price = priceData[priceData.length - 1].close;
-                    console.log(`Historical price data returned with current price: ${price}`);
-                    return price;
-                }
-                throw new ThirdPartyDataFailureException(
-                    `Passed three days historical data not found for: ${symbol}`);
             });
     }
 }

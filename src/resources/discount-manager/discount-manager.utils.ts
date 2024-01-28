@@ -1,24 +1,14 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import { PeriodicData } from "@/src/types";
 import { Statement, Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
-import { days_between } from "@/utils/global.utils";
+import { days_between } from "@/utils/date.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
+import { BenchmarkRatioPrice } from "@/services/benchmark/benchmark.typings";
+import { Discount } from "@/services/discount/discount.typings";
+import { DiscountedCashFlowPrice } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
+import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
+import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";
+import { QuarterlyData } from "./discount-manager.typings";
 
-export function reduceTTM(
-    data: PeriodicData[],
-    equation: ((input1: number, input2: number) => number)
-): number {
-    return data
-        .slice(-4)
-        .map(period => period.value)
-        .reduce((a, b) => equation(a, b));
-}
-
-export function getLastPeriodValue(
-    data: PeriodicData[]
-): number {
-    return data.slice(-1)[0].value;
-}
 
 export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
     checkHasSufficientStatements(cik, data);
@@ -48,54 +38,96 @@ function isUpToDate<T extends Statement>(statements: T[]): boolean {
     return days_between(lastReportedData, new Date()) <= 7;
 }
 
-// Annualizes PeriodicData by adding together values
-export function annualizeByAdd(cik: string, data: PeriodicData[]): PeriodicData[] {
-    const annualData: PeriodicData[] = [];
-    let i = 0;
-    while (i < data.length) {
-        annualData.push(data.slice(i, i + 4).reduce((quarter1, quarter2) => {
-            return {
-                cik: cik,
-                announcedDate: new Date(data[i + 3].announcedDate),
-                period: 'FY',
-                value: quarter1.value + quarter2.value
-            }
-        }));
-        i = i + 4;
-    }
-    return annualData;
-}
 
-// Annualizes data using last quarter in the FY
-export function annualizeByLastQuarter(cik: string, data: PeriodicData[]): PeriodicData[] {
-    const lastQuarter = data[data.length - 1].period;
-    return data.filter(quarter => quarter.period === lastQuarter).map(quarter => {
-        return {
-            cik: cik,
-            announcedDate: quarter.announcedDate,
-            period: quarter.period,
-            value: quarter.value
-        }
-    });
-}
-
-// Processes quarterly data by perform an equation using the reported value of
-// data1 with the value available from the closest date from data2 and vice versa
-export function processPeriodicDatasets(
+export const buildDiscount = (
     cik: string,
-    data1: PeriodicData[],
-    data2: PeriodicData[],
-    equation: ((input1: number, input2: number) => number)
-): PeriodicData[] {
-    let index = 0;
-    return data1.map(quarter1 => {
-        const result: PeriodicData = {
-            cik: cik,
-            announcedDate: quarter1.announcedDate,
-            period: quarter1.period,
-            value: equation(quarter1.value, data2[index].value)
-        }
-        index++;
-        return result;
-    });
-}
+    profile: CompanyProfile,
+    stickerPrice: StickerPrice,
+    benchmarkRatioPrice: BenchmarkRatioPrice,
+    discountedCashFlowPrice: DiscountedCashFlowPrice
+): Discount => ({
+    cik: cik,
+    symbol: profile.symbol,
+    name: profile.companyName,
+    active: false,
+    lastUpdated: new Date(),
+    stickerPrice,
+    benchmarkRatioPrice,
+    discountedCashFlowPrice
+})
+
+export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({
+    quarterlyShareholderEquity: statements.balanceSheets.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.totalStockholdersEquity
+    })),
+    quarterlyOutstandingShares: statements.incomeStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.weightedAverageShsOut
+    })),
+    quarterlyEPS: statements.incomeStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.eps
+    })),
+    quarterlyOperatingIncome: statements.incomeStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.operatingIncome
+    })),
+    quarterlyTaxExpense: statements.incomeStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.incomeTaxExpense
+    })),
+    quarterlyNetDebt: statements.balanceSheets.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.netDebt
+    })),
+    quarterlyTotalEquity: statements.balanceSheets.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.totalEquity
+    })),
+    quarterlyRevenue: statements.incomeStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.revenue
+    })),
+    quarterlyOperatingCashFlow: statements.cashFlowStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.operatingCashFlow
+    })),
+    quarterlyFreeCashFlow: statements.cashFlowStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.freeCashFlow
+    })),
+    quarterlyLongTermDebt: statements.balanceSheets.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.longTermDebt
+    })),
+    quarterlyCapitalExpenditure: statements.cashFlowStatements.map(sheets => ({
+        cik: sheets.cik,
+        announcedDate: sheets.date,
+        period: sheets.period,
+        value: sheets.capitalExpenditure
+    }))
+});
+

@@ -2,8 +2,9 @@ import HttpException from '@/utils/exceptions/HttpException';
 import { JSDOM } from 'jsdom';
 import ScrapeDataException from '@/utils/exceptions/ScrapeDataException';
 import { calculatorService } from '../../bootstrap';
-import { BenchmarkRatioPrice } from './benchmark.typings';
-import { QuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
+import { BenchmarkRatioPriceInput, BenchmarkRatioPrice } from './benchmark.typings';
+import { BenchmarkRatioPriceQuarterlyData, QuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
+import { reduceTTM, getLastPeriodValue } from '@/utils/processing.utils';
 
 class BenchmarkService {
 
@@ -17,15 +18,37 @@ class BenchmarkService {
         this.isReady = this.loadBenchmarkIndustryMap();
     }
 
-    public async getBenchmarkRatioPrice(cik: string, industry: string, data: QuarterlyData): Promise<BenchmarkRatioPrice> {
-        return calculatorService.calculateBenchmarkRatioPrice({
+    public getBenchmarkRatioPrice(cik: string, input: BenchmarkRatioPriceInput): BenchmarkRatioPrice {
+        console.log(`In benchmark service fetching benchmark ratio price for ${cik}`);
+        return {
             cik: cik,
-            industry: industry,
-            quarterlyData: data
-        });
+            price: calculatorService.calculateBenchmarkRatioPrice({
+                benchmarkPsRatio: input.psBenchmarkRatio,
+                ttmRevenue: input.ttmRevenue,
+                sharesOutstanding: input.sharesOutstanding
+            }),
+            input: input
+        }
     }
 
-    public async fetchBenchmarkPsRatio(industry: string): Promise<number> {
+    public async buildBenchmarkRatioPriceInput(
+        cik: string,
+        industry: string,
+        quarterlyData: BenchmarkRatioPriceQuarterlyData
+    ): Promise<BenchmarkRatioPriceInput> {
+        const benchmarkPsRatio = await this.fetchBenchmarkPsRatio(industry);
+        const ttmRevenue = reduceTTM(quarterlyData.quarterlyRevenue, (a, b) => a + b);
+        const sharesOutstanding = getLastPeriodValue(quarterlyData.quarterlyOutstandingShares);
+        return {
+            cik: cik,
+            industry: industry,
+            psBenchmarkRatio: benchmarkPsRatio,
+            ttmRevenue: ttmRevenue,
+            sharesOutstanding: sharesOutstanding
+        };
+    }
+
+    private async fetchBenchmarkPsRatio(industry: string): Promise<number> {
         return this.isReady.then(() => {
             if (this.benchmarkIndustryMapping[industry] !== undefined) {
                 console.log(`Industry '${industry}' exists in benchmark map...`);

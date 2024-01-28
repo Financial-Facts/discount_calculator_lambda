@@ -18,8 +18,7 @@ export interface SimpleDiscount {
     symbol: string;
     name: string;
     active: boolean;
-    ratio_Price: number;
-    ttmSalePrice: number;
-    tfySalePrice: number;
-    ttySalePrice: number;
+    benchmarkRatioPrice: number;
+    discountedCashFlowPrice: number;
+    stickerPrice: number;
 }
