@@ -8,6 +8,7 @@ import { DiscountedCashFlowPrice } from "@/services/financial-modeling-prep/disc
 import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
 import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";
 import { QuarterlyData } from "./discount-manager.typings";
+import { PeriodicData } from "@/src/types";
 
 
 export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
@@ -38,6 +39,19 @@ function isUpToDate<T extends Statement>(statements: T[]): boolean {
     return days_between(lastReportedData, new Date()) <= 7;
 }
 
+function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): PeriodicData[] {
+    periodicData.forEach((period, index) => {
+        if (period.value === 0) {
+            let i = index;
+            while (period.value === 0 && i > 0) {
+                i--;
+                period.value = periodicData[i].value;
+            }
+        }
+    });
+    return periodicData;
+}
+
 
 export const buildDiscount = (
     cik: string,
@@ -63,12 +77,13 @@ export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({
         period: sheets.period,
         value: sheets.totalStockholdersEquity
     })),
-    quarterlyOutstandingShares: statements.incomeStatements.map(sheets => ({
-        cik: sheets.cik,
-        announcedDate: sheets.date,
-        period: sheets.period,
-        value: sheets.weightedAverageShsOut
-    })),
+    quarterlyOutstandingShares: replaceEmptyValuesWithMostRecent(
+        statements.incomeStatements.map(sheets => ({
+            cik: sheets.cik,
+            announcedDate: sheets.date,
+            period: sheets.period,
+            value: sheets.weightedAverageShsOut
+    }))),
     quarterlyEPS: statements.incomeStatements.map(sheets => ({
         cik: sheets.cik,
         announcedDate: sheets.date,

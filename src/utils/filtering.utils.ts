@@ -12,7 +12,3 @@ export function filterToCompleteFiscalYears<T extends Statement | PeriodicData>(
     }
     return data.slice(firstQuarterOneIndex, lastQuarterFourIndex + 1);
 }
-
-// export function filterAllToCompleteFiscalYears(data: PeriodicData[][]): PeriodicData[][] {
-//     return data.map(periodicData => filterToCompleteFiscalYears(periodicData));
-// }

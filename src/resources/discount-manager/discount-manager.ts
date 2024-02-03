@@ -2,18 +2,16 @@ import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataExce
 import HttpException from "@/utils/exceptions/HttpException";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/discount.typings";
-import { benchmarkService, discountService, discountedCashFlowService, historicalPriceService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
+import { benchmarkService, discountService, discountedCashFlowService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
 import { buildDiscount, buildQuarterlyData, validateStatements } from "./discount-manager.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { StickerPriceInput } from "@/services/sticker-price/sticker-price.typings";
 import { BenchmarkRatioPriceInput } from "@/services/benchmark/benchmark.typings";
 import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
-import { QuarterlyData } from "./discount-manager.typings";
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
-import { getLastPeriodValue, getLastQ4Value, getLastStatement } from "@/utils/processing.utils";
-import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
+import { getLastQ4Value } from "@/utils/processing.utils";
 
 
 class DiscountManager {

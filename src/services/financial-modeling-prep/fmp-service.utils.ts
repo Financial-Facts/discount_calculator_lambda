@@ -3,5 +3,5 @@ export function simplifyCik(cik: string): string {
 }
 
 export function buildURI(cik: string, identifier: string, apiKey: string, period: 'quarter' | 'annual' = 'quarter'): string {
-    return `/api/v3/${identifier}/${simplifyCik(cik)}?period=${period}&apikey=${apiKey}&limit=132`;
+    return `/api/v3/${identifier}/${simplifyCik(cik)}?period=${period}&apikey=${apiKey}`;
 }
