@@ -38,7 +38,14 @@ class BenchmarkService {
     ): Promise<BenchmarkRatioPriceInput> {
         const benchmarkPsRatio = await this.fetchBenchmarkPsRatio(industry);
         const ttmRevenue = reduceTTM(quarterlyData.quarterlyRevenue, (a, b) => a + b);
-        const sharesOutstanding = getLastPeriodValue(quarterlyData.quarterlyOutstandingShares);
+
+        let index = quarterlyData.quarterlyOutstandingShares.length - 1;
+        let sharesOutstanding = quarterlyData.quarterlyOutstandingShares[index].value;
+        while (sharesOutstanding === 0 && index > 0) {
+            index--;
+            sharesOutstanding  = quarterlyData.quarterlyOutstandingShares[index].value;
+        }
+
         return {
             cik: cik,
             industry: industry,
