@@ -1,7 +1,7 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import { Discount } from "@/services/discount/discount.typings";
+import { Discount } from "@/services/discount/ffs-discount/discount.typings";
 import { benchmarkService, discountService, discountedCashFlowService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
 import { buildDiscount, buildQuarterlyData, validateStatements } from "./discount-manager.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
@@ -61,14 +61,12 @@ class DiscountManager {
                         stickerPriceService.getStickerPrice(stickerPriceInput),
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
-
-                    if (marketPrice > discount.stickerPrice.price) {
-                        throw new DisqualifyingDataException(`${cik} is priced above ten year sticker price: ${discount.stickerPrice.price}`);
-                    }
+                    
                     discount.active = 
                         marketPrice <  discount.stickerPrice.price &&
                         marketPrice < discount.benchmarkRatioPrice.price && 
                         marketPrice < discount.discountedCashFlowPrice.price;
+
                     console.log(discount);
                     return this.saveDiscount(discount);
                 });

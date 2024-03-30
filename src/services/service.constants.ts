@@ -1,6 +1,7 @@
 const CONSTANTS = {
     GLOBAL: {
         EMPTY: '',
+        SUCCESS: 'Success'
     },
     STICKER_PRICE: {
         DEI: 'dei',

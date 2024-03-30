@@ -35,12 +35,14 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.6",
+    "supabase": "^1.151.1",
     "tsc-watch": "^6.0.0",
     "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
     "@aws-sdk/client-sfn": "^3.454.0",
     "@aws-sdk/client-ssm": "^3.385.0",
+    "@supabase/supabase-js": "^2.41.1",
     "@types/module-alias": "^2.0.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",

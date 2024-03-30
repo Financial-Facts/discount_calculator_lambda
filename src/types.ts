@@ -9,7 +9,7 @@ export interface Valuation<T> {
 export interface PeriodicData {
     cik: string
     announcedDate: Date
-    period: Period
+    period?: Period
     value: number
 }
 

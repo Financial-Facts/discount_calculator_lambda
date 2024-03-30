@@ -1,5 +1,4 @@
 import BenchmarkService from "@/services/benchmark/benchmark.service";
-import DiscountService from "@/services/discount/discount.service";
 import HistoricalPriceService from "@/services/historical-price/historical-price.service";
 import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
 import StickerPriceService from "@/services/sticker-price/sticker-price.service";
@@ -8,9 +7,12 @@ import ProfileService from "@/services/financial-modeling-prep/profile/profile.s
 import CalculatorService from "@/services/calculator/calculator.service";
 import DiscountManager from "./resources/discount-manager/discount-manager";
 import DiscountedCashFlowService from "./services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.service";
+import SupabaseDiscountService from "./services/discount/supabase-discount/supabase-discount.service";
+import { IDiscountService } from "./services/discount/discount-service.typings";
+import DiscountService from "./services/discount/ffs-discount/discount.service";
 
 let discountManager: DiscountManager;
-let discountService: DiscountService;
+let discountService: IDiscountService;
 let statementService: StatementService;
 let discountedCashFlowService: DiscountedCashFlowService;
 let historicalPriceService: HistoricalPriceService;
@@ -44,6 +46,7 @@ export default function bootstrap() {
     console.log(`ffs url: ${process.env.ffs_base_url}`);
     console.log(`fmp url: ${process.env.fmp_base_url}`);
     console.log(`fmp key: ${process.env.fmp_api_key}`);
+    console.log(`supabase url: ${process.env.supabase_base_url}`);
     console.log(`historical source url: ${process.env.historical_data_source_url_v1}`);
     console.log(`Benchmark source url: ${process.env.benchmark_source_url}`);
 }
@@ -53,9 +56,22 @@ function initDiscountManager(): DiscountManager {
     return new DiscountManager(revisitMachineArn);
 }
 
-function initDiscountService(): DiscountService {
-    const ffs_base_url = process.env.ffs_base_url ?? 'http://localhost:8080';
-    return new DiscountService(ffs_base_url);
+function initDiscountService(): IDiscountService {
+    if (process.env.ffs_base_url) {
+        const ffs_base_url = process.env.ffs_base_url ?? 'http://localhost:8080';
+        return new DiscountService(ffs_base_url);
+    } 
+
+    return initSupabaseService();
+}
+
+function initSupabaseService(): SupabaseDiscountService {
+    const supabase_url = process.env.supabase_base_url;
+    const supabase_key = process.env.supabase_key;
+    if (!supabase_url || !supabase_key) {
+        throw new EnvInitializationException('Supabase key or base url not provided');
+    }
+    return new SupabaseDiscountService(supabase_url, supabase_key);
 }
 
 function initFinancialModelingPrepServices(): {

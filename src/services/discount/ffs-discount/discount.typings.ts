@@ -1,12 +1,12 @@
-import { BenchmarkRatioPrice } from "../benchmark/benchmark.typings";
-import { DiscountedCashFlowPrice } from "../financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
-import { StickerPrice } from "../sticker-price/sticker-price.typings";
+import { BenchmarkRatioPrice } from "../../benchmark/benchmark.typings";
+import { DiscountedCashFlowPrice } from "../../financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
+import { StickerPrice } from "../../sticker-price/sticker-price.typings";
 
 export interface Discount {
     cik: string
     symbol: string
-    name: string
-    lastUpdated: Date
+    name: string,
+    lastUpdated: Date,
     active: boolean
     stickerPrice: StickerPrice
     benchmarkRatioPrice: BenchmarkRatioPrice
@@ -18,6 +18,7 @@ export interface SimpleDiscount {
     symbol: string;
     name: string;
     active: boolean;
+    lastUpdated: Date;
     benchmarkRatioPrice: number;
     discountedCashFlowPrice: number;
     stickerPrice: number;

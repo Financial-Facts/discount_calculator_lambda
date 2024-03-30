@@ -3,7 +3,7 @@ import { Statement, Statements } from "@/services/financial-modeling-prep/statem
 import { days_between } from "@/utils/date.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { BenchmarkRatioPrice } from "@/services/benchmark/benchmark.typings";
-import { Discount } from "@/services/discount/discount.typings";
+import { Discount } from "@/services/discount/ffs-discount/discount.typings";
 import { DiscountedCashFlowPrice } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
 import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";

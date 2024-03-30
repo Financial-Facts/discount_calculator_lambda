@@ -2,8 +2,9 @@ import CONSTANTS from "@/resources/resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
 import { SimpleDiscount, Discount } from "./discount.typings";
 import { buildHeadersWithBasicAuth } from "./discount.utils";
+import { IDiscountService } from "../discount-service.typings";
 
-class DiscountService {
+class DiscountService implements IDiscountService {
 
     private financialFactServiceDiscountV1Url: string;
 
