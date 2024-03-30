@@ -119,7 +119,7 @@ class SupabaseDiscountService implements IDiscountService {
     }
 
     private async upsertBenchmarkRatioPriceInput(input: BenchmarkRatioPriceInput): Promise<void> {
-        this.upsertData('benchmark_ratio_price_input', {
+        await this.upsertData('benchmark_ratio_price_input', {
             cik: input.cik,
             industry: input.industry,
             ps_benchmark_ratio: input.psBenchmarkRatio,
@@ -129,7 +129,7 @@ class SupabaseDiscountService implements IDiscountService {
     }
 
     private async upsertDiscountedCashFlowPriceInput(input: DiscountedCashFlowInput): Promise<void> {
-        this.upsertData('discounted_cash_flow_input', {
+        await this.upsertData('discounted_cash_flow_input', {
             cik: input.cik,
             symbol: input.symbol,
             long_term_growth_rate: input.longTermGrowthRate,
@@ -141,12 +141,12 @@ class SupabaseDiscountService implements IDiscountService {
             diluted_shares_outstanding: input.dilutedSharesOutstanding,
             market_price: input.marketPrice
         })
-        this.upsertPeriodicData('historical_operating_cash_flow', input.historicalOperatingCashFlow);
-        this.upsertPeriodicData('projected_operating_cash_flow', input.projectedOperatingCashFlow);
-        this.upsertPeriodicData('historical_capital_expenditure', input.historicalCapitalExpenditure);
-        this.upsertPeriodicData('projected_capital_expenditure', input.projectedCapitalExpenditure);
-        this.upsertPeriodicData('historical_free_cash_flow', input.historicalFreeCashFlow);
-        this.upsertPeriodicData('projected_free_cash_flow', input.projectedFreeCashFlow);
+        await this.upsertPeriodicData('historical_operating_cash_flow', input.historicalOperatingCashFlow);
+        await this.upsertPeriodicData('projected_operating_cash_flow', input.projectedOperatingCashFlow);
+        await this.upsertPeriodicData('historical_capital_expenditure', input.historicalCapitalExpenditure);
+        await this.upsertPeriodicData('projected_capital_expenditure', input.projectedCapitalExpenditure);
+        await this.upsertPeriodicData('historical_free_cash_flow', input.historicalFreeCashFlow);
+        await this.upsertPeriodicData('projected_free_cash_flow', input.projectedFreeCashFlow);
     }
 
     private async upsertPeriodicData(name: TableName, periodicDataList: PeriodicData[]): Promise<void> {
