@@ -5,6 +5,7 @@ import { calculatorService } from '../../bootstrap';
 import { BenchmarkRatioPriceInput, BenchmarkRatioPrice } from './benchmark.typings';
 import { BenchmarkRatioPriceQuarterlyData, QuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
 import { reduceTTM, getLastPeriodValue } from '@/utils/processing.utils';
+import { industryNameMap } from './benchmark.constants';
 
 class BenchmarkService {
 
@@ -54,6 +55,9 @@ class BenchmarkService {
             if (this.benchmarkIndustryMapping[industry] !== undefined) {
                 console.log(`Industry '${industry}' exists in benchmark map...`);
                 return this.benchmarkIndustryMapping[industry];
+            } else if (industry in industryNameMap) {
+                console.log(`Industry ${industry} exists in industry name map...`);
+                return this.benchmarkIndustryMapping[industryNameMap[industry]];
             }
             console.log(`Industry '${industry}' does not exist in benchmark map, returning default...`);
             return 1.69;
