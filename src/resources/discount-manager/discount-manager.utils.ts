@@ -36,7 +36,7 @@ function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
 
 function isUpToDate<T extends Statement>(statements: T[]): boolean {
     const lastReportedData: Date = new Date(statements.slice(-1)[0].fillingDate);
-    return days_between(lastReportedData, new Date()) <= 7;
+    return days_between(lastReportedData, new Date()) <= 16;
 }
 
 function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): PeriodicData[] {

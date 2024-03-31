@@ -19,7 +19,7 @@ class SupabaseDiscountService implements IDiscountService {
         this.client = createClient<Database>(
             url,
             key
-          )
+        )
     }
 
     public async save(discount: Discount): Promise<string> {
