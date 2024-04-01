@@ -26,11 +26,11 @@ class ProfileService {
                     }
                     return response.json();
                 }).then((body: CompanyProfile[]) => {
-                    const profile = body.find(profile => profile.currency === 'USD');
-                    if (!profile) {
+                    const profiles = body.filter(profile => profile.currency === 'USD');
+                    if (profiles.length === 0) {
                         throw new InsufficientDataException(`${cik} does not have a profile listed in USD`);
                     }
-                    return profile;
+                    return profiles.slice(-1)[0];
                 });
         } catch (err: any) {
             throw new HttpException(err.status,
