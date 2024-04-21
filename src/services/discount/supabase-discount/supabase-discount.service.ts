@@ -1,15 +1,17 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { Database, DbDiscount, DbSimpleDiscount, TableName, TablesInsert } from './supabase-discount.typings';
+import { DbDiscount, DbSimpleDiscount, TableName } from './supabase-discount.typings';
 import { Discount, SimpleDiscount } from '../ffs-discount/discount.typings';
 import { PeriodicData } from '@/src/types';
 import { StickerPriceInput } from '../../sticker-price/sticker-price.typings';
 import { BenchmarkRatioPriceInput } from '../../benchmark/benchmark.typings';
 import { DiscountedCashFlowInput } from '../../financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings';
 import DatabaseException from '@/utils/exceptions/DatabaseException';
-import { SELECT_BULK_SIMPLE_DISCOUNTS_QUERY, SELECT_DISCOUNT_QUERY } from './supabase-discount.queries';
-import { mapDbToDiscount, mapToSimpleDiscount } from './supabase-discount.utils';
+import { SELECT_DISCOUNT_QUERY } from './supabase-discount.queries';
+import { mapDbToDiscount } from './supabase-discount.utils';
 import { IDiscountService } from '../discount-service.typings';
 import CONSTANTS from '@/services/service.constants';
+import { Database, TablesInsert } from './supabase-schema';
+import DataNotUpdatedException from '@/utils/exceptions/DataNotUpdatedException';
 
 class SupabaseDiscountService implements IDiscountService {
 
@@ -49,22 +51,17 @@ class SupabaseDiscountService implements IDiscountService {
     }
     
     public async getBulkSimpleDiscounts(): Promise<SimpleDiscount[]> {
-        const select_discount_query = this.client
-            .from('discount')
-            .select(SELECT_BULK_SIMPLE_DISCOUNTS_QUERY)
-            .returns<DbSimpleDiscount[]>();
-
-        const { data, error } = await select_discount_query;
-
+        const { data, error } = await this.client.rpc('get_bulk_simple_discounts');
         if (error) {
             throw new DatabaseException(error.message);
         }
-
-        if (!data) {
-            return [];
-        }
-
-        return mapToSimpleDiscount(data);
+        return data.map((dbSimpleDiscount: DbSimpleDiscount) => ({
+            lastUpdated: new Date(dbSimpleDiscount.last_updated),
+            stickerPrice: dbSimpleDiscount.stickerprice,
+            discountedCashFlowPrice: dbSimpleDiscount.discountedcashflowprice,
+            benchmarkRatioPrice: dbSimpleDiscount.benchmarkratioprice,
+            ...dbSimpleDiscount
+        }));
     }
 
     private async upsertDiscount(discount: Discount): Promise<void> {
@@ -85,7 +82,7 @@ class SupabaseDiscountService implements IDiscountService {
             cik: stickerPrice.cik,
             price: stickerPrice.price
         });
-        await this.upsertStickerPriceInput(discount.stickerPrice.input);
+        await this.upsertStickerPriceInput(stickerPrice.input);
 
         // Benchmark ratio price valuation
         const benchmarkRatioPrice = discount.benchmarkRatioPrice;
@@ -93,7 +90,7 @@ class SupabaseDiscountService implements IDiscountService {
             cik: benchmarkRatioPrice.cik,
             price: benchmarkRatioPrice.price
         });
-        await this.upsertBenchmarkRatioPriceInput(discount.benchmarkRatioPrice.input);
+        await this.upsertBenchmarkRatioPriceInput(benchmarkRatioPrice.input);
 
         // Discounted cash flow price valuation
         const discountedCashFlowPrice = discount.discountedCashFlowPrice;
@@ -101,7 +98,7 @@ class SupabaseDiscountService implements IDiscountService {
             cik: discountedCashFlowPrice.cik,
             price: discountedCashFlowPrice.price
         });
-        await this.upsertDiscountedCashFlowPriceInput(discount.discountedCashFlowPrice.input);
+        await this.upsertDiscountedCashFlowPriceInput(discountedCashFlowPrice.input);
     }
 
     private async upsertStickerPriceInput(input: StickerPriceInput): Promise<void> {
@@ -147,6 +144,8 @@ class SupabaseDiscountService implements IDiscountService {
         await this.upsertPeriodicData('projected_capital_expenditure', input.projectedCapitalExpenditure);
         await this.upsertPeriodicData('historical_free_cash_flow', input.historicalFreeCashFlow);
         await this.upsertPeriodicData('projected_free_cash_flow', input.projectedFreeCashFlow);
+        await this.upsertPeriodicData('historical_revenue', input.historicalRevenue);
+        await this.upsertPeriodicData('projected_revenue', input.projectedRevenue);
     }
 
     private async upsertPeriodicData(name: TableName, periodicDataList: PeriodicData[]): Promise<void> {
@@ -161,6 +160,8 @@ class SupabaseDiscountService implements IDiscountService {
                     period: periodicData.period
                 });
             }
+        } else {
+            throw new DataNotUpdatedException(`WARNING: data missing for table ${name}`);
         }
     }
 

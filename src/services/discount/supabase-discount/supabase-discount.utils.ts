@@ -1,5 +1,5 @@
 import { PeriodicData, Period } from "@/src/types";
-import { Discount, SimpleDiscount } from "../ffs-discount/discount.typings";
+import { Discount } from "../ffs-discount/discount.typings";
 import { DbPeriodicData, DbDiscount, DbSimpleDiscount } from "./supabase-discount.typings";
 
 export const cleanPeriodicData = (unclean: DbPeriodicData[]): PeriodicData[] => unclean.map(data => ({
@@ -75,15 +75,3 @@ export const mapDbToDiscount = (currentDiscount: DbDiscount): Discount | null =>
         }
     }
 }
-
-export const mapToSimpleDiscount = (dbSimpleDiscounts: DbSimpleDiscount[]): SimpleDiscount[] =>
-    dbSimpleDiscounts.map(dbSimpleDiscount => ({
-        cik: dbSimpleDiscount.cik,
-        symbol: dbSimpleDiscount.symbol,
-        name: dbSimpleDiscount.name,
-        active: dbSimpleDiscount.active,
-        lastUpdated: new Date(dbSimpleDiscount.last_updated),
-        stickerPrice: dbSimpleDiscount.sticker_price.price,
-        benchmarkRatioPrice: dbSimpleDiscount.benchmark_ratio_price.price,
-        discountedCashFlowPrice: dbSimpleDiscount.discounted_cash_flow_price.price
-    }));

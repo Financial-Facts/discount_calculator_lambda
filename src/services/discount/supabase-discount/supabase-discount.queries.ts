@@ -129,19 +129,3 @@ discounted_cash_flow_price (
         )
     )
 )`;
-
-export const SELECT_BULK_SIMPLE_DISCOUNTS_QUERY = `
-cik,
-symbol,
-name,
-active,
-last_updated,
-sticker_price (
-    price
-),
-benchmark_ratio_price (
-    price
-),
-discounted_cash_flow_price (
-    price
-)`;
