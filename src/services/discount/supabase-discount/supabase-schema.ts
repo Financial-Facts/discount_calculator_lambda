@@ -495,6 +495,24 @@ export type Database = {
           },
         ]
       }
+      identity: {
+        Row: {
+          cik: string
+          name: string
+          symbol: string
+        }
+        Insert: {
+          cik: string
+          name: string
+          symbol: string
+        }
+        Update: {
+          cik?: string
+          name?: string
+          symbol?: string
+        }
+        Relationships: []
+      }
       projected_capital_expenditure: {
         Row: {
           announced_date: string
@@ -674,6 +692,12 @@ export type Database = {
           benchmarkratioprice: number
           stickerprice: number
         }[]
+      }
+      get_discount: {
+        Args: {
+          discount_cik: string
+        }
+        Returns: Json
       }
     }
     Enums: {

@@ -1,13 +1,11 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { DbDiscount, DbSimpleDiscount, TableName } from './supabase-discount.typings';
+import { DbSimpleDiscount, TableName } from './supabase-discount.typings';
 import { Discount, SimpleDiscount } from '../ffs-discount/discount.typings';
 import { PeriodicData } from '@/src/types';
 import { StickerPriceInput } from '../../sticker-price/sticker-price.typings';
 import { BenchmarkRatioPriceInput } from '../../benchmark/benchmark.typings';
 import { DiscountedCashFlowInput } from '../../financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings';
 import DatabaseException from '@/utils/exceptions/DatabaseException';
-import { SELECT_DISCOUNT_QUERY } from './supabase-discount.queries';
-import { mapDbToDiscount } from './supabase-discount.utils';
 import { IDiscountService } from '../discount-service.typings';
 import CONSTANTS from '@/services/service.constants';
 import { Database, TablesInsert } from './supabase-schema';
@@ -71,7 +69,7 @@ class SupabaseDiscountService implements IDiscountService {
         await this.upsertData('discount', {
             cik: discount.cik,
             active: discount.active,
-            last_updated: discount.lastUpdated.toDateString(),
+            last_updated: new Date(discount.lastUpdated).toDateString(),
             name: discount.name,
             symbol: discount.symbol
         });
@@ -187,24 +185,15 @@ class SupabaseDiscountService implements IDiscountService {
     }
 
     private async fetchDiscountIfExists(cik: string): Promise<Discount | null> {
-        const select_discount_query = this.client
-            .from('discount')
-            .select(SELECT_DISCOUNT_QUERY)
-            .eq('cik', cik)
-            .returns<DbDiscount>()
-            .maybeSingle();
-
-        const { data, error } = await select_discount_query;
+        const { data, error } = await this.client
+            .rpc('get_discount', { discount_cik: cik })
+            .returns<Discount>();
 
         if (error) {
             throw new DatabaseException(error.message);
         }
 
-        if (!data) {
-            return null;
-        }
-
-        return mapDbToDiscount(data as DbDiscount);
+        return data;
     }
 
 }
