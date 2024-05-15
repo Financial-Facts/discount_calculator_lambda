@@ -64,6 +64,7 @@ export const buildDiscount = (
     symbol: profile.symbol,
     name: profile.companyName,
     active: false,
+    marketPrice: 0,
     lastUpdated: new Date(),
     stickerPrice,
     benchmarkRatioPrice,

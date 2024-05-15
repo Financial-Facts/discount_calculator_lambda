@@ -66,7 +66,9 @@ class DiscountManager {
                         marketPrice <  discount.stickerPrice.price &&
                         marketPrice < discount.benchmarkRatioPrice.price && 
                         marketPrice < discount.discountedCashFlowPrice.price;
-
+                    
+                    discount.marketPrice = marketPrice;
+                    
                     console.log(discount);
                     return this.saveDiscount(discount);
                 });

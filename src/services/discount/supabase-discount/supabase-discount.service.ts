@@ -71,7 +71,8 @@ class SupabaseDiscountService implements IDiscountService {
             active: discount.active,
             last_updated: new Date(discount.lastUpdated).toDateString(),
             name: discount.name,
-            symbol: discount.symbol
+            symbol: discount.symbol,
+            market_price: discount.marketPrice
         });
 
         // Sticker price valuation

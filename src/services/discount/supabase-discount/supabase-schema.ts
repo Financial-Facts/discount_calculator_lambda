@@ -272,6 +272,7 @@ export type Database = {
           active: boolean
           cik: string
           last_updated: string
+          market_price: number
           name: string
           symbol: string
         }
@@ -279,6 +280,7 @@ export type Database = {
           active: boolean
           cik: string
           last_updated: string
+          market_price: number
           name: string
           symbol: string
         }
@@ -286,6 +288,7 @@ export type Database = {
           active?: boolean
           cik?: string
           last_updated?: string
+          market_price?: number
           name?: string
           symbol?: string
         }
@@ -692,6 +695,10 @@ export type Database = {
           benchmarkratioprice: number
           stickerprice: number
         }[]
+      }
+      get_bulk_simple_discounts_json: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_discount: {
         Args: {
