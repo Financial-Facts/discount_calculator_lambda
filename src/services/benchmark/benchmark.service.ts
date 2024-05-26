@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 import ScrapeDataException from '@/utils/exceptions/ScrapeDataException';
 import { calculatorService } from '../../bootstrap';
 import { BenchmarkRatioPriceInput, BenchmarkRatioPrice } from './benchmark.typings';
-import { BenchmarkRatioPriceQuarterlyData, QuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
+import { BenchmarkRatioPriceQuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
 import { reduceTTM, getLastPeriodValue } from '@/utils/processing.utils';
 import { industryNameMap } from './benchmark.constants';
 
@@ -52,11 +52,19 @@ class BenchmarkService {
 
     private async fetchBenchmarkPsRatio(industry: string): Promise<number> {
         return this.isReady.then(() => {
-            if (this.benchmarkIndustryMapping[industry] !== undefined) {
+            if (industry in this.benchmarkIndustryMapping) {
                 console.log(`Industry '${industry}' exists in benchmark map...`);
                 return this.benchmarkIndustryMapping[industry];
-            } else if (industry in industryNameMap) {
-                console.log(`Industry ${industry} exists in industry name map...`);
+            }
+
+            const removedDash = ('' + industry).replaceAll(' - ', ' ');
+            if (removedDash in this.benchmarkIndustryMapping) {
+                console.log(`Industry '${removedDash}' exists in benchmark map...`);
+                return this.benchmarkIndustryMapping[removedDash];
+            }
+
+            if (industry in industryNameMap && industryNameMap[industry] in this.benchmarkIndustryMapping) {
+                console.log(`Industry '${industry}' exists in industry name map...`);
                 return this.benchmarkIndustryMapping[industryNameMap[industry]];
             }
             console.log(`Industry '${industry}' does not exist in benchmark map, returning default...`);
@@ -117,8 +125,9 @@ class BenchmarkService {
     private cleanIndustryText(industry: string): string {
         return industry
             .replaceAll('&amp;', '&')
-            .replaceAll(' - ', '—');
+            .replaceAll('—', '-');
     }
+
 }
 
 export default BenchmarkService;

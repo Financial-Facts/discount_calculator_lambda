@@ -101,7 +101,8 @@ class CalculatorService {
 
     public calculatePeriodicGrowthRates(data: {
         cik: string,
-        periodicData: PeriodicData[]
+        periodicData: PeriodicData[],
+        simplifiedGrowthRateMinimum?: number
     }): PeriodicData[] {
         return this.periodicGrowthRatesFunction.calculate(data);
     }

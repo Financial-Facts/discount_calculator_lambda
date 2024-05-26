@@ -12,6 +12,17 @@ export const industryNameMap: Record<string, string> = {
     'Beverages - Non-Alcoholic': 'Beverages—Non-Alcoholic',
     'Lumber & Wood Production': 'Building Materials',
     'Building - Products & Equipment': 'Building Products & Equipment',
-    'Apparel - Retail': 'Apparel Retail'
+    'Apparel - Retail': 'Apparel Retail',
+    'Auto - Dealerships': 'Auto & Truck Dealerships',
+    'Financial - Capital Markets': 'Capital Markets',
+    'Construction': 'Residential Construction',
+    'Construction Materials': 'Building Materials',
+    'Hardware, Equipment & Parts': 'Electrical Equipment & Parts',
+    'Gambling, Resorts & Casinos': 'Gambling',
+    'Financial - Data & Stock Exchanges': 'Asset Management',
+    'Medical - Diagnostics & Research': 'Diagnostics & Research',
+    'Agricultural Farm Products': 'Farm Products',
+    'Industrial - Machinery': 'Specialty Industrial Machinery',
+    'Paper, Lumber & Forest Products': 'Building Materials'
 }
 

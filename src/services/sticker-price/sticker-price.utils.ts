@@ -14,22 +14,26 @@ export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFiv
     checkAverageGrowthRateExceedsValue(
         calculatorService.calculatePeriodicGrowthRates({
             cik: cik,
-            periodicData: bigFive.annualRevenue
+            periodicData: bigFive.annualRevenue,
+            simplifiedGrowthRateMinimum: 10
         }), `Revenue growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
         calculatorService.calculatePeriodicGrowthRates({
             cik: cik,
-            periodicData: bigFive.annualEPS
+            periodicData: bigFive.annualEPS,
+            simplifiedGrowthRateMinimum: 10
         }), `EPS growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
         calculatorService.calculatePeriodicGrowthRates({
             cik: cik,
-            periodicData: bigFive.annualEquity
+            periodicData: bigFive.annualEquity,
+            simplifiedGrowthRateMinimum: 10
         }), `Equity growth does not meet a minimum of 10% for ${cik}`);
     checkAverageGrowthRateExceedsValue(
         calculatorService.calculatePeriodicGrowthRates({
             cik: cik,
-            periodicData: bigFive.annualOperatingCashFlow
+            periodicData: bigFive.annualOperatingCashFlow,
+            simplifiedGrowthRateMinimum: 10
         }), `Operating cash flow growth does not meet a minimum of 10% for ${cik}`); 
 }
 

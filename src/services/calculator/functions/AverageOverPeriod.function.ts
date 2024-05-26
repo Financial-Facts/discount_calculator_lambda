@@ -14,10 +14,19 @@ class AverageOverPeriodFunction extends AbstractFunction {
     }): number {
         const periodicData = data.periodicData;
         const numPeriods = data.numPeriods;
-        const average = numPeriods <= 0 ? 0 : numPeriods === 1 ? getLastPeriodValue(periodicData) :
-        periodicData.slice(0 - numPeriods)
+        let average = 0;
+        
+        if (numPeriods === 1) {
+            average = getLastPeriodValue(periodicData);
+        }
+
+        if (numPeriods > 1) {
+            average = periodicData
+                .slice(0 - numPeriods)
                 .map(period => period.value)
                 .reduce((a, b) => a + b) / numPeriods;
+        }
+
         if (data.minimum && average < data.minimum) {
             if (data.errorMessage) {
                 throw new DisqualifyingDataException(data.errorMessage);

@@ -62,6 +62,12 @@ class DiscountManager {
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
                     
+                    if (discount.stickerPrice.price < 0 ||
+                        discount.benchmarkRatioPrice.price < 0 ||
+                        discount.discountedCashFlowPrice.price <= 0) {
+                            throw new DisqualifyingDataException('Valuation cannot be negative');
+                        }
+                    
                     discount.active = 
                         marketPrice <  discount.stickerPrice.price &&
                         marketPrice < discount.benchmarkRatioPrice.price && 
