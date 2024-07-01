@@ -7,8 +7,8 @@ export enum Frequency {
 
 export interface HistoricalPriceInput {
     symbol: string;
-    fromDate: number;
-    toDate: number;
+    fromDate: Date;
+    toDate: Date;
     frequency: Frequency
 }
 

@@ -1,13 +1,13 @@
-import { buildHistoricalPriceInput } from "@/services/historical-price/historical-price.utils";
+import { buildHistoricalPriceInput } from "@/services/historical-price/yf-historical-price/historical-price.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import AbstractFunction from "./AbstractFunction";
-import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
 import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
 import { PeriodicData } from "@/src/types";
 import { PeInput } from "@/resources/discount-manager/discount-manager.typings";
 import { days_between } from "@/utils/date.utils";
 import { annualizeByAdd } from "@/utils/annualize.utils";
+import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
 
 
 

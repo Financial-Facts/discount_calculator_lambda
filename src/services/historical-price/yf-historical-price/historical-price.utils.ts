@@ -1,12 +1,12 @@
-import { HistoricalPriceInput, Frequency, PriceData } from "./historical-price.typings";
+import { HistoricalPriceInput, Frequency, PriceData } from "../historical-price.typings";
 
 
 
 export function buildHistoricalPriceInput(symbol: string, fromDate: Date, toDate: Date): HistoricalPriceInput {
     return {
         symbol: symbol,
-        fromDate: getUnixTimestamp(fromDate),
-        toDate: getUnixTimestamp(toDate),
+        fromDate: fromDate,
+        toDate: toDate,
         frequency: Frequency.DAILY
     }
 }

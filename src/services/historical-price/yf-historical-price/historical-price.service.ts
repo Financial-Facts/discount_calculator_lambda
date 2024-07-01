@@ -1,9 +1,10 @@
-import { mapCSVToPriceData } from "./historical-price.utils";
 import fetch, { Response } from "node-fetch";
 import ThirdPartyDataFailureException from "@/utils/exceptions/ThirdPartyDataFailureException";
-import { HistoricalPriceInput, PriceData } from "./historical-price.typings";
+import { HistoricalPriceInput, PriceData } from "../historical-price.typings";
+import { mapCSVToPriceData } from "./historical-price.utils";
+import { IHistoricalPriceService } from "../historical-price-service.typings";
 
-class HistoricalPriceService {
+class HistoricalPriceService implements IHistoricalPriceService {
 
     private historicalPriceUrlV1: string;
 

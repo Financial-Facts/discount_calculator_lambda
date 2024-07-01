@@ -64,12 +64,47 @@ export const buildDiscount = (
     symbol: profile.symbol,
     name: profile.companyName,
     active: false,
-    marketPrice: 0,
+    marketPrice: profile.price,
+    annualDividend: profile.lastDiv,
+    averageVolume: profile.volAvg,
+    description: profile.description,
+    ceo: profile.ceo,
+    exchange: profile.exchange,
+    industry: profile.industry,
+    location: buildLocationString(profile),
+    website: profile.website,
     lastUpdated: new Date(),
     stickerPrice,
     benchmarkRatioPrice,
     discountedCashFlowPrice
 })
+
+const buildLocationString = (profile: CompanyProfile): string => {
+    const { city, state, country } = profile;
+    let result = '';
+
+    if (city) {
+        result += city;
+
+        if (state || country) {
+            result += ', '
+        }
+    }
+
+    if (state) {
+        result += state;
+
+        if (country) {
+            result += ', ';
+        }
+    }
+
+    if (country) {
+        result += country;
+    }
+
+    return result;
+}
 
 export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({
     quarterlyShareholderEquity: statements.balanceSheets.map(sheets => ({

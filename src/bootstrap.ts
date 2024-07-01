@@ -1,5 +1,5 @@
 import BenchmarkService from "@/services/benchmark/benchmark.service";
-import HistoricalPriceService from "@/services/historical-price/historical-price.service";
+import HistoricalPriceService from "@/services/historical-price/yf-historical-price/historical-price.service";
 import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
 import StickerPriceService from "@/services/sticker-price/sticker-price.service";
 import EnvInitializationException from "@/utils/exceptions/EnvInitializationException";
@@ -10,12 +10,14 @@ import DiscountedCashFlowService from "./services/financial-modeling-prep/discou
 import SupabaseDiscountService from "./services/discount/supabase-discount/supabase-discount.service";
 import { IDiscountService } from "./services/discount/discount-service.typings";
 import DiscountService from "./services/discount/ffs-discount/discount.service";
+import { IHistoricalPriceService } from "./services/historical-price/historical-price-service.typings";
+import FmpHistoricalPriceService from "./services/historical-price/fmp-historical-price/fmp-historical-price.service";
 
 let discountManager: DiscountManager;
 let discountService: IDiscountService;
 let statementService: StatementService;
 let discountedCashFlowService: DiscountedCashFlowService;
-let historicalPriceService: HistoricalPriceService;
+let historicalPriceService: IHistoricalPriceService;
 let stickerPriceService: StickerPriceService;
 let benchmarkService: BenchmarkService;
 let profileService: ProfileService;
@@ -31,9 +33,9 @@ export default function bootstrap() {
     profileService = fmpServices.profileService;
     statementService = fmpServices.statementService;
     discountedCashFlowService = fmpServices.discountedCashFlowService;
+    historicalPriceService = fmpServices.fmpHistoricalPriceService;
 
     // Business Logic Services
-    historicalPriceService = initHistoricalPriceService();
     stickerPriceService = new StickerPriceService();
     calculatorService = new CalculatorService();
     benchmarkService = initBenchmarkService();
@@ -47,7 +49,6 @@ export default function bootstrap() {
     console.log(`fmp url: ${process.env.fmp_base_url}`);
     console.log(`fmp key: ${process.env.fmp_api_key}`);
     console.log(`supabase url: ${process.env.supabase_base_url}`);
-    console.log(`historical source url: ${process.env.historical_data_source_url_v1}`);
     console.log(`Benchmark source url: ${process.env.benchmark_source_url}`);
 }
 
@@ -77,7 +78,8 @@ function initSupabaseService(): SupabaseDiscountService {
 function initFinancialModelingPrepServices(): {
     profileService: ProfileService,
     statementService: StatementService,
-    discountedCashFlowService: DiscountedCashFlowService
+    discountedCashFlowService: DiscountedCashFlowService,
+    fmpHistoricalPriceService: FmpHistoricalPriceService
 } {
     const fmp_base_url = process.env.fmp_base_url;
     const fmp_api_key = process.env.fmp_api_key;
@@ -87,7 +89,8 @@ function initFinancialModelingPrepServices(): {
     return {
         profileService: new ProfileService(fmp_base_url, fmp_api_key),
         statementService: new StatementService(fmp_base_url, fmp_api_key),
-        discountedCashFlowService: new DiscountedCashFlowService(fmp_base_url, fmp_api_key)
+        discountedCashFlowService: new DiscountedCashFlowService(fmp_base_url, fmp_api_key),
+        fmpHistoricalPriceService: new FmpHistoricalPriceService(fmp_base_url, fmp_api_key)
     }
 }
 

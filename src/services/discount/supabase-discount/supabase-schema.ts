@@ -270,27 +270,51 @@ export type Database = {
       discount: {
         Row: {
           active: boolean
+          annual_dividend: number
+          average_volume: number
+          ceo: string
           cik: string
+          description: string
+          exchange: string
+          industry: string
           last_updated: string
+          location: string
           market_price: number
           name: string
           symbol: string
+          website: string
         }
         Insert: {
           active: boolean
+          annual_dividend: number
+          average_volume: number
+          ceo: string
           cik: string
+          description: string
+          exchange: string
+          industry: string
           last_updated: string
+          location: string
           market_price: number
           name: string
           symbol: string
+          website: string
         }
         Update: {
           active?: boolean
+          annual_dividend?: number
+          average_volume?: number
+          ceo?: string
           cik?: string
+          description?: string
+          exchange?: string
+          industry?: string
           last_updated?: string
+          location?: string
           market_price?: number
           name?: string
           symbol?: string
+          website?: string
         }
         Relationships: []
       }
