@@ -12,7 +12,7 @@ class StickerPriceService {
         this.checkDataMeetsRequirements(data);
         return {
             cik: data.cik,
-            price: this.calculateStickerPrice(data.cik, data.annualBVPS, data.annualPE, data.annualEPS),
+            price: this.calculateStickerPrice(data.cik, data.annualBVPS, data.annualPE, data.annualEPS, data.ffyEstimatedEpsGrowthRate),
             input: data
         }
     }
@@ -47,7 +47,15 @@ class StickerPriceService {
             annualEPS: annualizeByAdd(cik, data.quarterlyEPS),
             annualEquity: annualizeByLastQuarter(cik, data.quarterlyTotalEquity),
             annualRevenue: annualizeByAdd(cik, data.quarterlyRevenue),
-            annualOperatingCashFlow: annualizeByAdd(cik, data.quarterlyOperatingCashFlow)
+            annualOperatingCashFlow: annualizeByAdd(cik, data.quarterlyOperatingCashFlow),
+            ffyEstimatedEpsGrowthRate: data.annualEstimatedEPS.length > 0 ? 
+                calculatorService.calculateAverageOverPeriod({
+                    periodicData: calculatorService.calculatePeriodicGrowthRates({
+                        cik: cik,
+                        periodicData: data.annualEstimatedEPS.reverse()
+                    }),
+                    numPeriods: 5
+                }) : undefined
         }
     }
     
@@ -67,7 +75,8 @@ class StickerPriceService {
         cik: string,
         annualBVPS: PeriodicData[],
         annualPE: PeriodicData[],
-        annualEPS: PeriodicData[]
+        annualEPS: PeriodicData[],
+        ffyEstimatedEpsGrowthRate?: number
     ): number {
         const numPeriods = 10;
         return calculatorService.calculateStickerPrice({
@@ -83,7 +92,8 @@ class StickerPriceService {
                 errorMessage: `Average annual growth rate over the passed ${numPeriods} year(s) does not exceed 10%`
             }),
             annualEPS: annualEPS,
-            annualPE: annualPE
+            annualPE: annualPE,
+            analystGrowthEstimate: ffyEstimatedEpsGrowthRate
         });
     }
 

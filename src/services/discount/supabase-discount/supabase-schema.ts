@@ -683,14 +683,17 @@ export type Database = {
         Row: {
           cik: string
           debt_years: number
+          ffy_estimated_eps_growth_rate: number | null
         }
         Insert: {
           cik: string
           debt_years: number
+          ffy_estimated_eps_growth_rate?: number | null
         }
         Update: {
           cik?: string
           debt_years?: number
+          ffy_estimated_eps_growth_rate?: number | null
         }
         Relationships: [
           {

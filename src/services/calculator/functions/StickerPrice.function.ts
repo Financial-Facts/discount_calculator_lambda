@@ -30,13 +30,6 @@ class StickerPriceFunction extends AbstractFunction {
         // check if two times equity growth rate is less than historical PE
         forwardPE = Math.min(data.equityGrowthRate * 2, forwardPE);
 
-        // ToDo: check analysts estimates, if they're less, use those
-
-        // Cap estimated EPS growth at 15%
-        if (data.equityGrowthRate > 15) {
-            data.equityGrowthRate = 15;
-        }
-
         // Calculate the sticker price of the stock today relative to what predicted price will be in the future
         const num_years = 10
         const percent_return = 15

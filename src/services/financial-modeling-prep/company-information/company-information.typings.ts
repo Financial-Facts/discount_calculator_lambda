@@ -37,3 +37,9 @@ export interface CompanyProfile {
     isAdr: boolean,
     isFund: boolean
 }
+
+export interface AnalystEstimates {
+    symbol: string
+    date: Date
+    estimatedEpsAvg: number
+}

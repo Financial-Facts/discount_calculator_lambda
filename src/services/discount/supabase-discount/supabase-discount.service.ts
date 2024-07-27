@@ -111,7 +111,8 @@ class SupabaseDiscountService implements IDiscountService {
     private async upsertStickerPriceInput(input: StickerPriceInput): Promise<void> {
         await this.upsertData('sticker_price_input', {
             cik: input.cik,
-            debt_years: input.debtYears
+            debt_years: input.debtYears,
+            ffy_estimated_eps_growth_rate: input.ffyEstimatedEpsGrowthRate
         });
         await this.upsertPeriodicData('annual_bvps', input.annualBVPS);
         await this.upsertPeriodicData('annual_pe', input.annualPE);

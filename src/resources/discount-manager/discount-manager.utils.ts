@@ -5,10 +5,11 @@ import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException"
 import { BenchmarkRatioPrice } from "@/services/benchmark/benchmark.typings";
 import { Discount } from "@/services/discount/ffs-discount/discount.typings";
 import { DiscountedCashFlowPrice } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
-import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
+import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";
 import { QuarterlyData } from "./discount-manager.typings";
 import { PeriodicData } from "@/src/types";
+import { companyInformationService } from "@/src/bootstrap";
 
 
 export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
@@ -106,7 +107,11 @@ const buildLocationString = (profile: CompanyProfile): string => {
     return result;
 }
 
-export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({
+export const buildQuarterlyData = async (
+    cik: string,
+    symbol: string,
+    statements: Statements
+): Promise<QuarterlyData> => ({
     quarterlyShareholderEquity: statements.balanceSheets.map(sheets => ({
         cik: sheets.cik,
         announcedDate: sheets.date,
@@ -179,6 +184,11 @@ export const buildQuarterlyData = (statements: Statements): QuarterlyData => ({
         announcedDate: sheets.date,
         period: sheets.period,
         value: sheets.capitalExpenditure
+    })),
+    annualEstimatedEPS: (await companyInformationService.getAnalystEstimates(symbol)).map(estimate => ({
+        cik: cik,
+        announcedDate: estimate.date,
+        value: estimate.estimatedEpsAvg
     }))
 });
 

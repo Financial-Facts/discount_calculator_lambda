@@ -3,7 +3,7 @@ import HistoricalPriceService from "@/services/historical-price/yf-historical-pr
 import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
 import StickerPriceService from "@/services/sticker-price/sticker-price.service";
 import EnvInitializationException from "@/utils/exceptions/EnvInitializationException";
-import ProfileService from "@/services/financial-modeling-prep/profile/profile.service";
+import CompanyInformationService from "@/services/financial-modeling-prep/company-information/company-information.service";
 import CalculatorService from "@/services/calculator/calculator.service";
 import DiscountManager from "./resources/discount-manager/discount-manager";
 import DiscountedCashFlowService from "./services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.service";
@@ -20,7 +20,7 @@ let discountedCashFlowService: DiscountedCashFlowService;
 let historicalPriceService: IHistoricalPriceService;
 let stickerPriceService: StickerPriceService;
 let benchmarkService: BenchmarkService;
-let profileService: ProfileService;
+let companyInformationService: CompanyInformationService;
 let calculatorService: CalculatorService;
 
 export default function bootstrap() {
@@ -30,7 +30,7 @@ export default function bootstrap() {
 
     // FMP Services
     const fmpServices = initFinancialModelingPrepServices();
-    profileService = fmpServices.profileService;
+    companyInformationService = fmpServices.companyInformationService;
     statementService = fmpServices.statementService;
     discountedCashFlowService = fmpServices.discountedCashFlowService;
     historicalPriceService = fmpServices.fmpHistoricalPriceService;
@@ -76,7 +76,7 @@ function initSupabaseService(): SupabaseDiscountService {
 }
 
 function initFinancialModelingPrepServices(): {
-    profileService: ProfileService,
+    companyInformationService: CompanyInformationService,
     statementService: StatementService,
     discountedCashFlowService: DiscountedCashFlowService,
     fmpHistoricalPriceService: FmpHistoricalPriceService
@@ -87,7 +87,7 @@ function initFinancialModelingPrepServices(): {
         throw new EnvInitializationException('FMP key or base url not provided');
     }
     return {
-        profileService: new ProfileService(fmp_base_url, fmp_api_key),
+        companyInformationService: new CompanyInformationService(fmp_base_url, fmp_api_key),
         statementService: new StatementService(fmp_base_url, fmp_api_key),
         discountedCashFlowService: new DiscountedCashFlowService(fmp_base_url, fmp_api_key),
         fmpHistoricalPriceService: new FmpHistoricalPriceService(fmp_base_url, fmp_api_key)
@@ -116,7 +116,7 @@ export {
     statementService,
     historicalPriceService,
     stickerPriceService,
-    profileService,
+    companyInformationService,
     benchmarkService,
     calculatorService,
     discountedCashFlowService

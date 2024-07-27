@@ -2,7 +2,7 @@ import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataExce
 import HttpException from "@/utils/exceptions/HttpException";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/ffs-discount/discount.typings";
-import { benchmarkService, discountService, discountedCashFlowService, profileService, statementService, stickerPriceService } from "@/src/bootstrap";
+import { benchmarkService, discountService, discountedCashFlowService, statementService, stickerPriceService, companyInformationService } from "@/src/bootstrap";
 import { buildDiscount, buildQuarterlyData, validateStatements } from "./discount-manager.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
@@ -10,7 +10,7 @@ import { StickerPriceInput } from "@/services/sticker-price/sticker-price.typing
 import { BenchmarkRatioPriceInput } from "@/services/benchmark/benchmark.typings";
 import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
-import { CompanyProfile } from "@/services/financial-modeling-prep/profile/profile.typings";
+import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { getLastQ4Value } from "@/utils/processing.utils";
 
 
@@ -49,7 +49,7 @@ class DiscountManager {
         console.log(`In discount manager checking for a discount on ${cik}`);
         return Promise.all([
             statementService.getStatements(cik),
-            profileService.getCompanyProfile(cik)
+            companyInformationService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
             validateStatements(cik, statements, !!this.revisitMachineArn);
@@ -88,7 +88,7 @@ class DiscountManager {
     ): Promise<[ StickerPriceInput, BenchmarkRatioPriceInput, DiscountedCashFlowInput ]> {
         const symbol = profile.symbol;
         const industry = profile.industry;
-        const quarterlyData = buildQuarterlyData(statements);
+        const quarterlyData = await buildQuarterlyData(cik, symbol, statements);
 
         const lastQ4BalanceSheet = getLastQ4Value(statements.balanceSheets);
         const netDebt = lastQ4BalanceSheet.netDebt;

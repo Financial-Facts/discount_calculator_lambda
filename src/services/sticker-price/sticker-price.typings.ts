@@ -5,6 +5,7 @@ export type StickerPrice = Valuation<StickerPriceInput>;
 export interface StickerPriceInput {
     cik: string
     debtYears: number,
+    ffyEstimatedEpsGrowthRate?: number,
     annualBVPS: PeriodicData[]
     annualPE: PeriodicData[]
     annualROIC: PeriodicData[]

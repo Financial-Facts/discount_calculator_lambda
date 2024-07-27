@@ -1,9 +1,9 @@
 import HttpException from "@/utils/exceptions/HttpException";
-import { CompanyProfile } from "./profile.typings";
+import { AnalystEstimates, CompanyProfile } from "./company-information.typings";
 import { buildURI } from "../fmp-service.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
-class ProfileService {
+class CompanyInformationService {
 
     private fmp_base_url;
     private apiKey;
@@ -37,6 +37,30 @@ class ProfileService {
                 `Error occurred while getting company profile for ${cik}: ${err.message}`)
         }
     }
+
+    public async getAnalystEstimates(symbol: string): Promise<AnalystEstimates[]> {
+        console.log(`In profile service getting analysts estimates for ${symbol}`);
+        try {
+            const url = this.fmp_base_url + `/api/v3/analyst-estimates/${symbol}?apikey=${this.apiKey}`;
+            return fetch(url)
+                .then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        const text = await response.text();
+                        throw new HttpException(response.status,
+                            `Error occurred while getting analyst estimates for ${symbol}: ${text}`
+                        ) 
+                    }
+                    return response.json();
+                }).then((body: AnalystEstimates[]) => {
+                    return body;
+                })
+
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                `Error occurred while getting analyst estimates for ${symbol}: ${err.message}`
+            )
+        }
+    }
 }
 
-export default ProfileService;
+export default CompanyInformationService;

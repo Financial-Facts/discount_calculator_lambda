@@ -37,9 +37,11 @@ export type StickerPriceQuarterlyData =
     DebtYearsInput &
     BvpsInput &
     PeInput &
-    RoicInput & {
+    RoicInput &
+    {
         quarterlyRevenue: PeriodicData[],
         quarterlyOperatingCashFlow: PeriodicData[]
+        annualEstimatedEPS: PeriodicData[]
     }
 
 export interface BenchmarkRatioPriceQuarterlyData {
