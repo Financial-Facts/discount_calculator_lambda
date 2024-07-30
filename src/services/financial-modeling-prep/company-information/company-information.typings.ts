@@ -43,3 +43,10 @@ export interface AnalystEstimates {
     date: Date
     estimatedEpsAvg: number
 }
+
+export interface InsiderTrade {
+    symbol: string
+    transactionDate: Date
+    transactionType: 'P-Purchase' | 'S-Sale'
+    securitiesTransacted: number
+}

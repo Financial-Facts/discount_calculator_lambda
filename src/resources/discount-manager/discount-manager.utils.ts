@@ -54,13 +54,13 @@ function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): Periodi
 }
 
 
-export const buildDiscount = (
+export const buildDiscount = async (
     cik: string,
     profile: CompanyProfile,
     stickerPrice: StickerPrice,
     benchmarkRatioPrice: BenchmarkRatioPrice,
     discountedCashFlowPrice: DiscountedCashFlowPrice
-): Discount => ({
+): Promise<Discount> => ({
     cik: cik,
     symbol: profile.symbol,
     name: profile.companyName,
@@ -74,6 +74,7 @@ export const buildDiscount = (
     industry: profile.industry,
     location: buildLocationString(profile),
     website: profile.website,
+    ttmInsiderPurchases: await getTtmInsiderPurchases(profile.symbol),
     lastUpdated: new Date(),
     stickerPrice,
     benchmarkRatioPrice,
@@ -105,6 +106,21 @@ const buildLocationString = (profile: CompanyProfile): string => {
     }
 
     return result;
+}
+
+const getTtmInsiderPurchases = async (symbol: string): Promise<number> => {
+    return companyInformationService
+        .getInsiderTrades(symbol)
+        .then(insiderTrades => insiderTrades
+        .reduce<number>((netBuysSells, trade) => {
+            if (days_between(new Date(trade.transactionDate), new Date()) < 365) {
+                netBuysSells = netBuysSells + (
+                    trade.transactionType === 'P-Purchase' ?
+                        trade.securitiesTransacted :
+                        -trade.securitiesTransacted);
+            }
+            return netBuysSells;
+        }, 0));
 }
 
 export const buildQuarterlyData = async (

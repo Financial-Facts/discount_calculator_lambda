@@ -54,10 +54,10 @@ class DiscountManager {
             const [ statements, profile ] = companyData;
             validateStatements(cik, statements, !!this.revisitMachineArn);
             return this.buildValuationInputs(cik, statements, profile)
-                .then(inputs => {
+                .then(async inputs => {
                     const [stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
                     const marketPrice = discountedCashFlowInput.marketPrice;
-                    const discount = buildDiscount(cik, profile,
+                    const discount = await buildDiscount(cik, profile,
                         stickerPriceService.getStickerPrice(stickerPriceInput),
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));

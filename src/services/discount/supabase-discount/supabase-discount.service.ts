@@ -78,6 +78,7 @@ class SupabaseDiscountService implements IDiscountService {
             industry: discount.industry,
             location: discount.location,
             website: discount.website,
+            ttm_insider_purchases: discount.ttmInsiderPurchases,
             name: discount.name,
             symbol: discount.symbol,
             market_price: discount.marketPrice

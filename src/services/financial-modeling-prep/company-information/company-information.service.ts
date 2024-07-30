@@ -1,5 +1,5 @@
 import HttpException from "@/utils/exceptions/HttpException";
-import { AnalystEstimates, CompanyProfile } from "./company-information.typings";
+import { AnalystEstimates, CompanyProfile, InsiderTrade } from "./company-information.typings";
 import { buildURI } from "../fmp-service.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
@@ -58,6 +58,30 @@ class CompanyInformationService {
         } catch (err: any) {
             throw new HttpException(err.status,
                 `Error occurred while getting analyst estimates for ${symbol}: ${err.message}`
+            )
+        }
+    }
+
+    public async getInsiderTrades(symbol: string): Promise<InsiderTrade[]> {
+        console.log(`In profile service getting insider trade statistics for ${symbol}`);
+        try {
+            const url = this.fmp_base_url + `/api/v4/insider-trading?symbol=${symbol}&page=0&transactionType=P-Purchase&transactionType=S-Sale&apikey=${this.apiKey}`;
+            return fetch(url)
+                .then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        const text = await response.text();
+                        throw new HttpException(response.status,
+                            `Error occurred while getting insider trade statistics for ${symbol}: ${text}`
+                        ) 
+                    }
+                    return response.json();
+                }).then((body: InsiderTrade[]) => {
+                    return body;
+                })
+
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                `Error occurred while getting insider trade statistics for ${symbol}: ${err.message}`
             )
         }
     }

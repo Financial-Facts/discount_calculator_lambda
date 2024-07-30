@@ -282,6 +282,7 @@ export type Database = {
           market_price: number
           name: string
           symbol: string
+          ttm_insider_purchases: number
           website: string
         }
         Insert: {
@@ -298,6 +299,7 @@ export type Database = {
           market_price: number
           name: string
           symbol: string
+          ttm_insider_purchases?: number
           website: string
         }
         Update: {
@@ -314,6 +316,7 @@ export type Database = {
           market_price?: number
           name?: string
           symbol?: string
+          ttm_insider_purchases?: number
           website?: string
         }
         Relationships: []
