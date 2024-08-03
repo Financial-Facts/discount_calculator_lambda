@@ -10,59 +10,40 @@ export function checkDebtYearsExceedsMinimum(cik: string, debtYears: number, max
 }
 
 export function checkBigFiveExceedGrowthRateMinimum(cik: string, bigFive: BigFive): void {
-    checkPercentageExceedsMinimum(cik, bigFive.annualROIC, 'ROIC');
-    checkAverageGrowthRateExceedsValue(
-        calculatorService.calculatePeriodicGrowthRates({
-            cik: cik,
-            periodicData: bigFive.annualRevenue,
-            simplifiedGrowthRateMinimum: 10
-        }), `Revenue growth does not meet a minimum of 10% for ${cik}`);
-    checkAverageGrowthRateExceedsValue(
-        calculatorService.calculatePeriodicGrowthRates({
-            cik: cik,
-            periodicData: bigFive.annualEPS,
-            simplifiedGrowthRateMinimum: 10
-        }), `EPS growth does not meet a minimum of 10% for ${cik}`);
-    checkAverageGrowthRateExceedsValue(
-        calculatorService.calculatePeriodicGrowthRates({
-            cik: cik,
-            periodicData: bigFive.annualEquity,
-            simplifiedGrowthRateMinimum: 10
-        }), `Equity growth does not meet a minimum of 10% for ${cik}`);
-    checkAverageGrowthRateExceedsValue(
-        calculatorService.calculatePeriodicGrowthRates({
-            cik: cik,
-            periodicData: bigFive.annualOperatingCashFlow,
-            simplifiedGrowthRateMinimum: 10
-        }), `Operating cash flow growth does not meet a minimum of 10% for ${cik}`); 
-}
-
-function checkPercentageExceedsMinimum(cik: string, data: PeriodicData[], type: string): void {
-    checkAnnualDataAvgExceedsValue([data], 10, `Annual ${type} does not meet minimum 10% for ${cik}`);
-}
-
-function checkAverageGrowthRateExceedsValue(data: PeriodicData[], errorMessage: string) {
-    calculatorService.calculateAverageOverPeriod({
-        periodicData: data,
-        numPeriods: 10,
-        minimum: 10,
-        errorMessage: errorMessage
-    });
+    checkAnnualDataAvgExceedsValue(bigFive.annualROIC, 10, `Average annual ROIC does not meet minimum 10% for ${cik}`);
+    checkAverageGrowthRateExceedsValue(bigFive.annualRevenue, 10, 'Annual Revenue', [5, 10]);
+    checkAverageGrowthRateExceedsValue(bigFive.annualEPS, 10, 'Annual EPS', [1, 5, 10]);
+    checkAverageGrowthRateExceedsValue(bigFive.annualEquity, 10, 'Annual Equity', [1, 5, 10]);
+    checkAverageGrowthRateExceedsValue(bigFive.annualOperatingCashFlow, 10, 'Annual Operating Cash Flow', [5, 10]);
 }
 
 function checkAnnualDataAvgExceedsValue(
-    annualData: PeriodicData[][],
+    annualData: PeriodicData[],
     value: number,
     errorMessage: string
 ): void {
-    annualData.forEach(dataset => {
-        [1, 5, 10].forEach(period => {
-            calculatorService.calculateAverageOverPeriod({ 
-                periodicData: dataset,
-                numPeriods: period,
-                minimum: value,
-                errorMessage: errorMessage
-            });
+    [1, 5, 10].forEach(period => {
+        calculatorService.calculateAverageOverPeriod({ 
+            periodicData: annualData,
+            numPeriods: period,
+            minimum: value,
+            errorMessage: errorMessage
         });
-    })
+    });
+}
+
+function checkAverageGrowthRateExceedsValue(
+    data: PeriodicData[],
+    value: number,
+    type: string,
+    periods: number[]
+): void {
+    periods.forEach(period => {
+        calculatorService.calculateCAGR({
+            periodicData: data,
+            period: period,
+            minimumGrowth: value,
+            type: type
+        })
+    });
 }

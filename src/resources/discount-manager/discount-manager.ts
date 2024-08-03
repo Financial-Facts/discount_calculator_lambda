@@ -75,7 +75,7 @@ class DiscountManager {
                     
                     discount.marketPrice = marketPrice;
                     
-                    console.log(discount);
+                    console.log(JSON.stringify(discount, null, 4));
                     return this.saveDiscount(discount);
                 });
         });

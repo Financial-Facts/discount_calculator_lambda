@@ -15,6 +15,7 @@ import DcfFunction from "./functions/DCF.function";
 import TerminalValueFunction from "./functions/TerminalValue.function";
 import EnterpriseValueFunction from "./functions/EnterpriseValue.function";
 import WaccFunction from "./functions/WACC.function";
+import CagrFunction from "./functions/CAGR.function";
 
 
 class CalculatorService {
@@ -33,7 +34,8 @@ class CalculatorService {
     private terminalValueFunction = new TerminalValueFunction();
     private enterpriseValueFunction = new EnterpriseValueFunction();
     private waccFunction = new WaccFunction();
-
+    private cagrFunction = new CagrFunction();
+    
     public calculateBVPS(data: {
         cik: string,
         timePeriod: TimePeriod,
@@ -101,10 +103,18 @@ class CalculatorService {
 
     public calculatePeriodicGrowthRates(data: {
         cik: string,
-        periodicData: PeriodicData[],
-        simplifiedGrowthRateMinimum?: number
+        periodicData: PeriodicData[]
     }): PeriodicData[] {
         return this.periodicGrowthRatesFunction.calculate(data);
+    }
+
+    public calculateCAGR(data: {
+        periodicData: PeriodicData[],
+        period: number,
+        minimumGrowth: number,
+        type: string
+    }): number {
+        return this.cagrFunction.calculate(data);
     }
 
     public calculateStickerPrice(data: {

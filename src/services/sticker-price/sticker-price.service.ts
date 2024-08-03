@@ -82,14 +82,11 @@ class StickerPriceService {
         return calculatorService.calculateStickerPrice({
             cik: cik,
             numPeriods: numPeriods,
-            equityGrowthRate: calculatorService.calculateAverageOverPeriod({
-                periodicData: calculatorService.calculatePeriodicGrowthRates({
-                    cik: cik,
-                    periodicData: annualBVPS
-                }),
-                numPeriods: numPeriods,
-                minimum: 10,
-                errorMessage: `Average annual growth rate over the passed ${numPeriods} year(s) does not exceed 10%`
+            equityGrowthRate: calculatorService.calculateCAGR({
+                periodicData: annualBVPS,
+                period: numPeriods,
+                minimumGrowth: 10,
+                type: 'Annual BVPS'
             }),
             annualEPS: annualEPS,
             annualPE: annualPE,

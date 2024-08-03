@@ -1,27 +1,15 @@
 import { PeriodicData } from "@/src/types";
 import AbstractFunction from "./AbstractFunction";
-import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
-import { getLastPeriodValue } from "@/utils/processing.utils";
 
 
 class PeriodicGrowthRatesFunction extends AbstractFunction {
 
     calculate(data: {
         cik: string,
-        periodicData: PeriodicData[],
-        simplifiedGrowthRateMinimum?: number,
+        periodicData: PeriodicData[]
     }): PeriodicData[] {
         const periodicGrowthRates: PeriodicData[] = [];
         const periodicData = data.periodicData;
-
-        if (!!data.simplifiedGrowthRateMinimum) {
-            const previous = periodicData.slice(1)[0].value;
-            const current = getLastPeriodValue(periodicData);
-            const simplifiedGrowthRate = (1 - ((current / previous) * (1 / periodicData.length))) * 100;
-            if (simplifiedGrowthRate < data.simplifiedGrowthRateMinimum) {
-                throw new DisqualifyingDataException(`Simplified growth rate minimum not achieved`);
-            }
-        }
 
         let i = 1;
         while (i < periodicData.length) {
