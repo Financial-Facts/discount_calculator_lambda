@@ -277,6 +277,7 @@ export type Database = {
           description: string
           exchange: string
           industry: string
+          is_deleted: string
           last_updated: string
           location: string
           market_price: number
@@ -294,6 +295,7 @@ export type Database = {
           description: string
           exchange: string
           industry: string
+          is_deleted?: string
           last_updated: string
           location: string
           market_price: number
@@ -311,6 +313,7 @@ export type Database = {
           description?: string
           exchange?: string
           industry?: string
+          is_deleted?: string
           last_updated?: string
           location?: string
           market_price?: number

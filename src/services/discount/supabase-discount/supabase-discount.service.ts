@@ -43,8 +43,18 @@ class SupabaseDiscountService implements IDiscountService {
     }
 
     public async delete(cik: string): Promise<string> {
-        console.log(`Deleting discount for ${cik}`);
-        await this.deleteData('discount', 'cik', cik);
+        console.log(`Soft deleting discount for ${cik}`);
+        const { error } = await this.client
+            .from('discount')
+            .update({
+                is_deleted: 'Y',
+                last_updated: new Date().toDateString()
+            });
+
+        if (error) {
+            throw new DatabaseException(error.message);
+        }
+
         return CONSTANTS.GLOBAL.SUCCESS;
     }
     
