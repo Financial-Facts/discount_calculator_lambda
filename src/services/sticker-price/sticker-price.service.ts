@@ -4,6 +4,7 @@ import { calculatorService } from "../../bootstrap";
 import { PeriodicData } from "@/src/types";
 import { StickerPriceQuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
 import { annualizeByAdd, annualizeByLastQuarter } from "@/utils/annualize.utils";
+import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
 
 class StickerPriceService {
 
@@ -48,14 +49,7 @@ class StickerPriceService {
             annualEquity: annualizeByLastQuarter(cik, data.quarterlyTotalEquity),
             annualRevenue: annualizeByAdd(cik, data.quarterlyRevenue),
             annualOperatingCashFlow: annualizeByAdd(cik, data.quarterlyOperatingCashFlow),
-            ffyEstimatedEpsGrowthRate: data.annualEstimatedEPS.length > 0 ? 
-                calculatorService.calculateAverageOverPeriod({
-                    periodicData: calculatorService.calculatePeriodicGrowthRates({
-                        cik: cik,
-                        periodicData: data.annualEstimatedEPS.reverse()
-                    }),
-                    numPeriods: 5
-                }) : undefined
+            ffyEstimatedEpsGrowthRate: this.calculateAnalystEstimatedGrowthRate(cik, data.quarterlyEPS, data.annualEstimatedEPS)
         }
     }
     
@@ -70,6 +64,37 @@ class StickerPriceService {
             annualROIC: data.annualROIC
         });
     }
+
+
+    private calculateAnalystEstimatedGrowthRate(
+        cik: string,
+        quarterlyEps: PeriodicData[],
+        annualEstimatedEPS: PeriodicData[]
+    ): number | undefined {
+        if (annualEstimatedEPS.length === 0) {
+            return undefined;
+        }
+        
+        const recentFyEPS = annualizeByAdd(cik, filterToCompleteFiscalYears(quarterlyEps)).slice(-1)[0];
+        const futurePeriodEstimates = annualEstimatedEPS
+            .filter(period => new Date(period.announcedDate).valueOf() > new Date(recentFyEPS.announcedDate).valueOf())
+            .reverse();
+
+        if (futurePeriodEstimates.length === 0) {
+            return undefined;
+        }
+        
+        const estimatedPeriodicGrowthRates = calculatorService.calculatePeriodicGrowthRates({
+            cik: cik,
+            periodicData: [recentFyEPS, ...futurePeriodEstimates]
+        });
+
+        return calculatorService.calculateAverageOverPeriod({
+            periodicData: estimatedPeriodicGrowthRates,
+            numPeriods: estimatedPeriodicGrowthRates.length
+        });
+    }
+
 
     private calculateStickerPrice(
         cik: string,

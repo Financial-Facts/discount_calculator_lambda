@@ -77,6 +77,7 @@ export const buildDiscount = async (
     ttmInsiderPurchases: await getTtmInsiderPurchases(profile.symbol),
     lastUpdated: new Date(),
     isDeleted: 'N',
+    deletedReason: undefined,
     stickerPrice,
     benchmarkRatioPrice,
     discountedCashFlowPrice

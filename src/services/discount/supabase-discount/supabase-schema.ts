@@ -274,6 +274,7 @@ export type Database = {
           average_volume: number
           ceo: string
           cik: string
+          deleted_reason: string | null
           description: string
           exchange: string
           industry: string
@@ -292,6 +293,7 @@ export type Database = {
           average_volume: number
           ceo: string
           cik: string
+          deleted_reason?: string | null
           description: string
           exchange: string
           industry: string
@@ -310,6 +312,7 @@ export type Database = {
           average_volume?: number
           ceo?: string
           cik?: string
+          deleted_reason?: string | null
           description?: string
           exchange?: string
           industry?: string

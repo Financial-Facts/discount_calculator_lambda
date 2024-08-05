@@ -128,7 +128,7 @@ class DiscountManager {
     }
 
     private async deleteDiscount(cik: string, reason: string): Promise<void> {
-        return discountService.delete(cik)
+        return discountService.delete(cik, reason)
             .then(async () => {
                 return this.isReady.then(() => {
                     console.log(`Discount for ${cik} has been deleted due to: ${reason}`);

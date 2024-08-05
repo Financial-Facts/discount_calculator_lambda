@@ -35,21 +35,23 @@ class SupabaseDiscountService implements IDiscountService {
                 await this.upsertDiscount(currentDiscount);
             } else {
                 console.log('Deleting inserted data...');
-                await this.delete(discount.cik);
+                await this.delete(discount.cik, 'Discount failed to update');
             }
         }
 
         return CONSTANTS.GLOBAL.SUCCESS;
     }
 
-    public async delete(cik: string): Promise<string> {
-        console.log(`Soft deleting discount for ${cik}`);
+    public async delete(cik: string, reason?: string): Promise<string> {
+        console.log(`Soft deleting discount for ${cik}: ${reason}`);
         const { error } = await this.client
             .from('discount')
             .update({
                 is_deleted: 'Y',
-                last_updated: new Date().toDateString()
-            });
+                last_updated: new Date().toDateString(),
+                deleted_reason: reason
+            })
+            .eq('cik', cik);
 
         if (error) {
             throw new DatabaseException(error.message);
@@ -90,6 +92,7 @@ class SupabaseDiscountService implements IDiscountService {
             website: discount.website,
             ttm_insider_purchases: discount.ttmInsiderPurchases,
             is_deleted: discount.isDeleted,
+            deleted_reason: discount.deletedReason,
             name: discount.name,
             symbol: discount.symbol,
             market_price: discount.marketPrice

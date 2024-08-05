@@ -19,6 +19,7 @@ export interface Discount {
     website: string,
     ttmInsiderPurchases: number,
     isDeleted: 'Y' | 'N',
+    deletedReason?: string
     stickerPrice: StickerPrice
     benchmarkRatioPrice: BenchmarkRatioPrice
     discountedCashFlowPrice: DiscountedCashFlowPrice
