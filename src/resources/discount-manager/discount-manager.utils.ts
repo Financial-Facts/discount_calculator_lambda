@@ -3,7 +3,7 @@ import { Statement, Statements } from "@/services/financial-modeling-prep/statem
 import { days_between } from "@/utils/date.utils";
 import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
 import { BenchmarkRatioPrice } from "@/services/benchmark/benchmark.typings";
-import { Discount } from "@/services/discount/ffs-discount/discount.typings";
+import { Discount, Qualifier } from "@/services/discount/ffs-discount/discount.typings";
 import { DiscountedCashFlowPrice } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";
@@ -53,10 +53,10 @@ function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): Periodi
     return periodicData;
 }
 
-
 export const buildDiscount = async (
     cik: string,
     profile: CompanyProfile,
+    qualifiers: Qualifier[],
     stickerPrice: StickerPrice,
     benchmarkRatioPrice: BenchmarkRatioPrice,
     discountedCashFlowPrice: DiscountedCashFlowPrice
@@ -78,6 +78,7 @@ export const buildDiscount = async (
     lastUpdated: new Date(),
     isDeleted: 'N',
     deletedReason: undefined,
+    qualifiers: qualifiers,
     stickerPrice,
     benchmarkRatioPrice,
     discountedCashFlowPrice

@@ -12,6 +12,7 @@ import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/disc
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { getLastQ4Value } from "@/utils/processing.utils";
+import { buildQualifyingData } from "./qualification.utils";
 
 
 class DiscountManager {
@@ -55,9 +56,9 @@ class DiscountManager {
             validateStatements(cik, statements, !!this.revisitMachineArn);
             return this.buildValuationInputs(cik, statements, profile)
                 .then(async inputs => {
-                    const [stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
-                    const marketPrice = discountedCashFlowInput.marketPrice;
-                    const discount = await buildDiscount(cik, profile,
+                    const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
+                    const qualifiers = buildQualifyingData(stickerPriceInput);
+                    const discount = await buildDiscount(cik, profile, qualifiers,
                         stickerPriceService.getStickerPrice(stickerPriceInput),
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
@@ -68,6 +69,7 @@ class DiscountManager {
                             throw new DisqualifyingDataException('Valuation cannot be negative');
                         }
                     
+                    const { marketPrice } = discountedCashFlowInput;
                     discount.active = 
                         marketPrice <  discount.stickerPrice.price &&
                         marketPrice < discount.benchmarkRatioPrice.price && 

@@ -327,6 +327,35 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_qualifiers: {
+        Row: {
+          cik: string
+          periods: string
+          type: string
+          value: number
+        }
+        Insert: {
+          cik: string
+          periods: string
+          type: string
+          value: number
+        }
+        Update: {
+          cik?: string
+          periods?: string
+          type?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_qualifiers_cik_fkey"
+            columns: ["cik"]
+            isOneToOne: false
+            referencedRelation: "discount"
+            referencedColumns: ["cik"]
+          },
+        ]
+      }
       discounted_cash_flow_input: {
         Row: {
           cik: string

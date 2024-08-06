@@ -98,6 +98,12 @@ class SupabaseDiscountService implements IDiscountService {
             market_price: discount.marketPrice
         });
 
+        // Qualifiers
+        const qualifiers = discount.qualifiers;
+        for (let qualifier of qualifiers) {
+            await this.upsertData('discount_qualifiers', qualifier);
+        }
+
         // Sticker price valuation
         const stickerPrice = discount.stickerPrice;
         await this.upsertData('sticker_price', {
