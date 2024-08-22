@@ -59,12 +59,8 @@ class DiscountManager {
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
                                         
-                    const isExistingDiscount = await this.isReady.then(() => this.existingDiscountCikSet.has(cik));
-                    if (isExistingDiscount || discount.isDeleted === 'N') {             
-                        console.log(JSON.stringify(discount, null, 4));
-                        return this.saveDiscount(discount);
-                    }
-                    console.log(`Discount for ${cik} is invalid and will not be saved`);
+                    console.log(JSON.stringify(discount, null, 4));
+                    return this.saveDiscount(discount);
                 });
         });
     }
