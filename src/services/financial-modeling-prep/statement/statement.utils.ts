@@ -7,6 +7,7 @@ export function cleanStatements <T extends Statement>(
 ): T[] {
     statements = reorderStatements(statements);
     statements = filterUnsupportedCurrency(statements);
+    statements = filterOutPeriodSymbols(statements);
     statements = filterToLastElevenYears(cik, statements);
     checkConsecutive(cik, statements);
     return statements;
@@ -22,6 +23,12 @@ function filterUnsupportedCurrency <T extends Statement>(
     statements: T[]
 ): T[] {
     return statements.filter(statement => statement.reportedCurrency === 'USD');
+}
+
+function filterOutPeriodSymbols <T extends Statement>(
+    statements: T[]
+): T[] {
+    return statements.filter(statement => !statement.symbol.includes('.'));
 }
 
 function filterToLastElevenYears <T extends Statement>(

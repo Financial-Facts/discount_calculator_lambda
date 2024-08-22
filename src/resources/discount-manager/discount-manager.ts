@@ -1,4 +1,3 @@
-import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import HttpException from "@/utils/exceptions/HttpException";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { Discount } from "@/services/discount/ffs-discount/discount.typings";
@@ -12,7 +11,6 @@ import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/disc
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { getLastQ4Value } from "@/utils/processing.utils";
-import { buildQualifyingData } from "./qualification.utils";
 
 
 class DiscountManager {
@@ -34,8 +32,7 @@ class DiscountManager {
             .catch(async (err: any) => {
                 return this.isReady.then(async () => {
                     console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
-                    if ((err instanceof DisqualifyingDataException || 
-                        err instanceof InsufficientDataException) &&
+                    if (err instanceof InsufficientDataException &&
                         this.existingDiscountCikSet.has(cik)) {
                         return this.deleteDiscount(cik, err.message);
                     }
@@ -57,28 +54,17 @@ class DiscountManager {
             return this.buildValuationInputs(cik, statements, profile)
                 .then(async inputs => {
                     const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
-                    const qualifiers = buildQualifyingData(stickerPriceInput);
-                    const discount = await buildDiscount(cik, profile, qualifiers,
+                    const discount = await buildDiscount(cik, profile,
                         stickerPriceService.getStickerPrice(stickerPriceInput),
                         benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
                         discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
-                    
-                    if (discount.stickerPrice.price < 0 ||
-                        discount.benchmarkRatioPrice.price < 0 ||
-                        discount.discountedCashFlowPrice.price <= 0) {
-                            throw new DisqualifyingDataException('Valuation cannot be negative');
-                        }
-                    
-                    const { marketPrice } = discountedCashFlowInput;
-                    discount.active = 
-                        marketPrice <  discount.stickerPrice.price &&
-                        marketPrice < discount.benchmarkRatioPrice.price && 
-                        marketPrice < discount.discountedCashFlowPrice.price;
-                    
-                    discount.marketPrice = marketPrice;
-                    
-                    console.log(JSON.stringify(discount, null, 4));
-                    return this.saveDiscount(discount);
+                                        
+                    const isExistingDiscount = await this.isReady.then(() => this.existingDiscountCikSet.has(cik));
+                    if (isExistingDiscount || discount.isDeleted === 'N') {             
+                        console.log(JSON.stringify(discount, null, 4));
+                        return this.saveDiscount(discount);
+                    }
+                    console.log(`Discount for ${cik} is invalid and will not be saved`);
                 });
         });
     }

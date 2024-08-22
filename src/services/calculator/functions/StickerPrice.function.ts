@@ -1,4 +1,3 @@
-import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
 import AbstractFunction from "./AbstractFunction";
 import { calculatorService } from "../../../bootstrap";
 import { PeriodicData } from "@/src/types";
@@ -42,10 +41,6 @@ class StickerPriceFunction extends AbstractFunction {
         const returnTimeToDouble = Math.log10(2)/Math.log10(1 + (percent_return/100));
         const numberOfEquityDoubles = num_years/returnTimeToDouble;
         const stickerPrice = futurePrice/(Math.pow(2, numberOfEquityDoubles));
-
-        if (!stickerPrice || Number.isNaN(stickerPrice)) {
-            throw new DisqualifyingDataException('Invalid sticker price data calculated');
-        }
         
         return stickerPrice;
     }

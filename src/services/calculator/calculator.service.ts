@@ -94,9 +94,7 @@ class CalculatorService {
 
     public calculateAverageOverPeriod(data: {
         periodicData: PeriodicData[],
-        numPeriods: number,
-        minimum?: number,
-        errorMessage?: string
+        numPeriods: number
     }): number {
         return this.averageOverPeriodFunction.calculate(data);
     }
@@ -110,9 +108,7 @@ class CalculatorService {
 
     public calculateCAGR(data: {
         periodicData: PeriodicData[],
-        period: number,
-        minimumGrowth: number,
-        type: string
+        period: number
     }): number {
         return this.cagrFunction.calculate(data);
     }

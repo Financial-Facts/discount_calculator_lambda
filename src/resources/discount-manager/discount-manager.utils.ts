@@ -10,6 +10,7 @@ import { StickerPrice } from "@/services/sticker-price/sticker-price.typings";
 import { QuarterlyData } from "./discount-manager.typings";
 import { PeriodicData } from "@/src/types";
 import { companyInformationService } from "@/src/bootstrap";
+import { buildQualifyingData } from "./qualification.utils";
 
 
 export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
@@ -56,33 +57,95 @@ function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): Periodi
 export const buildDiscount = async (
     cik: string,
     profile: CompanyProfile,
-    qualifiers: Qualifier[],
     stickerPrice: StickerPrice,
     benchmarkRatioPrice: BenchmarkRatioPrice,
     discountedCashFlowPrice: DiscountedCashFlowPrice
-): Promise<Discount> => ({
-    cik: cik,
-    symbol: profile.symbol,
-    name: profile.companyName,
-    active: false,
-    marketPrice: profile.price,
-    annualDividend: profile.lastDiv,
-    averageVolume: profile.volAvg,
-    description: profile.description,
-    ceo: profile.ceo,
-    exchange: profile.exchange,
-    industry: profile.industry,
-    location: buildLocationString(profile),
-    website: profile.website,
-    ttmInsiderPurchases: await getTtmInsiderPurchases(profile.symbol),
-    lastUpdated: new Date(),
-    isDeleted: 'N',
-    deletedReason: undefined,
-    qualifiers: qualifiers,
-    stickerPrice,
-    benchmarkRatioPrice,
-    discountedCashFlowPrice
-})
+): Promise<Discount> => {
+    const qualifiers = buildQualifyingData(cik, stickerPrice.input);
+    return {
+        ...{
+            cik: cik,
+            symbol: profile.symbol,
+            name: profile.companyName,
+            active: getIsActive(profile.price, stickerPrice, benchmarkRatioPrice, discountedCashFlowPrice),
+            marketPrice: profile.price,
+            annualDividend: profile.lastDiv,
+            averageVolume: profile.volAvg,
+            description: profile.description,
+            ceo: profile.ceo,
+            exchange: profile.exchange,
+            industry: profile.industry,
+            location: buildLocationString(profile),
+            website: profile.website,
+            ttmInsiderPurchases: await getTtmInsiderPurchases(profile.symbol),
+            lastUpdated: new Date(),
+            qualifiers: qualifiers,
+            stickerPrice,
+            benchmarkRatioPrice,
+            discountedCashFlowPrice
+        },
+        ...buildDiscountValidationData(stickerPrice, benchmarkRatioPrice, discountedCashFlowPrice, qualifiers)
+    }
+}
+
+const buildDiscountValidationData = (
+    stickerPrice: StickerPrice,
+    benchmarkRatioPrice: BenchmarkRatioPrice,
+    discountedCashFlowPrice: DiscountedCashFlowPrice,
+    qualifiers: Qualifier[]
+): { isDeleted: 'Y' | 'N', deletedReason?: string } => {
+
+    if (!stickerPrice.price || Number.isNaN(stickerPrice.price)) {
+        return {
+            isDeleted: 'Y',
+            deletedReason: 'Invalid sticker price was calculated'
+        }
+    }
+
+    if (stickerPrice.price < 0 ||
+        benchmarkRatioPrice.price < 0 ||
+        discountedCashFlowPrice.price <= 0) {
+            return {
+                isDeleted: 'Y',
+                deletedReason: 'Valuation cannot be negative'
+            }
+        }
+    
+    const maximumDebtYears = 3;
+    if (stickerPrice.input.debtYears > maximumDebtYears) {
+        return {
+            isDeleted: 'Y',
+            deletedReason: `Debt years are greater than the allowed maximum (${maximumDebtYears})`
+        }
+    }
+
+    const minimumGrowthRate = 10;
+    for (let qualifier of qualifiers) {
+        const { value, type, periods } = qualifier;
+        if (value < minimumGrowthRate) {
+            return {
+                isDeleted: 'Y',
+                deletedReason: type === 'annualROIC' ?
+                    `Average annual ROIC does not meet minimum ${minimumGrowthRate}%` :
+                    `${type} growth rate does not exceed ${minimumGrowthRate}% on average over the passed ${periods} periods`
+            }
+        }
+    }
+    
+    return {
+        isDeleted: 'N' 
+    }
+}
+
+const getIsActive = (
+    marketPrice: number,
+    stickerPrice: StickerPrice,
+    benchmarkRatioPrice: BenchmarkRatioPrice,
+    discountedCashFlowPrice: DiscountedCashFlowPrice
+): boolean => 
+    marketPrice <  stickerPrice.price &&
+    marketPrice < benchmarkRatioPrice.price && 
+    marketPrice < discountedCashFlowPrice.price;
 
 const buildLocationString = (profile: CompanyProfile): string => {
     const { city, state, country } = profile;

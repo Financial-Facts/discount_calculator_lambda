@@ -95,9 +95,7 @@ class StickerPriceService {
             numPeriods: numPeriods,
             equityGrowthRate: calculatorService.calculateCAGR({
                 periodicData: annualBVPS,
-                period: numPeriods,
-                minimumGrowth: 10,
-                type: 'Annual BVPS'
+                period: numPeriods
             }),
             annualEPS: annualEPS,
             annualPE: annualPE,
