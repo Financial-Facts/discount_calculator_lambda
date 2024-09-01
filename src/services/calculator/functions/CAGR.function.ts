@@ -14,7 +14,7 @@ class CagrFunction extends AbstractFunction {
         const previous = slicedData[0].value;
         const current = getLastPeriodValue(slicedData);
 
-        if (previous <= 0) {
+        if ((current > 0 && previous <= 0) || (current <= 0 && previous > 0)) {
             return 0;
         }
 

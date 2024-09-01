@@ -43,14 +43,10 @@ class SupabaseDiscountService implements IDiscountService {
     }
 
     public async delete(cik: string, reason?: string): Promise<string> {
-        console.log(`Soft deleting discount for ${cik}: ${reason}`);
+        console.log(`Deleting discount for ${cik}: ${reason}`);
         const { error } = await this.client
             .from('discount')
-            .update({
-                is_deleted: 'Y',
-                last_updated: new Date().toDateString(),
-                deleted_reason: reason
-            })
+            .delete()
             .eq('cik', cik);
 
         if (error) {
@@ -92,7 +88,7 @@ class SupabaseDiscountService implements IDiscountService {
             website: discount.website,
             ttm_insider_purchases: discount.ttmInsiderPurchases,
             is_deleted: discount.isDeleted,
-            deleted_reason: discount.deletedReason,
+            deleted_reasons: discount.deletedReasons,
             name: discount.name,
             symbol: discount.symbol,
             market_price: discount.marketPrice

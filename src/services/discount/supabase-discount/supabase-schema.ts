@@ -275,6 +275,7 @@ export type Database = {
           ceo: string
           cik: string
           deleted_reason: string | null
+          deleted_reasons: string[]
           description: string
           exchange: string
           industry: string
@@ -294,6 +295,7 @@ export type Database = {
           ceo: string
           cik: string
           deleted_reason?: string | null
+          deleted_reasons?: string[]
           description: string
           exchange: string
           industry: string
@@ -313,6 +315,7 @@ export type Database = {
           ceo?: string
           cik?: string
           deleted_reason?: string | null
+          deleted_reasons?: string[]
           description?: string
           exchange?: string
           industry?: string

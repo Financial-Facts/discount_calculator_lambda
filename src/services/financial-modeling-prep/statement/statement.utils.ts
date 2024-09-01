@@ -8,6 +8,7 @@ export function cleanStatements <T extends Statement>(
     statements = reorderStatements(statements);
     statements = filterUnsupportedCurrency(statements);
     statements = filterOutPeriodSymbols(statements);
+    statements = filterOutUnlikeSymbols(statements);
     statements = filterToLastElevenYears(cik, statements);
     checkConsecutive(cik, statements);
     return statements;
@@ -29,6 +30,13 @@ function filterOutPeriodSymbols <T extends Statement>(
     statements: T[]
 ): T[] {
     return statements.filter(statement => !statement.symbol.includes('.'));
+}
+
+function filterOutUnlikeSymbols <T extends Statement>(
+    statements: T[]
+): T[] {
+    const symbol = statements[0].symbol;
+    return statements.filter(statement => statement.symbol === symbol);
 }
 
 function filterToLastElevenYears <T extends Statement>(

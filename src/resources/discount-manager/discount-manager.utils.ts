@@ -93,47 +93,45 @@ const buildDiscountValidationData = (
     benchmarkRatioPrice: BenchmarkRatioPrice,
     discountedCashFlowPrice: DiscountedCashFlowPrice,
     qualifiers: Qualifier[]
-): { isDeleted: 'Y' | 'N', deletedReason?: string } => {
+): { isDeleted: 'Y' | 'N', deletedReasons: string[] } => {
+
+    const deletedReasons: string[] = [];
 
     if (!stickerPrice.price || Number.isNaN(stickerPrice.price)) {
-        return {
-            isDeleted: 'Y',
-            deletedReason: 'Invalid sticker price was calculated'
-        }
+        deletedReasons.push('Invalid sticker price was calculated');
     }
 
     if (stickerPrice.price < 0 ||
         benchmarkRatioPrice.price < 0 ||
         discountedCashFlowPrice.price <= 0) {
-            return {
-                isDeleted: 'Y',
-                deletedReason: 'Valuation cannot be negative'
-            }
+            deletedReasons.push('Valuation cannot be negative');
         }
     
     const maximumDebtYears = 3;
     if (stickerPrice.input.debtYears > maximumDebtYears) {
-        return {
-            isDeleted: 'Y',
-            deletedReason: `Debt years are greater than the allowed maximum (${maximumDebtYears})`
-        }
+        deletedReasons.push(`Debt years are greater than the allowed maximum (${maximumDebtYears})`);
     }
 
     const minimumGrowthRate = 10;
+    const annualDataKeys: Record<string, string> = {
+        annualROIC: 'Annual ROIC',
+        annualRevenue: 'Annual revenue',
+        annualEPS: 'Annual EPS',
+        annualEquity: 'Annual equity',
+        annualOperatingCashFlow: 'Annual operating cash flow'
+    };
     for (let qualifier of qualifiers) {
         const { value, type, periods } = qualifier;
         if (value < minimumGrowthRate) {
-            return {
-                isDeleted: 'Y',
-                deletedReason: type === 'annualROIC' ?
-                    `Average annual ROIC does not meet minimum ${minimumGrowthRate}%` :
-                    `${type} growth rate does not exceed ${minimumGrowthRate}% on average over the passed ${periods} periods`
-            }
+            deletedReasons.push(type === 'annualROIC' ?
+                `Average annual ROIC does not meet minimum ${minimumGrowthRate}%` :
+                `${annualDataKeys[type]} growth rate does not exceed ${minimumGrowthRate}% on average over the past ${periods} years`);
         }
     }
     
     return {
-        isDeleted: 'N' 
+        isDeleted: deletedReasons.length > 0 ? 'Y' : 'N',
+        deletedReasons: deletedReasons
     }
 }
 
