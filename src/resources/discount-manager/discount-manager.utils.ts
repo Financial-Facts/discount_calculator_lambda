@@ -124,7 +124,7 @@ const buildDiscountValidationData = (
         const { value, type, periods } = qualifier;
         if (value < minimumGrowthRate) {
             deletedReasons.push(type === 'annualROIC' ?
-                `Average annual ROIC does not meet minimum ${minimumGrowthRate}%` :
+                `Average annual ROIC does not meet minimum ${minimumGrowthRate}% over the past ${periods} years` :
                 `${annualDataKeys[type]} growth rate does not exceed ${minimumGrowthRate}% on average over the past ${periods} years`);
         }
     }
