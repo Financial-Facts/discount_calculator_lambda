@@ -14,12 +14,12 @@ class StatementService {
     }
 
     // Fetch financial statements for a company
-    public async getStatements(cik: string): Promise<Statements> {
+    public async getStatements(cik: string, symbol: string): Promise<Statements> {
         console.log(`In statement service gettings sticker price data for ${cik}`);
         return Promise.all([
-            this.getIncomeStatements(cik),
-            this.getBalanceSheets(cik),
-            this.getCashFlowStatements(cik)
+            this.getIncomeStatements(cik, symbol),
+            this.getBalanceSheets(cik, symbol),
+            this.getCashFlowStatements(cik, symbol)
         ]).then(statements => {
             const [ incomeStatements, balanceSheets, cashFlowStatements ] = statements;
             return {
@@ -30,7 +30,7 @@ class StatementService {
         });
     }
 
-    private async getBalanceSheets(cik: string): Promise<BalanceSheet[]> {
+    private async getBalanceSheets(cik: string, symbol: string): Promise<BalanceSheet[]> {
         console.log(`In statement service getting balance sheets for ${cik}`);
         try {
             const url = this.fmp_base_url + buildURI(cik, 'balance-sheet-statement', this.apiKey);
@@ -43,7 +43,7 @@ class StatementService {
                     }
                     return response.json();
                 }).then((body: BalanceSheet[]) => {
-                    return cleanStatements(cik, body);
+                    return cleanStatements(cik, symbol, body);
                 });
         } catch (err: any) {
             throw new HttpException(err.status,
@@ -51,7 +51,7 @@ class StatementService {
         }
     }
 
-    private async getIncomeStatements(cik: string): Promise<IncomeStatement[]> {
+    private async getIncomeStatements(cik: string, symbol: string): Promise<IncomeStatement[]> {
         console.log(`In statement service getting income statements for ${cik}`);
         try {
             const url = this.fmp_base_url + buildURI(cik, 'income-statement', this.apiKey);
@@ -64,7 +64,7 @@ class StatementService {
                     }
                     return response.json();
                 }).then((body: IncomeStatement[]) => {
-                    return cleanStatements(cik, body);
+                    return cleanStatements(cik, symbol, body);
                 });
         } catch (err: any) {
             throw new HttpException(err.status,
@@ -72,7 +72,7 @@ class StatementService {
         }
     }
 
-    private async getCashFlowStatements(cik: string): Promise<CashFlowStatement[]> {
+    private async getCashFlowStatements(cik: string, symbol: string): Promise<CashFlowStatement[]> {
         console.log(`In statement service getting cash flow statements for ${cik}`);
         try {
             const url = this.fmp_base_url + buildURI(cik, 'cash-flow-statement', this.apiKey);
@@ -85,7 +85,7 @@ class StatementService {
                     }
                     return response.json();
                 }).then((body: CashFlowStatement[]) => {
-                    return cleanStatements(cik, body);
+                    return cleanStatements(cik, symbol, body);
                 });
         } catch (err: any) {
             throw new HttpException(err.status,

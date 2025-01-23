@@ -25,24 +25,20 @@ class DiscountManager {
 
     private async checkForDiscount(cik: string): Promise<void> {
         console.log(`In discount manager checking for a discount on ${cik}`);
-        return Promise.all([
-            statementService.getStatements(cik),
-            companyInformationService.getCompanyProfile(cik)
-        ]).then(async companyData => {
-            const [ statements, profile ] = companyData;
-            validateStatements(cik, statements);
-            return this.buildValuationInputs(cik, statements, profile)
-                .then(async inputs => {
-                    const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
-                    const discount = await buildDiscount(cik, profile,
-                        stickerPriceService.getStickerPrice(stickerPriceInput),
-                        benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
-                        discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
-                                        
-                    console.log(JSON.stringify(discount, null, 4));
-                    return this.saveDiscount(discount);
-                });
-        });
+        const profile = await companyInformationService.getCompanyProfile(cik);
+        const statements = await statementService.getStatements(cik, profile.symbol);
+        validateStatements(cik, statements);
+        return this.buildValuationInputs(cik, statements, profile)
+            .then(async inputs => {
+                const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
+                const discount = await buildDiscount(cik, profile,
+                    stickerPriceService.getStickerPrice(stickerPriceInput),
+                    benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
+                    discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
+                                    
+                console.log(JSON.stringify(discount, null, 4));
+                return this.saveDiscount(discount);
+            });
     }
 
     private async buildValuationInputs(

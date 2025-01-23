@@ -3,12 +3,13 @@ import { Statement } from "./statement.typings";
 
 export function cleanStatements <T extends Statement>(
     cik: string,
+    symbol: string,
     statements: T[]
 ): T[] {
     statements = reorderStatements(statements);
     statements = filterUnsupportedCurrency(statements);
     statements = filterOutPeriodSymbols(statements);
-    statements = filterOutUnlikeSymbols(statements);
+    statements = filterOutUnlikeSymbols(statements, symbol);
     statements = filterToLastElevenYears(cik, statements);
     checkConsecutive(cik, statements);
     return statements;
@@ -33,9 +34,9 @@ function filterOutPeriodSymbols <T extends Statement>(
 }
 
 function filterOutUnlikeSymbols <T extends Statement>(
-    statements: T[]
+    statements: T[],
+    symbol: string
 ): T[] {
-    const symbol = statements[0].symbol;
     return statements.filter(statement => statement.symbol === symbol);
 }
 
