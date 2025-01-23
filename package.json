@@ -41,7 +41,6 @@
     "tsconfig-paths": "^4.2.0"
   },
   "dependencies": {
-    "@aws-sdk/client-sfn": "^3.454.0",
     "@aws-sdk/client-ssm": "^3.385.0",
     "@supabase/supabase-js": "^2.41.1",
     "@types/module-alias": "^2.0.2",

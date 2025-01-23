@@ -22,9 +22,7 @@ export interface SqsMsgBody {
 }
 
 export interface EventItem {
-    body: {
-        cik: string
-    }
+    body: string
 }
 
 
