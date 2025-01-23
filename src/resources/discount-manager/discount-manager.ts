@@ -3,8 +3,6 @@ import InsufficientDataException from "@/utils/exceptions/InsufficientDataExcept
 import { Discount } from "@/services/discount/ffs-discount/discount.typings";
 import { benchmarkService, discountService, discountedCashFlowService, statementService, stickerPriceService, companyInformationService } from "@/src/bootstrap";
 import { buildDiscount, buildQuarterlyData, validateStatements } from "./discount-manager.utils";
-import DataNotUpdatedException from "@/utils/exceptions/DataNotUpdatedException";
-import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { StickerPriceInput } from "@/services/sticker-price/sticker-price.typings";
 import { BenchmarkRatioPriceInput } from "@/services/benchmark/benchmark.typings";
 import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
@@ -17,10 +15,8 @@ class DiscountManager {
 
     isReady: Promise<void>;
     existingDiscountCikSet: Set<string>;
-    sfnClient: SFNClient;
     
     constructor() {
-        this.sfnClient = new SFNClient({ region: 'us-east-1' });
         this.existingDiscountCikSet = new Set<string>();
         this.isReady = this.loadExistingDiscountCikSet();
     }
