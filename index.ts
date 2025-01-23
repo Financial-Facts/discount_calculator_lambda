@@ -14,8 +14,12 @@ export const handler = async (event: SQSEvent): Promise<void> => {
 
     for(let record of event.Records) {
         try {
-            const message: SqsMsgBody = JSON.parse(record.body);
-            await processSqsEvent(message);
+            if (record.body) {
+                const body = JSON.parse(record.body) as { cik: string };
+                const cik = removeS3KeySuffix(body.cik);
+                console.log(`In price check consumer, processing: ${cik}`);
+                return discountManager.intiateDiscountCheck(cik);
+            }
         } catch (err: any) {
             if (err instanceof SyntaxError) {
                 await processTestEvent(record);                
@@ -26,17 +30,6 @@ export const handler = async (event: SQSEvent): Promise<void> => {
 
     console.log('Processing complete!');
 };
-
-async function processSqsEvent(event: SqsMsgBody): Promise<void> {
-    for (let record of event.Records) {
-        if (record.body) {
-            const body = JSON.parse(record.body) as { cik: string };
-            const cik = removeS3KeySuffix(body.cik);
-            console.log(`In price check consumer, processing: ${cik}`);
-            return discountManager.intiateDiscountCheck(cik);
-        }
-    }
-}
 
 async function processTestEvent(record: SQSRecord): Promise<void> {
     const cikList = record.body
