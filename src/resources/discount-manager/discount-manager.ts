@@ -13,24 +13,13 @@ import { getLastQ4Value } from "@/utils/processing.utils";
 
 class DiscountManager {
 
-    isReady: Promise<void>;
-    existingDiscountCikSet: Set<string>;
-    
-    constructor() {
-        this.existingDiscountCikSet = new Set<string>();
-        this.isReady = this.loadExistingDiscountCikSet();
-    }
-
     public async intiateDiscountCheck(cik: string): Promise<void> {
         return this.checkForDiscount(cik)
-            .catch(async (err: any) => {
-                return this.isReady.then(async () => {
-                    console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
-                    if (err instanceof InsufficientDataException &&
-                        this.existingDiscountCikSet.has(cik)) {
-                        return this.deleteDiscount(cik, err.message);
-                    }
-                });
+            .catch((err: any) => {
+                console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+                if (err instanceof InsufficientDataException) {
+                    return this.deleteDiscount(cik, err.message);
+                }
             });
     }
 
@@ -81,10 +70,7 @@ class DiscountManager {
         return discountService.save(discount)
             .then(async response => {
                 if (response) {
-                    return this.isReady.then(() => {
-                        console.log(`Sticker price sale saved for ${cik}`);
-                        this.existingDiscountCikSet.add(discount.cik);
-                    });
+                    console.log(`Sticker price sale saved for ${cik}`);
                 }
             }).catch((err: HttpException) => {
                 console.log(`Sticker price save failed for ${cik} with err: ${err}`);
@@ -94,10 +80,7 @@ class DiscountManager {
     private async deleteDiscount(cik: string, reason: string): Promise<void> {
         return discountService.delete(cik, reason)
             .then(async () => {
-                return this.isReady.then(() => {
-                    console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
-                    this.existingDiscountCikSet.delete(cik);
-                });
+                console.log(`Discount for ${cik} has been deleted due to: ${reason}`);
             }).catch((deleteEx: HttpException) => {
                 if (deleteEx.status !== 404) {
                     console.log(`Deleting discount for ${cik} failed due to: ${deleteEx.message}`);
@@ -105,18 +88,6 @@ class DiscountManager {
                     console.log(`Discount for ${cik} does not exist`);
                 }
             })
-    }
-
-    private async loadExistingDiscountCikSet(): Promise<void> {
-        return discountService.getBulkSimpleDiscounts()
-            .then(simpleDiscounts => {
-                simpleDiscounts.forEach(simpleDiscount => {
-                    this.existingDiscountCikSet.add(simpleDiscount.cik);
-                });
-                console.log('Existing discount cik successfully loaded!');
-            }).catch((err: HttpException) => {
-                console.log(`Error occurred while initializing existing discount set: ${err.message}`);
-            });
     }
 }
 

@@ -12,7 +12,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
     bootstrap();
     frequency = +(process.env.price_check_consumer_frequency ?? 1);
 
-    for(let record of event.Records) {
+    for (let record of event.Records) {
         try {
             if (record.body) {
                 const body = JSON.parse(record.body) as { cik: string };
