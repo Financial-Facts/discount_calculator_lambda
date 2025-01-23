@@ -44,7 +44,6 @@ export default function bootstrap() {
     discountManager = initDiscountManager();
     
     console.log('BOOTSTRAPPED SERVICES WITH:')
-    console.log(`revisit machine arn: ${process.env.revisit_machine_arn}`);
     console.log(`ffs url: ${process.env.ffs_base_url}`);
     console.log(`fmp url: ${process.env.fmp_base_url}`);
     console.log(`fmp key: ${process.env.fmp_api_key}`);
@@ -53,8 +52,7 @@ export default function bootstrap() {
 }
 
 function initDiscountManager(): DiscountManager {
-    const revisitMachineArn = process.env.revisit_machine_arn;
-    return new DiscountManager(revisitMachineArn);
+    return new DiscountManager();
 }
 
 function initDiscountService(): IDiscountService {

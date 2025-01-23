@@ -18,11 +18,9 @@ class DiscountManager {
     isReady: Promise<void>;
     existingDiscountCikSet: Set<string>;
     sfnClient: SFNClient;
-    revisitMachineArn: string | undefined;
     
-    constructor(revisitMachineArn?: string) {
+    constructor() {
         this.sfnClient = new SFNClient({ region: 'us-east-1' });
-        this.revisitMachineArn = revisitMachineArn;
         this.existingDiscountCikSet = new Set<string>();
         this.isReady = this.loadExistingDiscountCikSet();
     }
@@ -36,9 +34,6 @@ class DiscountManager {
                         this.existingDiscountCikSet.has(cik)) {
                         return this.deleteDiscount(cik, err.message);
                     }
-                    if (err instanceof DataNotUpdatedException) {
-                        return this.triggerRevisit(cik);
-                    }
                 });
             });
     }
@@ -50,7 +45,7 @@ class DiscountManager {
             companyInformationService.getCompanyProfile(cik)
         ]).then(async companyData => {
             const [ statements, profile ] = companyData;
-            validateStatements(cik, statements, !!this.revisitMachineArn);
+            validateStatements(cik, statements);
             return this.buildValuationInputs(cik, statements, profile)
                 .then(async inputs => {
                     const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
@@ -83,17 +78,6 @@ class DiscountManager {
             benchmarkService.buildBenchmarkRatioPriceInput(cik, industry, quarterlyData),
             discountedCashFlowService.buildDiscountedCashFlowInput(cik, symbol, totalDebt, netDebt, quarterlyData)
         ]);
-    }
-
-    private async triggerRevisit(cik: string): Promise<void> {
-        console.log(`Triggering revisit for ${cik}`);
-        const stateMachineCommand = new StartExecutionCommand({
-            stateMachineArn: this.revisitMachineArn,
-            input: JSON.stringify({ cik: cik })
-        })
-        this.sfnClient.send(stateMachineCommand)
-            .then(() => console.log(`Revisit successfully triggered for ${cik}`))
-            .catch(err => console.log(`Revisit failed to triggerd for ${cik} due to error: ${err}`));
     }
 
     private async saveDiscount(discount: Discount): Promise<void> {

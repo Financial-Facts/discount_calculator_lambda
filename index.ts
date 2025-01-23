@@ -29,8 +29,8 @@ export const handler = async (event: SQSEvent): Promise<void> => {
 
 async function processSqsEvent(event: SqsMsgBody): Promise<void> {
     for (let record of event.Records) {
-        if (record.s3 && record.s3.object && record.s3.object.key) {
-            const cik = removeS3KeySuffix(record.s3.object.key);
+        if (record.body) {
+            const cik = removeS3KeySuffix(record.body.cik);
             console.log(`In price check consumer, processing: ${cik}`);
             return discountManager.intiateDiscountCheck(cik);
         }

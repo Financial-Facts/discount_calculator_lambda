@@ -13,11 +13,9 @@ import { companyInformationService } from "@/src/bootstrap";
 import { buildQualifyingData } from "./qualification.utils";
 
 
-export function validateStatements(cik: string, data: Statements, checkUpdated: boolean): void {
+export function validateStatements(cik: string, data: Statements): void {
     checkHasSufficientStatements(cik, data);
-    if (checkUpdated) {
-        checkStatementsHaveBeenUpdated(cik, data);
-    }
+    checkStatementsHaveBeenUpdated(cik, data);
 }
 
 function checkHasSufficientStatements(cik: string, data: Statements): void {
