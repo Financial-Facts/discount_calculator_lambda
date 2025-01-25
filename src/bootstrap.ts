@@ -1,5 +1,4 @@
 import BenchmarkService from "@/services/benchmark/benchmark.service";
-import HistoricalPriceService from "@/services/historical-price/yf-historical-price/historical-price.service";
 import StatementService from "@/services/financial-modeling-prep/statement/statement.service";
 import StickerPriceService from "@/services/sticker-price/sticker-price.service";
 import EnvInitializationException from "@/utils/exceptions/EnvInitializationException";
@@ -90,14 +89,6 @@ function initFinancialModelingPrepServices(): {
         discountedCashFlowService: new DiscountedCashFlowService(fmp_base_url, fmp_api_key),
         fmpHistoricalPriceService: new FmpHistoricalPriceService(fmp_base_url, fmp_api_key)
     }
-}
-
-function initHistoricalPriceService(): HistoricalPriceService {
-    const historical_price_url = process.env.historical_data_source_url_v1;
-    if (!historical_price_url) {
-        throw new EnvInitializationException('Historical price data source url not provided');
-    }
-    return new HistoricalPriceService(historical_price_url);
 }
 
 function initBenchmarkService(): BenchmarkService {

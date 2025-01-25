@@ -13,7 +13,7 @@ class CompanyInformationService {
         this.apiKey = apiKey;
     }
 
-    public async getCompanyProfile(cik: string): Promise<CompanyProfile> {
+    public async getCompanyProfiles(cik: string): Promise<CompanyProfile[]> {
         console.log(`In profile service getting company profile for ${cik}`);
         try {
             const url = this.fmp_base_url + buildURI(cik, 'profile', this.apiKey, 'annual');
@@ -27,10 +27,10 @@ class CompanyInformationService {
                     return response.json();
                 }).then((body: CompanyProfile[]) => {
                     const profiles = body.filter(profile => profile.currency === 'USD');
-                    if (profiles.length === 0) {
+                    if (!profiles.length) {
                         throw new InsufficientDataException(`${cik} does not have a profile listed in USD`);
                     }
-                    return profiles.slice(-1)[0];
+                    return profiles;
                 });
         } catch (err: any) {
             throw new HttpException(err.status,
@@ -38,26 +38,29 @@ class CompanyInformationService {
         }
     }
 
-    public async getAnalystEstimates(symbol: string): Promise<AnalystEstimates[]> {
-        console.log(`In profile service getting analysts estimates for ${symbol}`);
+    public async getAnalystEstimates(symbols: string[]): Promise<AnalystEstimates[]> {
+        console.log(`In profile service getting analysts estimates for ${symbols}`);
+        let allAnalystEstimates: AnalystEstimates[] = [];
         try {
-            const url = this.fmp_base_url + `/api/v3/analyst-estimates/${symbol}?apikey=${this.apiKey}`;
-            return fetch(url)
-                .then(async (response: Response) => {
-                    if (response.status !== 200) {
-                        const text = await response.text();
-                        throw new HttpException(response.status,
-                            `Error occurred while getting analyst estimates for ${symbol}: ${text}`
-                        ) 
-                    }
-                    return response.json();
-                }).then((body: AnalystEstimates[]) => {
-                    return body;
-                })
-
+            for (const symbol of symbols) {
+                const url = this.fmp_base_url + `/api/v3/analyst-estimates/${symbol}?apikey=${this.apiKey}`;
+                await fetch(url)
+                    .then(async (response: Response) => {
+                        if (response.status !== 200) {
+                            const text = await response.text();
+                            throw new HttpException(response.status,
+                                `Error occurred while getting analyst estimates for ${symbol}: ${text}`
+                            ) 
+                        }
+                        return response.json();
+                    }).then((body: AnalystEstimates[]) => {
+                        allAnalystEstimates = [...allAnalystEstimates, ...body];
+                    });
+            }
+            return allAnalystEstimates.sort((a, b) => new Date(a.date).valueOf() - new Date(b.date).valueOf());
         } catch (err: any) {
             throw new HttpException(err.status,
-                `Error occurred while getting analyst estimates for ${symbol}: ${err.message}`
+                `Error occurred while getting analyst estimates for ${symbols}: ${err.message}`
             )
         }
     }

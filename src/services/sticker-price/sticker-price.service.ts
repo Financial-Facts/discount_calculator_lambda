@@ -18,7 +18,7 @@ class StickerPriceService {
 
     public async buildStickerPriceInput(
         cik: string,
-        symbol: string,
+        symbols: string[],
         data: StickerPriceQuarterlyData
     ): Promise<StickerPriceInput> {
         return {
@@ -35,7 +35,7 @@ class StickerPriceService {
             annualPE: await calculatorService.calculatePE({
                 cik: cik,
                 timePeriod: 'A',
-                symbol: symbol,
+                symbols: symbols,
                 quarterlyData: data
             }),
             annualROIC: calculatorService.calculateROIC({
@@ -63,8 +63,7 @@ class StickerPriceService {
         
         const recentFyEPS = annualizeByAdd(cik, filterToCompleteFiscalYears(quarterlyEps)).slice(-1)[0];
         const futurePeriodEstimates = annualEstimatedEPS
-            .filter(period => new Date(period.announcedDate).valueOf() > new Date(recentFyEPS.announcedDate).valueOf())
-            .reverse();
+            .filter(period => new Date(period.announcedDate).valueOf() > new Date(recentFyEPS.announcedDate).valueOf());
 
         if (futurePeriodEstimates.length === 0) {
             return undefined;

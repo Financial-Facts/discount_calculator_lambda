@@ -7,6 +7,7 @@ import { annualizeByAdd } from "@/utils/annualize.utils";
 import { processPeriodicDatasets, getLastPeriodValue } from "@/utils/processing.utils";
 import { projectByAverageGrowth, projectByAveragePercentOfValue } from "@/utils/projection.utils";
 import { PeriodicData } from "@/src/types";
+import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
 
 class DiscountedCashFlowService {
@@ -37,7 +38,8 @@ class DiscountedCashFlowService {
 
     public async buildDiscountedCashFlowInput(
         cik: string,
-        symbol: string,
+        activeSymbol: string,
+        symbols: string[],
         totalDebt: number,
         netDebt: number,
         quarterlyData: DiscountedCashFlowQuarterlyData
@@ -53,7 +55,7 @@ class DiscountedCashFlowService {
             historicalFreeCashFlow,
             projectedFreeCashFlow
         ] = this.buildPeriodicProjections(cik, historicalNumYears, quarterlyData);
-        return this.getDiscountedCashFlowData(symbol).then(data => {
+        return this.getDiscountedCashFlowData(symbols).then(data => {
             const [
                 wacc,
                 freeCashFlowT1,
@@ -62,7 +64,7 @@ class DiscountedCashFlowService {
             ] = this.calculateFinancialValues(cik, totalDebt, projectedFreeCashFlow, data);
             return {
                 cik: cik,
-                symbol: symbol,
+                symbol: activeSymbol,
                 longTermGrowthRate: data.longTermGrowthRate,
                 freeCashFlowT1: freeCashFlowT1,
                 wacc: wacc,
@@ -164,14 +166,25 @@ class DiscountedCashFlowService {
         ]
     }
 
-    private async getDiscountedCashFlowData(symbol: string): Promise<DiscountedCashFlowData> {
-        return this.fetchDiscountedCashFlowData(symbol).then(data => {
-            if (!data.longTermGrowthRate || !data.dilutedSharesOutstanding || data.costOfEquity ||
-                 data.costofDebt || data.taxRate || data.price) {
-                return this.fetchDiscountedCashFlowData(symbol, true);
+    private async getDiscountedCashFlowData(symbols: string[]): Promise<DiscountedCashFlowData> {
+
+        const hasRequiredValues = (data: DiscountedCashFlowData): boolean => 
+            !!data && !!data.longTermGrowthRate && !!data.dilutedSharesOutstanding && !!data.price &&
+            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && !!data.taxRate;
+
+        for (const symbol of symbols) {
+            const data: DiscountedCashFlowData = await this.fetchDiscountedCashFlowData(symbol);
+            if (hasRequiredValues(data)) {
+                return data;
             }
-            return data;
-        })
+
+            const retriedData = await this.fetchDiscountedCashFlowData(symbol, true);
+            if (hasRequiredValues(retriedData)) {
+                return retriedData;
+            }
+        }
+
+        throw new InsufficientDataException(`Insufficient discounted cash flow data available for ${symbols}`);
     }
 
     private async fetchDiscountedCashFlowData(symbol: string, isRetry = false): Promise<DiscountedCashFlowData> {

@@ -1,4 +1,3 @@
-import { buildHistoricalPriceInput } from "@/services/historical-price/yf-historical-price/historical-price.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import AbstractFunction from "./AbstractFunction";
 import { historicalPriceService } from "../../../bootstrap";
@@ -7,7 +6,7 @@ import { PeriodicData } from "@/src/types";
 import { PeInput } from "@/resources/discount-manager/discount-manager.typings";
 import { days_between } from "@/utils/date.utils";
 import { annualizeByAdd } from "@/utils/annualize.utils";
-import { PriceData, HistoricalPriceInput } from "@/services/historical-price/historical-price.typings";
+import { PriceData, HistoricalPriceInput, Frequency } from "@/services/historical-price/historical-price.typings";
 
 
 
@@ -20,7 +19,7 @@ class PeFunction extends AbstractFunction {
     async calculate(data: {
         cik: string,
         timePeriod: TimePeriod,
-        symbol: string,
+        symbols: string[],
         quarterlyData: PeInput
     }): Promise<PeriodicData[]> {
         const annualPE: PeriodicData[] = [];
@@ -29,7 +28,7 @@ class PeFunction extends AbstractFunction {
             annualizeByAdd(data.cik, data.quarterlyData.quarterlyEPS) :
             data.quarterlyData.quarterlyEPS;
         const historicalPriceInput =
-            this.buildHistoricalPriceInput(data.symbol, periodicEPS);
+            this.buildHistoricalPriceInput(data.symbols, periodicEPS);
         return historicalPriceService.getHistoricalPrices(historicalPriceInput)
             .then(async (priceData: PriceData[]) => {
                 periodicEPS.forEach(period => {
@@ -51,11 +50,16 @@ class PeFunction extends AbstractFunction {
             });
     }
 
-    private buildHistoricalPriceInput(symbol: string, quarterlyEPS: PeriodicData[]): HistoricalPriceInput {
+    private buildHistoricalPriceInput(symbols: string[], quarterlyEPS: PeriodicData[]): HistoricalPriceInput {
         const fromDate: Date = new Date(quarterlyEPS[0].announcedDate);
         const toDate: Date = new Date(quarterlyEPS[quarterlyEPS.length - 1].announcedDate);
         toDate.setDate(toDate.getDate() + 3); 
-        return buildHistoricalPriceInput(symbol, fromDate, toDate)
+        return {
+            symbols, 
+            fromDate,
+            toDate,
+            frequency: Frequency.DAILY
+        };
     }
     
 }

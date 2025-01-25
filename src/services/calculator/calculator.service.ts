@@ -47,7 +47,7 @@ class CalculatorService {
     public async calculatePE(data: {
         cik: string,
         timePeriod: TimePeriod,
-        symbol: string,
+        symbols: string[],
         quarterlyData: PeInput
     }): Promise<PeriodicData[]> {
         return this.peFunction.calculate(data);

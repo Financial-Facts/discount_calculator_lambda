@@ -9,7 +9,8 @@ export function cleanStatements <T extends Statement>(
     statements = reorderStatements(statements);
     statements = filterUnsupportedCurrency(statements);
     statements = filterOutPeriodSymbols(statements);
-    statements = filterOutUnlikeSymbols(statements, symbol);
+    statements = filterOutRepeatedQuarters(statements);
+    statements = ensureConstantSymbol(statements, symbol);
     statements = filterToLastElevenYears(cik, statements);
     checkConsecutive(cik, statements);
     return statements;
@@ -33,11 +34,43 @@ function filterOutPeriodSymbols <T extends Statement>(
     return statements.filter(statement => !statement.symbol.includes('.'));
 }
 
-function filterOutUnlikeSymbols <T extends Statement>(
+function filterOutRepeatedQuarters <T extends Statement>(
+    statements: T[]
+): T[] {
+    return statements.filter((statement, index) => {
+        if (index + 1 < statements.length) {
+            const nextStatement = statements[index + 1];
+            switch (statement.period) {
+                case ('Q1'): {
+                    return nextStatement.period === 'Q2';
+                }
+                case ('Q2'): {
+                    return nextStatement.period === 'Q3';
+                }
+                case ('Q3'): {
+                    return nextStatement.period === 'Q4';
+                }
+                case ('Q4'): {
+                    return nextStatement.period === 'Q1';
+                }
+                default: {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    });
+}
+
+function ensureConstantSymbol <T extends Statement>(
     statements: T[],
     symbol: string
 ): T[] {
-    return statements.filter(statement => statement.symbol === symbol);
+    return statements.map(statement => ({
+        ...statement,
+        symbol: symbol
+    }));
 }
 
 function filterToLastElevenYears <T extends Statement>(

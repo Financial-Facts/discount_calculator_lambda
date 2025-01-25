@@ -25,39 +25,56 @@ class DiscountManager {
 
     private async checkForDiscount(cik: string): Promise<void> {
         console.log(`In discount manager checking for a discount on ${cik}`);
-        const profile = await companyInformationService.getCompanyProfile(cik);
-        const statements = await statementService.getStatements(cik, profile.symbol);
+        const profiles = await companyInformationService.getCompanyProfiles(cik);
+
+        const activeProfile = profiles.find(profile => profile.isActivelyTrading === true);
+        if (!activeProfile) {
+            throw new InsufficientDataException(`${cik} does not have an actively traded profile`);
+        }
+
+        const statements = await statementService.getCleanStatements(cik, activeProfile.symbol);
         validateStatements(cik, statements);
-        return this.buildValuationInputs(cik, statements, profile)
-            .then(async inputs => {
-                const [ stickerPriceInput, benchmarkRatioPriceInput, discountedCashFlowInput ] = inputs;
-                const discount = await buildDiscount(cik, profile,
-                    stickerPriceService.getStickerPrice(stickerPriceInput),
-                    benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
-                    discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
-                                    
-                console.log(JSON.stringify(discount, null, 4));
-                return this.saveDiscount(discount);
-            });
+        
+        const [ 
+            stickerPriceInput,
+            benchmarkRatioPriceInput,
+            discountedCashFlowInput
+        ] = await this.buildValuationInputs(
+            cik,
+            activeProfile.industry,
+            activeProfile.symbol,
+            statements,
+            profiles);
+        
+        const discount = await buildDiscount(cik, activeProfile,
+            stickerPriceService.getStickerPrice(stickerPriceInput),
+            benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
+            discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
+                            
+        console.log(JSON.stringify(discount, null, 4));
+        return this.saveDiscount(discount);
     }
 
     private async buildValuationInputs(
         cik: string,
+        industry: string,
+        activeSymbol: string,
         statements: Statements,
-        profile: CompanyProfile
+        profiles: CompanyProfile[]
     ): Promise<[ StickerPriceInput, BenchmarkRatioPriceInput, DiscountedCashFlowInput ]> {
-        const symbol = profile.symbol;
-        const industry = profile.industry;
-        const quarterlyData = await buildQuarterlyData(cik, symbol, statements);
 
-        const lastQ4BalanceSheet = getLastQ4Value(statements.balanceSheets);
-        const netDebt = lastQ4BalanceSheet.netDebt;
-        const totalDebt = lastQ4BalanceSheet.totalDebt;
+        // Compile list of profile symbols, making sure the active symbol is first
+        const symbols = profiles.map(profile => profile.symbol)
+            .sort((a, b) => a === activeSymbol ? -1 : b === activeSymbol ? 1 : 0);
+
+        // Compile data needed for discount input calculations
+        const quarterlyData = await buildQuarterlyData(cik, symbols, statements);
+        const { netDebt, totalDebt } = getLastQ4Value(statements.balanceSheets);
 
         return Promise.all([
-            stickerPriceService.buildStickerPriceInput(cik, symbol, quarterlyData),
+            stickerPriceService.buildStickerPriceInput(cik, symbols, quarterlyData),
             benchmarkService.buildBenchmarkRatioPriceInput(cik, industry, quarterlyData),
-            discountedCashFlowService.buildDiscountedCashFlowInput(cik, symbol, totalDebt, netDebt, quarterlyData)
+            discountedCashFlowService.buildDiscountedCashFlowInput(cik, activeSymbol, symbols, totalDebt, netDebt, quarterlyData)
         ]);
     }
 

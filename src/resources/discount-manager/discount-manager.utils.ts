@@ -187,7 +187,7 @@ const getTtmInsiderPurchases = async (symbol: string): Promise<number> => {
 
 export const buildQuarterlyData = async (
     cik: string,
-    symbol: string,
+    symbols: string[],
     statements: Statements
 ): Promise<QuarterlyData> => ({
     quarterlyShareholderEquity: statements.balanceSheets.map(sheets => ({
@@ -263,7 +263,7 @@ export const buildQuarterlyData = async (
         period: sheets.period,
         value: sheets.capitalExpenditure
     })),
-    annualEstimatedEPS: (await companyInformationService.getAnalystEstimates(symbol)).map(estimate => ({
+    annualEstimatedEPS: (await companyInformationService.getAnalystEstimates(symbols)).map(estimate => ({
         cik: cik,
         announcedDate: estimate.date,
         value: estimate.estimatedEpsAvg
