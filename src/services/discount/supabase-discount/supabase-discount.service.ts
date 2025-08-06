@@ -220,7 +220,7 @@ class SupabaseDiscountService implements IDiscountService {
             throw new DatabaseException(error.message);
         }
 
-        return data;
+        return data as Discount | null;
     }
 
 }
