@@ -120,6 +120,11 @@ const buildDiscountValidationData = (
     };
     for (let qualifier of qualifiers) {
         const { value, type, periods } = qualifier;
+
+        if (qualifier.type === 'annualEPS' && value === 0) {
+            continue;
+        }
+
         if (value < minimumGrowthRate) {
             deletedReasons.push(type === 'annualROIC' ?
                 `Average annual ROIC does not meet minimum ${minimumGrowthRate}% over the past ${periods} years` :

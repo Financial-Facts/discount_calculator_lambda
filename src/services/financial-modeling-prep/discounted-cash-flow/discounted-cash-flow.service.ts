@@ -170,7 +170,7 @@ class DiscountedCashFlowService {
 
         const hasRequiredValues = (data: DiscountedCashFlowData): boolean => 
             !!data && !!data.longTermGrowthRate && !!data.dilutedSharesOutstanding && !!data.price &&
-            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && !!data.taxRate;
+            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && data.taxRate !== undefined;
 
         for (const symbol of symbols) {
             const data: DiscountedCashFlowData = await this.fetchDiscountedCashFlowData(symbol);
