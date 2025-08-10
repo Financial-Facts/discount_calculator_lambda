@@ -122,7 +122,7 @@ const buildDiscountValidationData = (
     for (let qualifier of qualifiers) {
         const { value, type, periods } = qualifier;
 
-        if (qualifier.type === 'annualEPS' && value === 0) {
+        if (value === 0) {
             continue;
         }
 
