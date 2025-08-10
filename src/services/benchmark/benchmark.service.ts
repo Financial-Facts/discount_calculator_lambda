@@ -6,6 +6,7 @@ import { BenchmarkRatioPriceInput, BenchmarkRatioPrice } from './benchmark.typin
 import { BenchmarkRatioPriceQuarterlyData } from '@/resources/discount-manager/discount-manager.typings';
 import { reduceTTM, getLastPeriodValue } from '@/utils/processing.utils';
 import { industryNameMap } from './benchmark.constants';
+import { benchmarkRatioPriceFunction } from '../calculator/calculator.service';
 
 class BenchmarkService {
 
@@ -23,11 +24,14 @@ class BenchmarkService {
         console.log(`In benchmark service fetching benchmark ratio price for ${cik}`);
         return {
             cik: cik,
-            price: calculatorService.calculateBenchmarkRatioPrice({
-                benchmarkPsRatio: input.psBenchmarkRatio,
-                ttmRevenue: input.ttmRevenue,
-                sharesOutstanding: input.sharesOutstanding
-            }),
+            price: calculatorService.calculate(
+                {
+                    benchmarkPsRatio: input.psBenchmarkRatio,
+                    ttmRevenue: input.ttmRevenue,
+                    sharesOutstanding: input.sharesOutstanding
+                },
+                benchmarkRatioPriceFunction
+            ),
             input: input
         }
     }

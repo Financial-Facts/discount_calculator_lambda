@@ -1,22 +1,24 @@
 import { IcInput, QuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
 import { TimePeriod } from "../calculator.typings";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { PeriodicData } from "@/src/types";
 import { annualizeByLastQuarter } from "@/utils/annualize.utils";
 import { processPeriodicDatasets } from "@/utils/processing.utils";
 
 
-class IcFunction extends AbstractFunction {
+export interface IcVariables {
+    cik: string,
+    timePeriod: TimePeriod,
+    quarterlyData: IcInput
+}
 
-    calculate(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: IcInput
-    }): PeriodicData[] {
-        const quarterlyNetDebt = data.quarterlyData.quarterlyNetDebt;
-        const quarterlyTotalEquity = data.quarterlyData.quarterlyTotalEquity;
-        const quarterlyIC = processPeriodicDatasets(data.cik, quarterlyNetDebt, quarterlyTotalEquity, (a, b) => a + b);
-        return data.timePeriod === 'A' ? annualizeByLastQuarter(data.cik, quarterlyIC) : quarterlyIC;
+class IcFunction implements Function<IcVariables, PeriodicData[]>{
+
+    calculate(variables: IcVariables): PeriodicData[] {
+        const quarterlyNetDebt = variables.quarterlyData.quarterlyNetDebt;
+        const quarterlyTotalEquity = variables.quarterlyData.quarterlyTotalEquity;
+        const quarterlyIC = processPeriodicDatasets(variables.cik, quarterlyNetDebt, quarterlyTotalEquity, (a, b) => a + b);
+        return variables.timePeriod === 'A' ? annualizeByLastQuarter(variables.cik, quarterlyIC) : quarterlyIC;
     }
     
 }

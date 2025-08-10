@@ -1,20 +1,22 @@
 import { EnterpriseValueInput } from "../calculator.typings";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 
 
-class EnterpriseValueFunction extends AbstractFunction {
+export interface EnterpriseValueVariables {
+    wacc: number,
+    terminalValue: number,
+    periodicData: EnterpriseValueInput
+}
 
-    calculate(data: {
-        wacc: number,
-        terminalValue: number,
-        periodicData: EnterpriseValueInput
-    }): number {
-        const decimalWacc = data.wacc / 100;
-        return data.periodicData.periodicFreeCashFlow.reduce((sum, freeCashFlow, index) => {
+class EnterpriseValueFunction implements Function<EnterpriseValueVariables, number> {
+
+    calculate(variables: EnterpriseValueVariables): number {
+        const decimalWacc = variables.wacc / 100;
+        return variables.periodicData.periodicFreeCashFlow.reduce((sum, freeCashFlow, index) => {
             const cashFlow = freeCashFlow.value;
             sum += cashFlow / Math.pow(1 + decimalWacc, index + 1);
             return sum;
-        }, 0) + data.terminalValue / Math.pow(1 + decimalWacc, data.periodicData.periodicFreeCashFlow.length);
+        }, 0) + variables.terminalValue / Math.pow(1 + decimalWacc, variables.periodicData.periodicFreeCashFlow.length);
     }
 
 }

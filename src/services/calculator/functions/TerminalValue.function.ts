@@ -1,16 +1,17 @@
-import AbstractFunction from "./AbstractFunction";
+import Function from './Function';
 
+export interface TerminalValueVariables {
+    wacc: number,
+    longTermGrowthRate: number,
+    freeCashFlowT1: number
+}
 
-class TerminalValueFunction extends AbstractFunction {
+class TerminalValueFunction implements Function<TerminalValueVariables, number> {
 
-    calculate(data: {
-        wacc: number,
-        longTermGrowthRate: number,
-        freeCashFlowT1: number
-    }): number {
-        const decimalWacc = data.wacc / 100;
-        const decimalLongTermGrowthRate = data.longTermGrowthRate / 100;
-        return data.freeCashFlowT1 / (decimalWacc - decimalLongTermGrowthRate);
+    calculate(variables: TerminalValueVariables): number {
+        const decimalWacc = variables.wacc / 100;
+        const decimalLongTermGrowthRate = variables.longTermGrowthRate / 100;
+        return variables.freeCashFlowT1 / (decimalWacc - decimalLongTermGrowthRate);
     }
 
 }

@@ -1,15 +1,16 @@
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { PeriodicData } from "@/src/types";
 import { getLastPeriodValue, processPeriodicDatasets } from "@/utils/processing.utils";
 
+export interface CagrVariables {
+    periodicData: PeriodicData[],
+    period: number
+}
 
-class CagrFunction extends AbstractFunction {
+class CagrFunction implements Function<CagrVariables, number> {
 
-    calculate(data: {
-        periodicData: PeriodicData[],
-        period: number
-    }): number {
-        const { periodicData, period } = data;
+    calculate(variables: CagrVariables): number {
+        const { periodicData, period } = variables;
         const slicedData = periodicData.slice(-(period + 1));
         const previous = slicedData[0].value;
         const current = getLastPeriodValue(slicedData);

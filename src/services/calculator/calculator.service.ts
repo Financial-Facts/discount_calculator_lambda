@@ -16,149 +16,32 @@ import TerminalValueFunction from "./functions/TerminalValue.function";
 import EnterpriseValueFunction from "./functions/EnterpriseValue.function";
 import WaccFunction from "./functions/WACC.function";
 import CagrFunction from "./functions/CAGR.function";
+import Function from "./functions/Function";
 
+
+export const bvpsFunction = new BvpsFunction();
+export const peFunction = new PeFunction();
+export const roicFunction = new RoicFunction();
+export const nopatFunction = new NopatFunction();
+export const icFunction = new IcFunction();
+export const debtYearsFunction = new DebtYearsFunction();
+export const benchmarkRatioPriceFunction = new BenchmarkRatioPriceFunction();
+export const periodicGrowthRatesFunction = new PeriodicGrowthRatesFunction();
+export const averageOverPeriodFunction = new AverageOverPeriodFunction();
+export const stickerPriceFunction = new StickerPriceFunction();
+export const discountedCashFlowFunction = new DcfFunction();
+export const terminalValueFunction = new TerminalValueFunction();
+export const enterpriseValueFunction = new EnterpriseValueFunction();
+export const waccFunction = new WaccFunction();
+export const cagrFunction = new CagrFunction();
 
 class CalculatorService {
 
-    private bvpsFunction = new BvpsFunction();
-    private peFunction = new PeFunction();
-    private roicFunction = new RoicFunction();
-    private nopatFunction = new NopatFunction();
-    private icFunction = new IcFunction();
-    private debtYearsFunction = new DebtYearsFunction();
-    private benchmarkRatioPriceFunction = new BenchmarkRatioPriceFunction();
-    private periodicGrowthRatesFunction = new PeriodicGrowthRatesFunction();
-    private averageOverPeriodFunction = new AverageOverPeriodFunction();
-    private stickerPriceFunction = new StickerPriceFunction();
-    private discountedCashFlowFunction = new DcfFunction();
-    private terminalValueFunction = new TerminalValueFunction();
-    private enterpriseValueFunction = new EnterpriseValueFunction();
-    private waccFunction = new WaccFunction();
-    private cagrFunction = new CagrFunction();
-    
-    public calculateBVPS(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: BvpsInput
-    }): PeriodicData[] {
-        return this.bvpsFunction.calculate(data);
-    }
-
-    public async calculatePE(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        symbols: string[],
-        quarterlyData: PeInput
-    }): Promise<PeriodicData[]> {
-        return this.peFunction.calculate(data);
-    }
-
-    public calculateNOPAT(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: NopatInput
-    }): PeriodicData[] {
-        return this.nopatFunction.calculate(data);
-    }
-
-    public calculateIC(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: IcInput
-    }): PeriodicData[] {
-        return this.icFunction.calculate(data);
-    }
-
-    public calculateROIC(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: RoicInput
-    }): PeriodicData[] {
-        return this.roicFunction.calculate(data);
-    }
-
-    public calculateDebtYears(data: {
-        cik: string,
-        quarterlyData: DebtYearsInput
-    }): number {
-        return this.debtYearsFunction.calculate(data);
-    }
-
-    public calculateBenchmarkRatioPrice(data: {
-        benchmarkPsRatio: number,
-        ttmRevenue: number,
-        sharesOutstanding: number
-    }): number {
-        return this.benchmarkRatioPriceFunction.calculate(data);
-    }
-
-    public calculateAverageOverPeriod(data: {
-        periodicData: PeriodicData[],
-        numPeriods: number
-    }): number {
-        return this.averageOverPeriodFunction.calculate(data);
-    }
-
-    public calculatePeriodicGrowthRates(data: {
-        cik: string,
-        periodicData: PeriodicData[]
-    }): PeriodicData[] {
-        return this.periodicGrowthRatesFunction.calculate(data);
-    }
-
-    public calculateCAGR(data: {
-        periodicData: PeriodicData[],
-        period: number
-    }): number {
-        return this.cagrFunction.calculate(data);
-    }
-
-    public calculateStickerPrice(data: {
-        cik: string, 
-        numPeriods: number,
-        equityGrowthRate: number,
-        annualPE: PeriodicData[],
-        annualEPS: PeriodicData[],
-        analystGrowthEstimate?: number
-    }): number {
-        return this.stickerPriceFunction.calculate(data);
-    }
-
-    public calculateDiscountedCashFlowPrice(data: {
-        enterpriseValue: number,
-        netDebt: number,
-        dilutedSharesOutstanding: number,
-    }): number {
-        return this.discountedCashFlowFunction.calculate(data);
-    }
-
-    public calculateTerminalValue(data: {
-        wacc: number,
-        longTermGrowthRate: number,
-        freeCashFlowT1: number
-    }): number {
-        return this.terminalValueFunction.calculate(data);
-    }
-
-    public calculateEnterpriseValue(data: {
-        wacc: number,
-        terminalValue: number,
-        periodicData: EnterpriseValueInput
-    }): number {
-        return this.enterpriseValueFunction.calculate(data);
-    }
-
-    public calculateWACC(data: {
-        cik: string,
-        price: number,
-        dilutedSharesOutstanding: number,
-        totalDebt: number, 
-        totalEquity: number,
-        costOfEquity: number,
-        costofDebt: number,
-        taxRate: number
-    }): number {
-        return this.waccFunction.calculate(data);
+    public calculate<I, O>(
+        variables: I,
+        calculatorFunction: Function<I, O>
+    ): O {
+        return calculatorFunction.calculate(variables);
     }
     
 }

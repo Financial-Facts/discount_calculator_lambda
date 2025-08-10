@@ -1,15 +1,17 @@
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 
 
-class DcfFunction extends AbstractFunction {
+export interface DcfVariables {
+    enterpriseValue: number,
+    netDebt: number,
+    dilutedSharesOutstanding: number
+}
 
-    calculate(data: {
-        enterpriseValue: number,
-        netDebt: number,
-        dilutedSharesOutstanding: number
-    }): number {
-        const intrinsicValue = data.enterpriseValue - data.netDebt;
-        return intrinsicValue / data.dilutedSharesOutstanding;
+class DcfFunction implements Function<DcfVariables, number> {
+
+    calculate(variables: DcfVariables): number {
+        const intrinsicValue = variables.enterpriseValue - variables.netDebt;
+        return intrinsicValue / variables.dilutedSharesOutstanding;
     }
     
 }
