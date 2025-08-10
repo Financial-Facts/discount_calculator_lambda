@@ -36,7 +36,8 @@ function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
 
 function isUpToDate<T extends Statement>(statements: T[]): boolean {
     const lastReportedData: Date = new Date(statements.slice(-1)[0].fillingDate);
-    return days_between(lastReportedData, new Date()) <= 32;
+    const upToDateMaxDays = (process.env.up_to_date_max_days || 16) as number;
+    return days_between(lastReportedData, new Date()) <= upToDateMaxDays;
 }
 
 function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): PeriodicData[] {
@@ -120,6 +121,11 @@ const buildDiscountValidationData = (
     };
     for (let qualifier of qualifiers) {
         const { value, type, periods } = qualifier;
+
+        if (value === 0) {
+            continue;
+        }
+
         if (value < minimumGrowthRate) {
             deletedReasons.push(type === 'annualROIC' ?
                 `Average annual ROIC does not meet minimum ${minimumGrowthRate}% over the past ${periods} years` :

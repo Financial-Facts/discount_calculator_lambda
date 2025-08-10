@@ -1,17 +1,21 @@
 import DisqualifyingDataException from "@/utils/exceptions/DisqualifyingDataException";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { PeriodicData } from "@/src/types";
 import { getLastPeriodValue } from "@/utils/processing.utils";
 
 
-class AverageOverPeriodFunction extends AbstractFunction {
+export interface AverageOverPeriodVariables {
+    periodicData: PeriodicData[],
+    numPeriods: number
+}
 
-    calculate(data: {
-        periodicData: PeriodicData[],
-        numPeriods: number
-    }): number {
-        const periodicData = data.periodicData;
-        const numPeriods = data.numPeriods;
+class AverageOverPeriodFunction implements Function<AverageOverPeriodVariables, number> {
+
+    calculate(variables: AverageOverPeriodVariables): number {
+        const {
+            periodicData,
+            numPeriods
+        } = variables;
         let average = 0;
         
         if (numPeriods === 1) {

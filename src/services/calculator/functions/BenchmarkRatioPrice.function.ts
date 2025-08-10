@@ -1,14 +1,16 @@
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 
 
-class BenchmarkRatioPriceFunction extends AbstractFunction {
+export interface BenchmarkRatioPriceVariables {
+    benchmarkPsRatio: number,
+    ttmRevenue: number,
+    sharesOutstanding: number
+}
 
-    calculate(data: {
-        benchmarkPsRatio: number,
-        ttmRevenue: number,
-        sharesOutstanding: number
-    }): number {
-        return (data.ttmRevenue / data.sharesOutstanding) * data.benchmarkPsRatio;
+class BenchmarkRatioPriceFunction implements Function<BenchmarkRatioPriceVariables, number> {
+
+    calculate(variables: BenchmarkRatioPriceVariables): number {
+        return (variables.ttmRevenue / variables.sharesOutstanding) * variables.benchmarkPsRatio;
     }
     
 }

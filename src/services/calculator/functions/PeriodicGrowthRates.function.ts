@@ -1,15 +1,17 @@
 import { PeriodicData } from "@/src/types";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 
 
-class PeriodicGrowthRatesFunction extends AbstractFunction {
+export interface PeriodicGrowthRatesVariables {
+    cik: string,
+    periodicData: PeriodicData[]
+}
 
-    calculate(data: {
-        cik: string,
-        periodicData: PeriodicData[]
-    }): PeriodicData[] {
+class PeriodicGrowthRatesFunction implements Function<PeriodicGrowthRatesVariables, PeriodicData[]> {
+
+    calculate(variables: PeriodicGrowthRatesVariables): PeriodicData[] {
         const periodicGrowthRates: PeriodicData[] = [];
-        const periodicData = data.periodicData;
+        const periodicData = variables.periodicData;
 
         let i = 1;
         while (i < periodicData.length) {
@@ -17,7 +19,7 @@ class PeriodicGrowthRatesFunction extends AbstractFunction {
             const current = periodicData[i];
             const growthRate = ((current.value - previous.value) / Math.abs(previous.value)) * 100;
             periodicGrowthRates.push({
-                cik: data.cik,
+                cik: variables.cik,
                 announcedDate: current.announcedDate,
                 period: current.period,
                 value: growthRate

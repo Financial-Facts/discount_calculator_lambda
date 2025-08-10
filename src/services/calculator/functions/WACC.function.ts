@@ -1,22 +1,24 @@
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 
 
-class WaccFunction extends AbstractFunction {
+export interface WaccVariables {
+    cik: string,
+    price: number,
+    dilutedSharesOutstanding: number,
+    totalDebt: number, 
+    totalEquity: number,
+    costOfEquity: number,
+    costofDebt: number,
+    taxRate: number
+}
 
-    calculate(data: {
-        cik: string,
-        price: number,
-        dilutedSharesOutstanding: number,
-        totalDebt: number, 
-        totalEquity: number,
-        costOfEquity: number,
-        costofDebt: number,
-        taxRate: number
-    }): number {
-        const totalCapital = data.dilutedSharesOutstanding * data.price + data.totalDebt;
-        const equityWeighting = data.totalEquity / totalCapital;
-        const debtWeighting = data.totalDebt / totalCapital;
-        return (equityWeighting * data.costOfEquity) + (debtWeighting * data.costofDebt * (1 - (data.taxRate / 100)));
+class WaccFunction implements Function<WaccVariables, number> {
+
+    calculate(variables: WaccVariables): number {
+        const totalCapital = variables.dilutedSharesOutstanding * variables.price + variables.totalDebt;
+        const equityWeighting = variables.totalEquity / totalCapital;
+        const debtWeighting = variables.totalDebt / totalCapital;
+        return (equityWeighting * variables.costOfEquity) + (debtWeighting * variables.costofDebt * (1 - (variables.taxRate / 100)));
     }
     
 }

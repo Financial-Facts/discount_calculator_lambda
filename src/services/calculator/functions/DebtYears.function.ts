@@ -1,14 +1,17 @@
 import { DebtYearsInput} from "@/resources/discount-manager/discount-manager.typings";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { getLastPeriodValue, reduceTTM } from "@/utils/processing.utils";
 
-class DebtYearsFunction extends AbstractFunction {
 
-    calculate(data: {
-        cik: string,
-        quarterlyData: DebtYearsInput
-    }): number {
-        const quarterlyData = data.quarterlyData;
+export interface DebtYearsVariables {
+    cik: string,
+    quarterlyData: DebtYearsInput
+}
+
+class DebtYearsFunction implements Function<DebtYearsVariables, number> {
+
+    calculate(variables: DebtYearsVariables): number {
+        const quarterlyData = variables.quarterlyData;
         const current_long_term_debt = getLastPeriodValue(quarterlyData.quarterlyLongTermDebt);
         const current_free_cash_flow = reduceTTM(quarterlyData.quarterlyFreeCashFlow, (a, b) => a + b);
         return current_long_term_debt / current_free_cash_flow;
