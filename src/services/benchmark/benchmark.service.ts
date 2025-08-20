@@ -90,17 +90,25 @@ class BenchmarkService {
 
     private async fetchPage(): Promise<string> {
         try {
-            return fetch(this.benchmarkSourceUrl)
-                .then(async (response: Response) => {
-                    if (response.status !== 200) {
-                        const text = await response.text();
-                        throw new HttpException(response.status,
-                            `Error occurred while fetching benchmark page: ${text}`);
+            return fetch(
+                this.benchmarkSourceUrl,
+                {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                        'Accept-Encoding': 'gzip, deflate, br, zstd'
                     }
-                    return response.text();
-                }).then((body: string) => {
-                    return body;
-                });
+                }
+            ).then(async (response: Response) => {
+                if (response.status !== 200) {
+                    const text = await response.text();
+                    throw new HttpException(response.status,
+                        `Error occurred while fetching benchmark page: ${text}`);
+                }
+                return response.text();
+            }).then((body: string) => {
+                return body;
+            });
         } catch (err: any) {
             throw new HttpException(err.status,
                 `Error occurred while fetching benchmark page: ${err.message}`)
