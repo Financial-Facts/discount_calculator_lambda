@@ -32,7 +32,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.1"
     },
     {
-        "Industry": "Aerospace &amp; Defense",
+        "Industry": "Aerospace & Defense",
         "Average P/S ratio": "2.63"
     },
     {
@@ -44,7 +44,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "0.48"
     },
     {
-        "Industry": "Airports &amp; Air Services",
+        "Industry": "Airports & Air Services",
         "Average P/S ratio": "1.51"
     },
     {
@@ -72,7 +72,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "0.81"
     },
     {
-        "Industry": "Auto &amp; Truck Dealerships",
+        "Industry": "Auto & Truck Dealerships",
         "Average P/S ratio": "1.09"
     },
     {
@@ -88,7 +88,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "2.09"
     },
     {
-        "Industry": "Beverages - Wineries &amp; Distilleries",
+        "Industry": "Beverages - Wineries & Distilleries",
         "Average P/S ratio": "1.61"
     },
     {
@@ -104,11 +104,11 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "3.05"
     },
     {
-        "Industry": "Building Products &amp; Equipment",
+        "Industry": "Building Products & Equipment",
         "Average P/S ratio": "2.3"
     },
     {
-        "Industry": "Business Equipment &amp; Supplies",
+        "Industry": "Business Equipment & Supplies",
         "Average P/S ratio": "0.82"
     },
     {
@@ -148,7 +148,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "2.22"
     },
     {
-        "Industry": "Diagnostics &amp; Research",
+        "Industry": "Diagnostics & Research",
         "Average P/S ratio": "4.06"
     },
     {
@@ -160,15 +160,15 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "4.11"
     },
     {
-        "Industry": "Drug Manufacturers - Specialty &amp; Generic",
+        "Industry": "Drug Manufacturers - Specialty & Generic",
         "Average P/S ratio": "2.98"
     },
     {
-        "Industry": "Education &amp; Training Services",
+        "Industry": "Education & Training Services",
         "Average P/S ratio": "1.97"
     },
     {
-        "Industry": "Electrical Equipment &amp; Parts",
+        "Industry": "Electrical Equipment & Parts",
         "Average P/S ratio": "2.01"
     },
     {
@@ -176,15 +176,15 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "3.14"
     },
     {
-        "Industry": "Electronic Gaming &amp; Multimedia",
+        "Industry": "Electronic Gaming & Multimedia",
         "Average P/S ratio": "2.25"
     },
     {
-        "Industry": "Electronics &amp; Computer Distribution",
+        "Industry": "Electronics & Computer Distribution",
         "Average P/S ratio": "0.57"
     },
     {
-        "Industry": "Engineering &amp; Construction",
+        "Industry": "Engineering & Construction",
         "Average P/S ratio": "1.58"
     },
     {
@@ -192,7 +192,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.38"
     },
     {
-        "Industry": "Farm &amp; Heavy Construction Machinery",
+        "Industry": "Farm & Heavy Construction Machinery",
         "Average P/S ratio": "1.06"
     },
     {
@@ -200,7 +200,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "0.84"
     },
     {
-        "Industry": "Financial Data &amp; Stock Exchanges",
+        "Industry": "Financial Data & Stock Exchanges",
         "Average P/S ratio": "4.97"
     },
     {
@@ -208,11 +208,11 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "0.32"
     },
     {
-        "Industry": "Footwear &amp; Accessories",
+        "Industry": "Footwear & Accessories",
         "Average P/S ratio": "1.14"
     },
     {
-        "Industry": "Furnishings, Fixtures &amp; Appliances",
+        "Industry": "Furnishings, Fixtures & Appliances",
         "Average P/S ratio": "0.65"
     },
     {
@@ -240,7 +240,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.26"
     },
     {
-        "Industry": "Household &amp; Personal Products",
+        "Industry": "Household & Personal Products",
         "Average P/S ratio": "2.03"
     },
     {
@@ -264,7 +264,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.33"
     },
     {
-        "Industry": "Insurance - Property &amp; Casualty",
+        "Industry": "Insurance - Property & Casualty",
         "Average P/S ratio": "1.65"
     },
     {
@@ -276,11 +276,11 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "2.48"
     },
     {
-        "Industry": "Integrated Freight &amp; Logistics",
+        "Industry": "Integrated Freight & Logistics",
         "Average P/S ratio": "1.15"
     },
     {
-        "Industry": "Internet Content &amp; Information",
+        "Industry": "Internet Content & Information",
         "Average P/S ratio": "2.74"
     },
     {
@@ -316,7 +316,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "0.27"
     },
     {
-        "Industry": "Medical Instruments &amp; Supplies",
+        "Industry": "Medical Instruments & Supplies",
         "Average P/S ratio": "4.22"
     },
     {
@@ -328,35 +328,35 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.73"
     },
     {
-        "Industry": "Oil &amp; Gas Drilling",
+        "Industry": "Oil & Gas Drilling",
         "Average P/S ratio": "0.69"
     },
     {
-        "Industry": "Oil &amp; Gas E&amp;P",
+        "Industry": "Oil & Gas E&P",
         "Average P/S ratio": "1.65"
     },
     {
-        "Industry": "Oil &amp; Gas Equipment &amp; Services",
+        "Industry": "Oil & Gas Equipment & Services",
         "Average P/S ratio": "1.16"
     },
     {
-        "Industry": "Oil &amp; Gas Integrated",
+        "Industry": "Oil & Gas Integrated",
         "Average P/S ratio": "1.3"
     },
     {
-        "Industry": "Oil &amp; Gas Midstream",
+        "Industry": "Oil & Gas Midstream",
         "Average P/S ratio": "1.85"
     },
     {
-        "Industry": "Oil &amp; Gas Refining &amp; Marketing",
+        "Industry": "Oil & Gas Refining & Marketing",
         "Average P/S ratio": "0.64"
     },
     {
-        "Industry": "Other Industrial Metals &amp; Mining",
+        "Industry": "Other Industrial Metals & Mining",
         "Average P/S ratio": "1.62"
     },
     {
-        "Industry": "Other Precious Metals &amp; Mining",
+        "Industry": "Other Precious Metals & Mining",
         "Average P/S ratio": "3.95"
     },
     {
@@ -364,11 +364,11 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.11"
     },
     {
-        "Industry": "Packaging &amp; Containers",
+        "Industry": "Packaging & Containers",
         "Average P/S ratio": "0.97"
     },
     {
-        "Industry": "Paper &amp; Paper Products",
+        "Industry": "Paper & Paper Products",
         "Average P/S ratio": "0.25"
     },
     {
@@ -376,7 +376,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.68"
     },
     {
-        "Industry": "Pollution &amp; Treatment Controls",
+        "Industry": "Pollution & Treatment Controls",
         "Average P/S ratio": "3.39"
     },
     {
@@ -412,7 +412,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "5.37"
     },
     {
-        "Industry": "REIT - Hotel &amp; Motel",
+        "Industry": "REIT - Hotel & Motel",
         "Average P/S ratio": "1.13"
     },
     {
@@ -440,7 +440,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "5.67"
     },
     {
-        "Industry": "Rental &amp; Leasing Services",
+        "Industry": "Rental & Leasing Services",
         "Average P/S ratio": "2.06"
     },
     {
@@ -448,7 +448,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.21"
     },
     {
-        "Industry": "Resorts &amp; Casinos",
+        "Industry": "Resorts & Casinos",
         "Average P/S ratio": "1.26"
     },
     {
@@ -456,15 +456,15 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.14"
     },
     {
-        "Industry": "Scientific &amp; Technical Instruments",
+        "Industry": "Scientific & Technical Instruments",
         "Average P/S ratio": "4.18"
     },
     {
-        "Industry": "Security &amp; Protection Services",
+        "Industry": "Security & Protection Services",
         "Average P/S ratio": "2.06"
     },
     {
-        "Industry": "Semiconductor Equipment &amp; Materials",
+        "Industry": "Semiconductor Equipment & Materials",
         "Average P/S ratio": "4.14"
     },
     {
@@ -500,7 +500,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.07"
     },
     {
-        "Industry": "Staffing &amp; Employment Services",
+        "Industry": "Staffing & Employment Services",
         "Average P/S ratio": "1.15"
     },
     {
@@ -520,7 +520,7 @@ export const benchmarkIndustryMapping = [
         "Average P/S ratio": "1.89"
     },
     {
-        "Industry": "Tools &amp; Accessories",
+        "Industry": "Tools & Accessories",
         "Average P/S ratio": "2.27"
     },
     {

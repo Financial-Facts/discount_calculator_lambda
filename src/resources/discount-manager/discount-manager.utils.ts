@@ -15,7 +15,6 @@ import { buildQualifyingData } from "./qualification.utils";
 
 export function validateStatements(cik: string, data: Statements): void {
     checkHasSufficientStatements(cik, data);
-    checkStatementsHaveBeenUpdated(cik, data);
 }
 
 function checkHasSufficientStatements(cik: string, data: Statements): void {
@@ -24,20 +23,6 @@ function checkHasSufficientStatements(cik: string, data: Statements): void {
         data.cashFlowStatements.length !== 44) {
         throw new InsufficientDataException(`${cik} has insufficent statements available`);
     }
-}
-
-function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
-    if (!isUpToDate(data.balanceSheets) ||
-        !isUpToDate(data.incomeStatements) ||
-        !isUpToDate(data.cashFlowStatements)) {
-        throw new DataNotUpdatedException(`Data for ${cik} has not yet been updated!`);
-    }
-}
-
-function isUpToDate<T extends Statement>(statements: T[]): boolean {
-    const lastReportedData: Date = new Date(statements.slice(-1)[0].fillingDate);
-    const upToDateMaxDays = (process.env.up_to_date_max_days || 16) as number;
-    return days_between(lastReportedData, new Date()) <= upToDateMaxDays;
 }
 
 function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): PeriodicData[] {
