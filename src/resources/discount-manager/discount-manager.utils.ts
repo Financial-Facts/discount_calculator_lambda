@@ -31,8 +31,9 @@ function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
     const lastIncomeStatementDate = new Date(data.incomeStatements.slice(-1)[0].fillingDate);
     const lastCashFlowStatementDate = new Date(data.cashFlowStatements.slice(-1)[0].fillingDate);
 
-    if (days_between(lastBalanceSheetDate, lastIncomeStatementDate) >= 90 ||
-        days_between(lastBalanceSheetDate, lastCashFlowStatementDate) >= 90
+    if (days_between(lastBalanceSheetDate, lastIncomeStatementDate) >= 45 ||
+        days_between(lastBalanceSheetDate, lastCashFlowStatementDate) >= 45 ||
+        days_between(lastIncomeStatementDate, lastCashFlowStatementDate) >= 45
     ) {
         throw new DataNotUpdatedException(`Data for ${cik} has not yet been updated!`);
     }
