@@ -20,6 +20,11 @@ class CagrFunction implements Function<CagrVariables, number> {
         }
 
         const cagr = (Math.pow((current / previous), (1 / (slicedData.length - 1))) - 1) * 100;
+
+        if (current < 0 && previous < 0) {
+            return -cagr;
+        }
+        
         return cagr;
     }
     
