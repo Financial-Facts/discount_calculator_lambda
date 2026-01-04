@@ -27,17 +27,16 @@ function checkHasSufficientStatements(cik: string, data: Statements): void {
 }
 
 function checkStatementsHaveBeenUpdated(cik: string, data: Statements): void {
-    if (!isUpToDate(data.balanceSheets) ||
-        !isUpToDate(data.incomeStatements) ||
-        !isUpToDate(data.cashFlowStatements)) {
+    const lastBalanceSheetDate = new Date(data.balanceSheets.slice(-1)[0].fillingDate);
+    const lastIncomeStatementDate = new Date(data.incomeStatements.slice(-1)[0].fillingDate);
+    const lastCashFlowStatementDate = new Date(data.cashFlowStatements.slice(-1)[0].fillingDate);
+
+    if (days_between(lastBalanceSheetDate, lastIncomeStatementDate) >= 45 ||
+        days_between(lastBalanceSheetDate, lastCashFlowStatementDate) >= 45 ||
+        days_between(lastIncomeStatementDate, lastCashFlowStatementDate) >= 45
+    ) {
         throw new DataNotUpdatedException(`Data for ${cik} has not yet been updated!`);
     }
-}
-
-function isUpToDate<T extends Statement>(statements: T[]): boolean {
-    const lastReportedData: Date = new Date(statements.slice(-1)[0].fillingDate);
-    const upToDateMaxDays = (process.env.up_to_date_max_days || 16) as number;
-    return days_between(lastReportedData, new Date()) <= upToDateMaxDays;
 }
 
 function replaceEmptyValuesWithMostRecent(periodicData: PeriodicData[]): PeriodicData[] {
