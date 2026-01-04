@@ -1,24 +1,26 @@
 import { BvpsInput } from "@/resources/discount-manager/discount-manager.typings";
 import { TimePeriod } from "../calculator.typings";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { PeriodicData } from "@/src/types";
 import { annualizeByLastQuarter } from "@/utils/annualize.utils";
 import { processPeriodicDatasets } from "@/utils/processing.utils";
 
 
-class BvpsFunction extends AbstractFunction {
+export interface BvpsVariables {
+    cik: string,
+    timePeriod: TimePeriod,
+    quarterlyData: BvpsInput
+};
 
-    calculate(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: BvpsInput
-    }): PeriodicData[] {
-        const quarterlyData = data.quarterlyData;
+class BvpsFunction implements Function<BvpsVariables, PeriodicData[]> {
+
+    calculate(variables: BvpsVariables): PeriodicData[] {
+        const quarterlyData = variables.quarterlyData;
         const quarterly_shareholder_equity = quarterlyData.quarterlyShareholderEquity;
         const quarterly_outstanding_shares = quarterlyData.quarterlyOutstandingShares;
-        const quarterlyBVPS = processPeriodicDatasets(data.cik,
+        const quarterlyBVPS = processPeriodicDatasets(variables.cik,
         quarterly_shareholder_equity, quarterly_outstanding_shares, (a, b) => a/b);
-        return data.timePeriod === 'A' ? annualizeByLastQuarter(data.cik, quarterlyBVPS) : quarterlyBVPS;
+        return variables.timePeriod === 'A' ? annualizeByLastQuarter(variables.cik, quarterlyBVPS) : quarterlyBVPS;
     }
     
 }

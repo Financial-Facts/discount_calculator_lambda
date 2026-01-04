@@ -1,16 +1,28 @@
+import { averageOverPeriodFunction, periodicGrowthRatesFunction } from "@/services/calculator/calculator.service";
 import { calculatorService } from "../bootstrap";
 import { PeriodicData } from "../types";
 import { addYears } from "./date.utils";
 import { processPeriodicDatasets } from "./processing.utils";
+import AverageOverPeriodFunction, { AverageOverPeriodVariables } from "@/services/calculator/functions/AverageOverPeriod.function";
+import PeriodicGrowthRatesFunction, { PeriodicGrowthRatesVariables } from "@/services/calculator/functions/PeriodicGrowthRates.function";
 
 
 // Project periodic data using growth rate
 export function projectByAverageGrowth(cik: string, numYears: number, data: PeriodicData[]): PeriodicData[] {
     const result: PeriodicData[] = [];
-    const averageGrowthRate = calculatorService.calculateAverageOverPeriod({
-        periodicData: calculatorService.calculatePeriodicGrowthRates({ cik: cik, periodicData: data }).slice(numYears - 1),
-        numPeriods: numYears - 1
-    }) / 100;
+    const averageGrowthRate = calculatorService.calculate(
+        {
+            periodicData: calculatorService.calculate(
+                {
+                    cik: cik,
+                    periodicData: data
+                },
+                periodicGrowthRatesFunction
+            ).slice(numYears - 1),
+            numPeriods: numYears - 1
+        },
+        averageOverPeriodFunction
+    ) / 100;
 
     const lastPeriod = data.slice(-1)[0];
     let value = lastPeriod.value;
@@ -35,12 +47,15 @@ export function projectByAveragePercentOfValue(
     historicalReferenceData: PeriodicData[],
     projectedReferenceData: PeriodicData[]
 ): PeriodicData[] {
-    const averagePercent = calculatorService.calculateAverageOverPeriod({
-        periodicData: processPeriodicDatasets(cik,
-            data,
-            historicalReferenceData, (a, b) => (a / b)),
-        numPeriods: data.length
-    });
+    const averagePercent = calculatorService.calculate(
+        {
+            periodicData: processPeriodicDatasets(cik,
+                data,
+                historicalReferenceData, (a, b) => (a / b)),
+            numPeriods: data.length
+        },
+        averageOverPeriodFunction
+    );
     return projectedReferenceData.map((projectedReferenceData) => ({
         cik: cik,
         announcedDate: projectedReferenceData.announcedDate,

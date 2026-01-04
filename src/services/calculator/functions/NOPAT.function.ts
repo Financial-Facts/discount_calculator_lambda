@@ -1,22 +1,24 @@
 import { NopatInput } from "@/resources/discount-manager/discount-manager.typings";
 import { TimePeriod } from "../calculator.typings";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { PeriodicData } from "@/src/types";
 import { annualizeByAdd } from "@/utils/annualize.utils";
 import { processPeriodicDatasets } from "@/utils/processing.utils";
 
 
-class NopatFunction extends AbstractFunction {
+export interface NopatVariables {
+    cik: string,
+    timePeriod: TimePeriod,
+    quarterlyData: NopatInput
+}
 
-    calculate(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        quarterlyData: NopatInput
-    }): PeriodicData[] {
-        const quarterlyTaxExpense = data.quarterlyData.quarterlyTaxExpense;
-        const quarterlyOperatingIncome = data.quarterlyData.quarterlyOperatingIncome;
-        const quarterlyNOPAT = processPeriodicDatasets(data.cik, quarterlyOperatingIncome, quarterlyTaxExpense, (a, b) => a - b);
-        return data.timePeriod === 'A' ? annualizeByAdd(data.cik, quarterlyNOPAT) : quarterlyNOPAT;
+class NopatFunction implements Function<NopatVariables, PeriodicData[]> {
+
+    calculate(variables: NopatVariables): PeriodicData[] {
+        const quarterlyTaxExpense = variables.quarterlyData.quarterlyTaxExpense;
+        const quarterlyOperatingIncome = variables.quarterlyData.quarterlyOperatingIncome;
+        const quarterlyNOPAT = processPeriodicDatasets(variables.cik, quarterlyOperatingIncome, quarterlyTaxExpense, (a, b) => a - b);
+        return variables.timePeriod === 'A' ? annualizeByAdd(variables.cik, quarterlyNOPAT) : quarterlyNOPAT;
     }
     
 }

@@ -1,5 +1,5 @@
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
-import AbstractFunction from "./AbstractFunction";
+import Function from "./Function";
 import { historicalPriceService } from "../../../bootstrap";
 import { TimePeriod } from "../calculator.typings";
 import { PeriodicData } from "@/src/types";
@@ -9,26 +9,23 @@ import { annualizeByAdd } from "@/utils/annualize.utils";
 import { PriceData, HistoricalPriceInput, Frequency } from "@/services/historical-price/historical-price.typings";
 
 
+export interface PeVariables {
+    cik: string,
+    timePeriod: TimePeriod,
+    symbols: string[],
+    quarterlyData: PeInput
+}
 
-class PeFunction extends AbstractFunction {
+class PeFunction implements Function<PeVariables, Promise<PeriodicData[]>> {
 
-    constructor() {
-        super();
-    }
-
-    async calculate(data: {
-        cik: string,
-        timePeriod: TimePeriod,
-        symbols: string[],
-        quarterlyData: PeInput
-    }): Promise<PeriodicData[]> {
+    async calculate(variables: PeVariables): Promise<PeriodicData[]> {
         const annualPE: PeriodicData[] = [];
-        const isAnnual = data.timePeriod === 'A';
+        const isAnnual = variables.timePeriod === 'A';
         const periodicEPS = isAnnual ?
-            annualizeByAdd(data.cik, data.quarterlyData.quarterlyEPS) :
-            data.quarterlyData.quarterlyEPS;
+            annualizeByAdd(variables.cik, variables.quarterlyData.quarterlyEPS) :
+            variables.quarterlyData.quarterlyEPS;
         const historicalPriceInput =
-            this.buildHistoricalPriceInput(data.symbols, periodicEPS);
+            this.buildHistoricalPriceInput(variables.symbols, periodicEPS);
         return historicalPriceService.getHistoricalPrices(historicalPriceInput)
             .then(async (priceData: PriceData[]) => {
                 periodicEPS.forEach(period => {
@@ -36,11 +33,11 @@ class PeFunction extends AbstractFunction {
                         return days_between(new Date(day.date), new Date(period.announcedDate)) <= 3;
                     })?.close;
                     if (!price) {
-                        console.log("Insufficient historical price data available for " + data.cik);
+                        console.log("Insufficient historical price data available for " + variables.cik);
                         throw new InsufficientDataException("Insufficient historical price data available");
                     }
                     annualPE.push({
-                        cik: data.cik,
+                        cik: variables.cik,
                         announcedDate: period.announcedDate,
                         period: isAnnual ? 'FY' : period.period,
                         value: period.value > 0 ? price/period.value : 0

@@ -4,6 +4,8 @@ import { PeriodicData } from "@/src/types";
 import { StickerPriceQuarterlyData } from "@/resources/discount-manager/discount-manager.typings";
 import { annualizeByAdd, annualizeByLastQuarter } from "@/utils/annualize.utils";
 import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
+import { averageOverPeriodFunction, bvpsFunction, cagrFunction, debtYearsFunction, peFunction, periodicGrowthRatesFunction, roicFunction, stickerPriceFunction } from "../calculator/calculator.service";
+import { TimePeriod } from "../calculator/calculator.typings";
 
 class StickerPriceService {
 
@@ -23,26 +25,38 @@ class StickerPriceService {
     ): Promise<StickerPriceInput> {
         return {
             cik: cik,
-            debtYears: calculatorService.calculateDebtYears({
-                cik: cik,
-                quarterlyData: data
-            }),
-            annualBVPS: calculatorService.calculateBVPS({
-                cik: cik,
-                timePeriod: 'A',
-                quarterlyData: data
-            }),
-            annualPE: await calculatorService.calculatePE({
-                cik: cik,
-                timePeriod: 'A',
-                symbols: symbols,
-                quarterlyData: data
-            }),
-            annualROIC: calculatorService.calculateROIC({
-                cik: cik,
-                timePeriod: 'A',
-                quarterlyData: data
-            }),
+            debtYears: calculatorService.calculate(
+                {
+                    cik: cik,
+                    quarterlyData: data
+                },
+                debtYearsFunction
+            ),
+            annualBVPS: calculatorService.calculate(
+                {
+                    cik: cik,
+                    timePeriod: 'A' as TimePeriod,
+                    quarterlyData: data
+                },
+                bvpsFunction
+            ),
+            annualPE: await calculatorService.calculate(
+                {
+                    cik: cik,
+                    timePeriod: 'A' as TimePeriod,
+                    symbols: symbols,
+                    quarterlyData: data
+                },
+                peFunction
+            ),
+            annualROIC: calculatorService.calculate(
+                {
+                   cik: cik,
+                    timePeriod: 'A' as TimePeriod,
+                    quarterlyData: data
+                },
+                roicFunction
+            ),
             annualEPS: annualizeByAdd(cik, data.quarterlyEPS),
             annualEquity: annualizeByLastQuarter(cik, data.quarterlyTotalEquity),
             annualRevenue: annualizeByAdd(cik, data.quarterlyRevenue),
@@ -69,15 +83,21 @@ class StickerPriceService {
             return undefined;
         }
         
-        const estimatedPeriodicGrowthRates = calculatorService.calculatePeriodicGrowthRates({
-            cik: cik,
-            periodicData: [recentFyEPS, ...futurePeriodEstimates]
-        });
+        const estimatedPeriodicGrowthRates = calculatorService.calculate(
+            {
+                cik: cik,
+                periodicData: [recentFyEPS, ...futurePeriodEstimates]
+            },
+            periodicGrowthRatesFunction
+        );
 
-        return calculatorService.calculateAverageOverPeriod({
-            periodicData: estimatedPeriodicGrowthRates,
-            numPeriods: estimatedPeriodicGrowthRates.length
-        });
+        return calculatorService.calculate(
+            {
+                periodicData: estimatedPeriodicGrowthRates,
+                numPeriods: estimatedPeriodicGrowthRates.length
+            },
+            averageOverPeriodFunction
+        );
     }
 
 
@@ -89,17 +109,23 @@ class StickerPriceService {
         ffyEstimatedEpsGrowthRate?: number
     ): number {
         const numPeriods = 10;
-        return calculatorService.calculateStickerPrice({
-            cik: cik,
-            numPeriods: numPeriods,
-            equityGrowthRate: calculatorService.calculateCAGR({
-                periodicData: annualBVPS,
-                period: numPeriods
-            }),
-            annualEPS: annualEPS,
-            annualPE: annualPE,
-            analystGrowthEstimate: ffyEstimatedEpsGrowthRate
-        });
+        return calculatorService.calculate(
+            {
+                cik: cik,
+                numPeriods: numPeriods,
+                equityGrowthRate: calculatorService.calculate(
+                    {
+                        periodicData: annualBVPS,
+                        period: numPeriods
+                    },
+                    cagrFunction
+                ),
+                annualEPS: annualEPS,
+                annualPE: annualPE,
+                analystGrowthEstimate: ffyEstimatedEpsGrowthRate
+            },
+            stickerPriceFunction
+        );
     }
 
 }

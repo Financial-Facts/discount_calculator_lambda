@@ -2,6 +2,7 @@ import { BigFive } from "@/services/calculator/calculator.typings";
 import { calculatorService } from "../../bootstrap";
 import { PeriodicData } from "@/src/types";
 import { Qualifier } from "@/services/discount/ffs-discount/discount.typings";
+import { averageOverPeriodFunction, cagrFunction } from "@/services/calculator/calculator.service";
 
 
 
@@ -25,10 +26,13 @@ function checkAnnualDataAvgExceedsValue(
         cik: cik,
         type: type,
         periods: period,
-        value: calculatorService.calculateAverageOverPeriod({ 
-            periodicData: annualData,
-            numPeriods: period
-        })
+        value: calculatorService.calculate(
+            { 
+                periodicData: annualData,
+                numPeriods: period
+            },
+            averageOverPeriodFunction
+        )
     }));
 }
 
@@ -43,9 +47,12 @@ function checkAverageGrowthRateExceedsValue(
         cik: cik,
         type: type,
         periods: period,
-        value: calculatorService.calculateCAGR({
-            periodicData: data,
-            period: period
-        })
+        value: calculatorService.calculate(
+            {
+                periodicData: data,
+                period: period
+            },
+            cagrFunction
+        )
     }));
 }

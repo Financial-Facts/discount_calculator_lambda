@@ -8,6 +8,7 @@ import { processPeriodicDatasets, getLastPeriodValue } from "@/utils/processing.
 import { projectByAverageGrowth, projectByAveragePercentOfValue } from "@/utils/projection.utils";
 import { PeriodicData } from "@/src/types";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
+import { discountedCashFlowFunction, enterpriseValueFunction, terminalValueFunction, waccFunction } from "@/services/calculator/calculator.service";
 
 
 class DiscountedCashFlowService {
@@ -27,11 +28,14 @@ class DiscountedCashFlowService {
         console.log(`In discounted cash flow service getting DCF price for ${cik}`);
         return {
             cik: cik,
-            price: calculatorService.calculateDiscountedCashFlowPrice({
-                enterpriseValue: input.enterpriseValue,
-                netDebt: input.netDebt,
-                dilutedSharesOutstanding: input.dilutedSharesOutstanding
-            }),
+            price: calculatorService.calculate(
+                {
+                    enterpriseValue: input.enterpriseValue,
+                    netDebt: input.netDebt,
+                    dilutedSharesOutstanding: input.dilutedSharesOutstanding
+                },
+                discountedCashFlowFunction
+            ),
             input: input
         }
     }
@@ -135,28 +139,37 @@ class DiscountedCashFlowService {
         data: DiscountedCashFlowData
     ): number[] {
         
-        const wacc = calculatorService.calculateWACC({
-            cik: cik, 
-            ...data,
-            totalDebt: totalDebt,
-        });
+        const wacc = calculatorService.calculate(
+            {
+                cik: cik, 
+                ...data,
+                totalDebt: totalDebt,
+            },
+            waccFunction
+        );
 
         const lastPeriodFreeCashFlow = getLastPeriodValue(projectedFreeCashFlow);
         const freeCashFlowT1 = lastPeriodFreeCashFlow + (lastPeriodFreeCashFlow * (data.longTermGrowthRate / 100));
 
-        const terminalValue = calculatorService.calculateTerminalValue({
-            wacc: wacc,
-            longTermGrowthRate: data.longTermGrowthRate,
-            freeCashFlowT1: freeCashFlowT1
-        });
+        const terminalValue = calculatorService.calculate(
+            {
+                wacc: wacc,
+                longTermGrowthRate: data.longTermGrowthRate,
+                freeCashFlowT1: freeCashFlowT1
+            },
+            terminalValueFunction
+        );
 
-        const enterpriseValue = calculatorService.calculateEnterpriseValue({
-            wacc: wacc,
-            terminalValue: terminalValue,
-            periodicData: {
-                periodicFreeCashFlow: projectedFreeCashFlow
-            }
-        });
+        const enterpriseValue = calculatorService.calculate(
+            {
+                wacc: wacc,
+                terminalValue: terminalValue,
+                periodicData: {
+                    periodicFreeCashFlow: projectedFreeCashFlow
+                }
+            },
+            enterpriseValueFunction
+        );
 
         return [
             wacc,
@@ -170,7 +183,7 @@ class DiscountedCashFlowService {
 
         const hasRequiredValues = (data: DiscountedCashFlowData): boolean => 
             !!data && !!data.longTermGrowthRate && !!data.dilutedSharesOutstanding && !!data.price &&
-            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && !!data.taxRate;
+            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && data.taxRate !== undefined;
 
         for (const symbol of symbols) {
             const data: DiscountedCashFlowData = await this.fetchDiscountedCashFlowData(symbol);

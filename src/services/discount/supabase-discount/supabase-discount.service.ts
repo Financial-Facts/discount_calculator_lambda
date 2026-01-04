@@ -214,13 +214,13 @@ class SupabaseDiscountService implements IDiscountService {
     private async fetchDiscountIfExists(cik: string): Promise<Discount | null> {
         const { data, error } = await this.client
             .rpc('get_discount', { discount_cik: cik })
-            .returns<Discount>();
+            .returns<Discount | null>();
 
         if (error) {
             throw new DatabaseException(error.message);
         }
 
-        return data;
+        return data as Discount | null;
     }
 
 }
