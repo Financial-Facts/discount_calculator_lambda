@@ -1,7 +1,6 @@
 import HttpException from "@/utils/exceptions/HttpException";
 import { BalanceSheet, CashFlowStatement, IncomeStatement, Statements } from "./statement.typings";
 import { cleanStatements } from "./statement.utils";
-import { buildURI } from "../fmp-service.utils";
 
 class StatementService {
 
@@ -17,9 +16,9 @@ class StatementService {
     public async getCleanStatements(cik: string, symbol: string): Promise<Statements> {
         console.log(`In statement service gettings sticker price data for ${cik}`);
         return Promise.all([
-            this.getIncomeStatements(cik),
-            this.getBalanceSheets(cik),
-            this.getCashFlowStatements(cik)
+            this.getIncomeStatements(symbol),
+            this.getBalanceSheets(symbol),
+            this.getCashFlowStatements(symbol)
         ]).then(statements => {
             const [ incomeStatements, balanceSheets, cashFlowStatements ] = statements;
             return {
@@ -30,66 +29,75 @@ class StatementService {
         });
     }
 
-    private async getBalanceSheets(cik: string): Promise<BalanceSheet[]> {
-        console.log(`In statement service getting balance sheets for ${cik}`);
+    private async getBalanceSheets(symbol: string): Promise<BalanceSheet[]> {
+        console.log(`In statement service getting balance sheets for ${symbol}`);
         try {
-            const url = this.fmp_base_url + buildURI(cik, 'balance-sheet-statement', this.apiKey);
+            const url = this.fmp_base_url +
+                `/stable/balance-sheet-statement?symbol=${symbol}&apikey=${this.apiKey}&period=quarter&limit=44`;
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
                         const text = await response.text();
                         throw new HttpException(response.status,
-                            `Error occurred while getting balance sheets for ${cik}: ${text}`);
+                            `Error occurred while getting balance sheets for ${symbol}: ${text}`);
                     }
                     return response.json();
                 }).then((body: BalanceSheet[]) => {
                     return body;
                 });
         } catch (err: any) {
-            throw new HttpException(err.status,
-                `Error occurred while getting balance sheets for ${cik}: ${err.message}`)
+            throw new HttpException(
+                err.status,
+                `Error occurred while getting balance sheets for ${symbol}: ${err.message}`
+            );
         }
     }
 
-    private async getIncomeStatements(cik: string): Promise<IncomeStatement[]> {
-        console.log(`In statement service getting income statements for ${cik}`);
+    private async getIncomeStatements(symbol: string): Promise<IncomeStatement[]> {
+        console.log(`In statement service getting income statements for ${symbol}`);
         try {
-            const url = this.fmp_base_url + buildURI(cik, 'income-statement', this.apiKey);
+            const url = this.fmp_base_url +
+                `/stable/income-statement?symbol=${symbol}&apikey=${this.apiKey}&period=quarter&limit=44`;
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
                         const text = await response.text();
                         throw new HttpException(response.status,
-                            `Error occurred while getting income statements for ${cik}: ${text}`);
+                            `Error occurred while getting income statements for ${symbol}: ${text}`);
                     }
                     return response.json();
                 }).then((body: IncomeStatement[]) => {
                     return body;
                 });
         } catch (err: any) {
-            throw new HttpException(err.status,
-                `Error occurred while getting income statements for ${cik}: ${err.message}`)
+            throw new HttpException(
+                err.status,
+                `Error occurred while getting income statements for ${symbol}: ${err.message}`
+            );
         }
     }
 
-    private async getCashFlowStatements(cik: string): Promise<CashFlowStatement[]> {
-        console.log(`In statement service getting cash flow statements for ${cik}`);
+    private async getCashFlowStatements(symbol: string): Promise<CashFlowStatement[]> {
+        console.log(`In statement service getting cash flow statements for ${symbol}`);
         try {
-            const url = this.fmp_base_url + buildURI(cik, 'cash-flow-statement', this.apiKey);
+            const url = this.fmp_base_url +
+                `/stable/cash-flow-statement?symbol=${symbol}&apikey=${this.apiKey}&period=quarter&limit=44`;
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
                         const text = await response.text();
                         throw new HttpException(response.status,
-                            `Error occurred while getting cash flow statements for ${cik}: ${text}`);
+                            `Error occurred while getting cash flow statements for ${symbol}: ${text}`);
                     }
                     return response.json();
                 }).then((body: CashFlowStatement[]) => {
                     return body;
                 });
         } catch (err: any) {
-            throw new HttpException(err.status,
-                `Error occurred while getting cash flow statements for ${cik}: ${err.message}`)
+            throw new HttpException(
+                err.status,
+                `Error occurred while getting cash flow statements for ${symbol}: ${err.message}`
+            );
         }
     }
 }
