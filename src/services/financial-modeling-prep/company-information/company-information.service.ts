@@ -1,5 +1,5 @@
 import HttpException from "@/utils/exceptions/HttpException";
-import { AnalystEstimates, CompanyProfile, InsiderTrade } from "./company-information.typings";
+import { AnalystEstimates, Company, CompanyProfile, CompanyTTMRatios, InsiderTrade } from "./company-information.typings";
 import { buildURI } from "../fmp-service.utils";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 
@@ -87,6 +87,59 @@ class CompanyInformationService {
                 `Error occurred while getting insider trade statistics for ${symbol}: ${err.message}`
             )
         }
+    }
+
+    public async getCompanyListByIndustry(industry: string): Promise<Company[]> {
+        console.log(`In profile service getting company list by industry for ${industry}`);
+        const url = this.fmp_base_url +'/stable/company-screener' +
+            `?industry=${encodeURIComponent(industry)}` +
+            `&apikey=${this.apiKey}` +
+            '&isActivelyTrading=true' +
+            '&isFund=false' +
+            '&isEtf=false' +
+            '&exchange=NYSE,NASDAQ';
+
+        try {
+            return fetch(url)
+                .then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        const text = await response.text();
+                        throw new HttpException(response.status,
+                            `Error occurred while getting company list by industry for ${industry}: ${text}`
+                        )
+                    }
+                    return response.json();
+                }).then((body: Company[]) => {
+                    return body;
+                });
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                `Error occurred while getting company list by industry for ${industry}: ${err.message}`
+            )
+        }
+    }
+
+    public async getCompanyTTMRatiosBySymbol(symbol: string): Promise<CompanyTTMRatios> {
+        const url = this.fmp_base_url + `/stable/ratios-ttm?symbol=${symbol}&apikey=${this.apiKey}`;
+        try {
+            return fetch(url)
+                .then(async (response: Response) => {
+                    if (response.status !== 200) {
+                        const text = await response.text();
+                        throw new HttpException(response.status,
+                            `Error occurred while getting company TTM ratios for ${symbol}: ${text}`
+                        )
+                    }
+                    return response.json();
+                }).then((body: CompanyTTMRatios[]) => {
+                    return body[0];
+                });
+        } catch (err: any) {
+            throw new HttpException(err.status,
+                `Error occurred while getting company TTM ratios for ${symbol}: ${err.message}`
+            )
+        }
+    
     }
 }
 

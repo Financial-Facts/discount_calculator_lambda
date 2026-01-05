@@ -50,3 +50,15 @@ export interface InsiderTrade {
     transactionType: 'P-Purchase' | 'S-Sale'
     securitiesTransacted: number
 }
+
+export interface Company {
+    symbol: string
+    companyName: string
+    price: number
+    marketCap: number
+}
+
+export interface CompanyTTMRatios {
+    symbol: string
+    priceToSalesRatioTTM: number
+}

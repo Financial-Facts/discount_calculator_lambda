@@ -44,3 +44,8 @@ export interface SimpleDiscount {
     discountedCashFlowPrice: number;
     stickerPrice: number;
 }
+
+export interface IndustryPSBenchmarkRatio {
+    ps_ratio: number;
+    updated_at: string;
+}

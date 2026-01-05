@@ -1,6 +1,6 @@
 import CONSTANTS from "@/resources/resource.contants";
 import HttpException from "@/utils/exceptions/HttpException";
-import { SimpleDiscount, Discount } from "./discount.typings";
+import { SimpleDiscount, Discount, IndustryPSBenchmarkRatio } from "./discount.typings";
 import { buildHeadersWithBasicAuth } from "./discount.utils";
 import { IDiscountService } from "../discount-service.typings";
 
@@ -10,6 +10,13 @@ class DiscountService implements IDiscountService {
 
     constructor(ffs_base_url: string) {
         this.financialFactServiceDiscountV1Url = ffs_base_url + CONSTANTS.DISCOUNT.V1_ENDPOINT;
+    }
+    
+    getIndustryPSBenchmarkRatio(industry: string): Promise<IndustryPSBenchmarkRatio | null> {
+        throw new Error("Method not implemented.");
+    }
+    upsertIndustryPSBenchmarkRatio(industry: string, ps_ratio: number): Promise<string> {
+        throw new Error("Method not implemented.");
     }
     
     // Delete a discount

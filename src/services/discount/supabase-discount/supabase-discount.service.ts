@@ -1,6 +1,6 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { DbSimpleDiscount, TableName } from './supabase-discount.typings';
-import { Discount, SimpleDiscount } from '../ffs-discount/discount.typings';
+import { Discount, IndustryPSBenchmarkRatio, SimpleDiscount } from '../ffs-discount/discount.typings';
 import { PeriodicData } from '@/src/types';
 import { StickerPriceInput } from '../../sticker-price/sticker-price.typings';
 import { BenchmarkRatioPriceInput } from '../../benchmark/benchmark.typings';
@@ -20,6 +20,35 @@ class SupabaseDiscountService implements IDiscountService {
             url,
             key
         )
+    }
+    
+    public async getIndustryPSBenchmarkRatio(industry: string): Promise<IndustryPSBenchmarkRatio | null> {
+        const { data, error } = await this.client
+            .from('benchmark_industry_ps_ratio')
+            .select('ps_ratio, updated_at')
+            .eq('industry', industry)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') { // No rows found
+                return null;
+            }
+            
+            throw new DatabaseException(error.message);
+        }
+
+        return data;
+    }
+
+    public async upsertIndustryPSBenchmarkRatio(industry: string, ps_ratio: number): Promise<string> {
+        console.log(`Upserting industry PS benchmark ratio ${ps_ratio} for industry '${industry}'...`);
+        await this.upsertData('benchmark_industry_ps_ratio', {
+            industry,
+            ps_ratio,
+            updated_at: new Date().toISOString()
+        });
+
+        return CONSTANTS.GLOBAL.SUCCESS;
     }
 
     public async save(discount: Discount): Promise<string> {
