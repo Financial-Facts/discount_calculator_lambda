@@ -8,7 +8,6 @@ import { BenchmarkRatioPriceInput } from "@/services/benchmark/benchmark.typings
 import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/discounted-cash-flow/discounted-cash-flow.typings";
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
-import { getLastQ4Value } from "@/utils/processing.utils";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 
 
@@ -91,12 +90,11 @@ class DiscountManager {
 
         // Compile data needed for discount input calculations
         const quarterlyData = await buildQuarterlyData(cik, symbols, statements);
-        const { netDebt, totalDebt } = getLastQ4Value(statements.balanceSheets);
 
         return Promise.all([
             stickerPriceService.buildStickerPriceInput(cik, symbols, quarterlyData),
             benchmarkService.buildBenchmarkRatioPriceInput(cik, industry, quarterlyData),
-            discountedCashFlowService.buildDiscountedCashFlowInput(cik, activeSymbol, symbols, totalDebt, netDebt, quarterlyData)
+            discountedCashFlowService.buildDiscountedCashFlowInput(cik, activeSymbol, symbols, quarterlyData)
         ]);
     }
 

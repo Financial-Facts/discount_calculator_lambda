@@ -44,11 +44,10 @@ class DiscountedCashFlowService {
         cik: string,
         activeSymbol: string,
         symbols: string[],
-        totalDebt: number,
-        netDebt: number,
         quarterlyData: DiscountedCashFlowQuarterlyData
     ): Promise<DiscountedCashFlowInput> {
-        const historicalNumYears = 5;
+        const historicalNumYears = 10;
+
         const [
             historicalRevenue,
             projectedRevenue,
@@ -59,34 +58,35 @@ class DiscountedCashFlowService {
             historicalFreeCashFlow,
             projectedFreeCashFlow
         ] = this.buildPeriodicProjections(cik, historicalNumYears, quarterlyData);
-        return this.getDiscountedCashFlowData(symbols).then(data => {
-            const [
-                wacc,
-                freeCashFlowT1,
-                terminalValue,
-                enterpriseValue
-            ] = this.calculateFinancialValues(cik, totalDebt, projectedFreeCashFlow, data);
-            return {
-                cik: cik,
-                symbol: activeSymbol,
-                longTermGrowthRate: data.longTermGrowthRate,
-                freeCashFlowT1: freeCashFlowT1,
-                wacc: wacc,
-                terminalValue: terminalValue,
-                enterpriseValue: enterpriseValue,
-                netDebt: netDebt,
-                dilutedSharesOutstanding: data.dilutedSharesOutstanding,
-                marketPrice: data.price,
-                historicalRevenue: historicalRevenue,
-                projectedRevenue: projectedRevenue,
-                historicalOperatingCashFlow: historicalOperatingCashFlow,
-                projectedOperatingCashFlow: projectedOperatingCashFlow,
-                historicalCapitalExpenditure: historicalCapitalExpenditure,
-                projectedCapitalExpenditure: projectedCapitalExpenditure,
-                historicalFreeCashFlow: historicalFreeCashFlow,
-                projectedFreeCashFlow: projectedFreeCashFlow
-            }
-        });
+
+        const data = await this.getDiscountedCashFlowData(symbols)
+        const [
+            wacc,
+            freeCashFlowT1,
+            terminalValue,
+            enterpriseValue
+        ] = this.calculateFinancialValues(cik, data.totalDebt, projectedFreeCashFlow, data);
+
+        return {
+            cik: cik,
+            symbol: activeSymbol,
+            longTermGrowthRate: data.longTermGrowthRate,
+            freeCashFlowT1: freeCashFlowT1,
+            wacc: wacc,
+            terminalValue: terminalValue,
+            enterpriseValue: enterpriseValue,
+            netDebt: data.netDebt,
+            dilutedSharesOutstanding: data.dilutedSharesOutstanding,
+            marketPrice: data.price,
+            historicalRevenue: historicalRevenue,
+            projectedRevenue: projectedRevenue,
+            historicalOperatingCashFlow: historicalOperatingCashFlow,
+            projectedOperatingCashFlow: projectedOperatingCashFlow,
+            historicalCapitalExpenditure: historicalCapitalExpenditure,
+            projectedCapitalExpenditure: projectedCapitalExpenditure,
+            historicalFreeCashFlow: historicalFreeCashFlow,
+            projectedFreeCashFlow: projectedFreeCashFlow
+        };
     }
 
     private buildPeriodicProjections(
@@ -102,23 +102,33 @@ class DiscountedCashFlowService {
         const projectedRevenue = projectByAverageGrowth(cik, 5, historicalRevenue);
     
         const historicalOperatingCashFlow = annualizeByAdd(cik, filteredQuarterlyOperatingCashFlow);
-        const projectedOperatingCashFlow = projectByAveragePercentOfValue(cik,
+        const projectedOperatingCashFlow = projectByAveragePercentOfValue(
+            cik,
             historicalOperatingCashFlow.slice(-historicalNumYears),
             historicalRevenue.slice(-historicalNumYears),
-            projectedRevenue);
+            projectedRevenue
+        );
     
         const historicalCapitalExpenditure = annualizeByAdd(cik, filteredQuarterlyCapitalExpenditure);
-        const projectedCapitalExpenditure = projectByAveragePercentOfValue(cik,
+        const projectedCapitalExpenditure = projectByAveragePercentOfValue(
+            cik,
             historicalCapitalExpenditure.slice(-historicalNumYears),
             historicalRevenue.slice(-historicalNumYears),
-            projectedRevenue);
+            projectedRevenue
+        );
 
-        const historicalFreeCashFlow = processPeriodicDatasets(cik,
+        const historicalFreeCashFlow = processPeriodicDatasets(
+            cik,
             historicalOperatingCashFlow,
-            historicalCapitalExpenditure, (a, b) => a + b);
-        const projectedFreeCashFlow = processPeriodicDatasets(cik,
+            historicalCapitalExpenditure,
+            (a, b) => a + b
+        );
+        const projectedFreeCashFlow = processPeriodicDatasets(
+            cik,
             projectedOperatingCashFlow,
-            projectedCapitalExpenditure, (a, b) => a + b)
+            projectedCapitalExpenditure,
+            (a, b) => a + b
+        );
 
         return [
             historicalRevenue,
