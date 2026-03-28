@@ -9,21 +9,39 @@ import { DiscountedCashFlowInput } from "@/services/financial-modeling-prep/disc
 import { Statements } from "@/services/financial-modeling-prep/statement/statement.typings";
 import { CompanyProfile } from "@/services/financial-modeling-prep/company-information/company-information.typings";
 import { getLastQ4Value } from "@/utils/processing.utils";
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 
 
 class DiscountManager {
 
-    public async intiateDiscountCheck(cik: string): Promise<void> {
-        return this.checkForDiscount(cik)
-            .catch((err: any) => {
-                console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
-                if (err instanceof InsufficientDataException) {
-                    return this.deleteDiscount(cik, err.message);
-                }
-            });
+    snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+
+    public async processDiscountCheck(cik: string): Promise<void> {
+        // Calculate the discount for the given cik.
+        let discount: Discount;
+        try {
+            discount = await this.calculateDiscount(cik);
+        } catch (err: any) {
+            console.log(`Error occurred while checking ${cik} for discount: ${err.message}`);
+            if (err instanceof InsufficientDataException) {
+                await this.deleteDiscount(cik, err.message);
+            }
+
+            throw err;
+        }
+
+        // If a discount was successfully calculated, save it.
+        await this.saveDiscount(discount);
+
+        if (discount.isDeleted === 'N') {
+            await this.sendSNSAlert(
+                JSON.stringify(discount, null, 4),
+                `Active discount calculated for ${cik}`
+            );
+        }
     }
 
-    private async checkForDiscount(cik: string): Promise<void> {
+    private async calculateDiscount(cik: string): Promise<Discount> {
         console.log(`In discount manager checking for a discount on ${cik}`);
         const profiles = await companyInformationService.getCompanyProfiles(cik);
 
@@ -44,15 +62,19 @@ class DiscountManager {
             activeProfile.industry,
             activeProfile.symbol,
             statements,
-            profiles);
+            profiles
+        );
         
-        const discount = await buildDiscount(cik, activeProfile,
+        const discount = await buildDiscount(
+            cik,
+            activeProfile,
             stickerPriceService.getStickerPrice(stickerPriceInput),
             benchmarkService.getBenchmarkRatioPrice(cik, benchmarkRatioPriceInput),
-            discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput));
+            discountedCashFlowService.getDiscountCashFlowPrice(cik, discountedCashFlowInput)
+        );
                             
         console.log(JSON.stringify(discount, null, 4));
-        return this.saveDiscount(discount);
+        return discount;
     }
 
     private async buildValuationInputs(
@@ -101,6 +123,27 @@ class DiscountManager {
                     console.log(`Discount for ${cik} does not exist`);
                 }
             })
+    }
+
+    async sendSNSAlert(message: string, subject: string): Promise<void> {
+        const topicArn = process.env.ACTIVE_DISCOUNT_SNS_TOPIC_ARN;
+
+        try {
+            if (topicArn) {
+                // Publish to SNS topic (topic subscribers will receive the message)
+                const command = new PublishCommand({
+                    Message: message,
+                    Subject: subject,
+                    TopicArn: topicArn
+                });
+
+                await this.snsClient.send(command);
+            } else {
+                console.warn('SNS_TOPIC_ARN set; skipping SNS notification');
+            }
+        } catch (err) {
+            console.error('Error publishing SNS message', err);
+        }
     }
 }
 

@@ -18,7 +18,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
                 const body = JSON.parse(record.body) as { cik: string };
                 const cik = removeS3KeySuffix(body.cik);
                 console.log(`In price check consumer, processing: ${cik}`);
-                return discountManager.intiateDiscountCheck(cik);
+                return discountManager.processDiscountCheck(cik);
             }
         } catch (err: any) {
             if (err instanceof SyntaxError) {
@@ -37,7 +37,7 @@ async function processTestEvent(record: SQSRecord): Promise<void> {
         .map(raw => raw.trim())
         .filter(trimmed => trimmed !== CONSTANTS.GLOBAL.EMPTY);
     for (let cik of cikList) {
-        await discountManager.intiateDiscountCheck(cik);
+        await discountManager.processDiscountCheck(cik);
         await sleep(1000 * frequency);
     }
 }
