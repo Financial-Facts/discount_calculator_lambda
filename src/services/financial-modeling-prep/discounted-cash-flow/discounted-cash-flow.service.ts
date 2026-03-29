@@ -5,10 +5,10 @@ import { DiscountedCashFlowQuarterlyData, QuarterlyData } from "@/resources/disc
 import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
 import { annualizeByAdd } from "@/utils/annualize.utils";
 import { processPeriodicDatasets, getLastPeriodValue } from "@/utils/processing.utils";
-import { projectByAverageGrowth, projectByPercentValue } from "@/utils/projection.utils";
 import { PeriodicData } from "@/src/types";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { discountedCashFlowFunction, enterpriseValueFunction, terminalValueFunction, waccFunction } from "@/services/calculator/calculator.service";
+import { addYears } from "@/utils/date.utils";
 
 
 class DiscountedCashFlowService {
@@ -60,8 +60,7 @@ class DiscountedCashFlowService {
         ] = this.buildPeriodicProjections(
             cik,
             quarterlyData,
-            data.operatingCashFlowPercentage,
-            data.capitalExpenditurePercentage
+            data
         );
 
         const [
@@ -69,19 +68,19 @@ class DiscountedCashFlowService {
             freeCashFlowT1,
             terminalValue,
             enterpriseValue
-        ] = this.calculateFinancialValues(cik, data.totalDebt, projectedFreeCashFlow, data);
+        ] = this.calculateFinancialValues(cik, data[0].totalDebt, projectedFreeCashFlow, data[0]);
 
         return {
             cik: cik,
             symbol: activeSymbol,
-            longTermGrowthRate: data.longTermGrowthRate,
+            longTermGrowthRate: data[0].longTermGrowthRate,
             freeCashFlowT1: freeCashFlowT1,
             wacc: wacc,
             terminalValue: terminalValue,
             enterpriseValue: enterpriseValue,
-            netDebt: data.netDebt,
-            dilutedSharesOutstanding: data.dilutedSharesOutstanding,
-            marketPrice: data.price,
+            netDebt: data[0].netDebt,
+            dilutedSharesOutstanding: data[0].dilutedSharesOutstanding,
+            marketPrice: data[0].price,
             historicalRevenue: historicalRevenue,
             projectedRevenue: projectedRevenue,
             historicalOperatingCashFlow: historicalOperatingCashFlow,
@@ -96,40 +95,54 @@ class DiscountedCashFlowService {
     private buildPeriodicProjections(
         cik: string,
         quarterlyData: DiscountedCashFlowQuarterlyData,
-        operatingCashFlowPercentage: number,
-        capitalExpenditurePercentage: number
+        data: DiscountedCashFlowData[]
     ): PeriodicData[][] {
+        // Filter quarterly data to ensure we are only projecting based on complete fiscal years
         const filteredQuarterlyRevenue = filterToCompleteFiscalYears(quarterlyData.quarterlyRevenue);
         const filteredQuarterlyOperatingCashFlow = filterToCompleteFiscalYears(quarterlyData.quarterlyOperatingCashFlow);
         const filteredQuarterlyCapitalExpenditure = filterToCompleteFiscalYears(quarterlyData.quarterlyCapitalExpenditure);
 
+        // Annualize quarterly data by adding values from the 4 quarters in each fiscal year
         const historicalRevenue = annualizeByAdd(cik, filteredQuarterlyRevenue);
-        const projectedRevenue = projectByAverageGrowth(cik, 5, historicalRevenue);
-    
         const historicalOperatingCashFlow = annualizeByAdd(cik, filteredQuarterlyOperatingCashFlow);
-        const projectedOperatingCashFlow = projectByPercentValue(
-            projectedRevenue,
-            operatingCashFlowPercentage / 100
-        );
-    
         const historicalCapitalExpenditure = annualizeByAdd(cik, filteredQuarterlyCapitalExpenditure);
-        const projectedCapitalExpenditure = projectByPercentValue(
-            projectedRevenue,
-            capitalExpenditurePercentage / 100
-        );
-
         const historicalFreeCashFlow = processPeriodicDatasets(
             cik,
             historicalOperatingCashFlow,
             historicalCapitalExpenditure,
             (a, b) => a + b
         );
-        const projectedFreeCashFlow = processPeriodicDatasets(
-            cik,
-            projectedOperatingCashFlow,
-            projectedCapitalExpenditure,
-            (a, b) => a + b
-        );
+
+        // Project future values
+        const lastHistoricalDate = new Date(historicalRevenue.slice(-1)[0].announcedDate);
+        const projections = data.filter(d => Number(d.year) > lastHistoricalDate.getFullYear()).reverse();
+        const projectedRevenue: PeriodicData[] = projections.map((projection, i) => ({
+            cik: cik,
+            announcedDate: addYears(lastHistoricalDate, i + 1),
+            period: 'Q4',
+            value: projection.revenue
+        }));
+
+        const projectedOperatingCashFlow: PeriodicData[] = projections.map((projection, i) => ({
+            cik: cik,
+            announcedDate: addYears(lastHistoricalDate, i + 1),
+            period: 'Q4',
+            value: projection.operatingCashFlow
+        }));
+    
+        const projectedCapitalExpenditure: PeriodicData[] = projections.map((projection, i) => ({
+            cik: cik,
+            announcedDate: addYears(lastHistoricalDate, i + 1),
+            period: 'Q4',
+            value: projection.capitalExpenditure
+        }));
+
+        const projectedFreeCashFlow: PeriodicData[] = projections.map((projection, i) => ({
+            cik: cik,
+            announcedDate: addYears(lastHistoricalDate, i + 1),
+            period: 'Q4',
+            value: projection.freeCashFlow
+        }));
 
         return [
             historicalRevenue,
@@ -190,32 +203,26 @@ class DiscountedCashFlowService {
         ]
     }
 
-    private async getDiscountedCashFlowData(symbols: string[]): Promise<DiscountedCashFlowData> {
+    private async getDiscountedCashFlowData(symbols: string[]): Promise<DiscountedCashFlowData[]> {
 
-        const hasRequiredValues = (data: DiscountedCashFlowData): boolean => 
-            !!data && !!data.longTermGrowthRate && !!data.dilutedSharesOutstanding && !!data.price &&
-            !!data.totalEquity && !!data.costOfEquity && !!data.costofDebt && data.taxRate !== undefined;
+        const hasRequiredValues = (data: DiscountedCashFlowData[]): boolean => 
+            !!data[0] && !!data[0].longTermGrowthRate && !!data[0].dilutedSharesOutstanding && !!data[0].price &&
+            !!data[0].totalEquity && !!data[0].costOfEquity && !!data[0].costofDebt && data[0].taxRate !== undefined;
 
         for (const symbol of symbols) {
-            const data: DiscountedCashFlowData = await this.fetchDiscountedCashFlowData(symbol);
+            const data = await this.fetchDiscountedCashFlowData(symbol);
             if (hasRequiredValues(data)) {
                 return data;
-            }
-
-            const retriedData = await this.fetchDiscountedCashFlowData(symbol, true);
-            if (hasRequiredValues(retriedData)) {
-                return retriedData;
             }
         }
 
         throw new InsufficientDataException(`Insufficient discounted cash flow data available for ${symbols}`);
     }
 
-    private async fetchDiscountedCashFlowData(symbol: string, isRetry = false): Promise<DiscountedCashFlowData> {
+    private async fetchDiscountedCashFlowData(symbol: string): Promise<DiscountedCashFlowData[]> {
         console.log(`In discounted cash flow service getting discounted cash flow data`);
         try {
-            const endpointVal = isRetry ? 'advanced_discounted_cash_flow' : 'advanced_levered_discounted_cash_flow';
-            const url = `${this.fmp_base_url}/api/v4/${endpointVal}?symbol=${symbol}&apikey=${this.apiKey}`;
+            const url = `${this.fmp_base_url}/api/v4/advanced_levered_discounted_cash_flow?symbol=${symbol}&apikey=${this.apiKey}`;
             return fetch(url)
                 .then(async (response: Response) => {
                     if (response.status !== 200) {
@@ -225,7 +232,7 @@ class DiscountedCashFlowService {
                     }
                     return response.json();
                 }).then((body: DiscountedCashFlowData[]) => {
-                    return body[0];
+                    return body;
                 });
         } catch (err: any) {
             throw new HttpException(err.status,
