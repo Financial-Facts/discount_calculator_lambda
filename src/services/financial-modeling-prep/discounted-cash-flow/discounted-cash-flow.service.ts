@@ -5,7 +5,7 @@ import { DiscountedCashFlowQuarterlyData, QuarterlyData } from "@/resources/disc
 import { filterToCompleteFiscalYears } from "@/utils/filtering.utils";
 import { annualizeByAdd } from "@/utils/annualize.utils";
 import { processPeriodicDatasets, getLastPeriodValue } from "@/utils/processing.utils";
-import { projectByAverageGrowth, projectByAveragePercentOfValue } from "@/utils/projection.utils";
+import { projectByAverageGrowth, projectByPercentValue } from "@/utils/projection.utils";
 import { PeriodicData } from "@/src/types";
 import InsufficientDataException from "@/utils/exceptions/InsufficientDataException";
 import { discountedCashFlowFunction, enterpriseValueFunction, terminalValueFunction, waccFunction } from "@/services/calculator/calculator.service";
@@ -46,7 +46,7 @@ class DiscountedCashFlowService {
         symbols: string[],
         quarterlyData: DiscountedCashFlowQuarterlyData
     ): Promise<DiscountedCashFlowInput> {
-        const historicalNumYears = 10;
+        const data = await this.getDiscountedCashFlowData(symbols)
 
         const [
             historicalRevenue,
@@ -57,9 +57,13 @@ class DiscountedCashFlowService {
             projectedCapitalExpenditure,
             historicalFreeCashFlow,
             projectedFreeCashFlow
-        ] = this.buildPeriodicProjections(cik, historicalNumYears, quarterlyData);
+        ] = this.buildPeriodicProjections(
+            cik,
+            quarterlyData,
+            data.operatingCashFlowPercentage,
+            data.capitalExpenditurePercentage
+        );
 
-        const data = await this.getDiscountedCashFlowData(symbols)
         const [
             wacc,
             freeCashFlowT1,
@@ -91,8 +95,9 @@ class DiscountedCashFlowService {
 
     private buildPeriodicProjections(
         cik: string,
-        historicalNumYears: number,
-        quarterlyData: DiscountedCashFlowQuarterlyData
+        quarterlyData: DiscountedCashFlowQuarterlyData,
+        operatingCashFlowPercentage: number,
+        capitalExpenditurePercentage: number
     ): PeriodicData[][] {
         const filteredQuarterlyRevenue = filterToCompleteFiscalYears(quarterlyData.quarterlyRevenue);
         const filteredQuarterlyOperatingCashFlow = filterToCompleteFiscalYears(quarterlyData.quarterlyOperatingCashFlow);
@@ -102,19 +107,15 @@ class DiscountedCashFlowService {
         const projectedRevenue = projectByAverageGrowth(cik, 5, historicalRevenue);
     
         const historicalOperatingCashFlow = annualizeByAdd(cik, filteredQuarterlyOperatingCashFlow);
-        const projectedOperatingCashFlow = projectByAveragePercentOfValue(
-            cik,
-            historicalOperatingCashFlow.slice(-historicalNumYears),
-            historicalRevenue.slice(-historicalNumYears),
-            projectedRevenue
+        const projectedOperatingCashFlow = projectByPercentValue(
+            projectedRevenue,
+            operatingCashFlowPercentage / 100
         );
     
         const historicalCapitalExpenditure = annualizeByAdd(cik, filteredQuarterlyCapitalExpenditure);
-        const projectedCapitalExpenditure = projectByAveragePercentOfValue(
-            cik,
-            historicalCapitalExpenditure.slice(-historicalNumYears),
-            historicalRevenue.slice(-historicalNumYears),
-            projectedRevenue
+        const projectedCapitalExpenditure = projectByPercentValue(
+            projectedRevenue,
+            capitalExpenditurePercentage / 100
         );
 
         const historicalFreeCashFlow = processPeriodicDatasets(

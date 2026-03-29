@@ -40,26 +40,14 @@ export function projectByAverageGrowth(cik: string, numYears: number, data: Peri
     return result;
 }
 
-// Project periodic data by average percentage of other value
-export function projectByAveragePercentOfValue(
-    cik: string,
-    data: PeriodicData[],
-    historicalReferenceData: PeriodicData[],
-    projectedReferenceData: PeriodicData[]
+export function projectByPercentValue(
+    projectedReferenceData: PeriodicData[],
+    percentValue: number
 ): PeriodicData[] {
-    const averagePercent = calculatorService.calculate(
-        {
-            periodicData: processPeriodicDatasets(cik,
-                data,
-                historicalReferenceData, (a, b) => (a / b)),
-            numPeriods: data.length
-        },
-        averageOverPeriodFunction
-    );
-    return projectedReferenceData.map((projectedReferenceData) => ({
-        cik: cik,
-        announcedDate: projectedReferenceData.announcedDate,
-        period: projectedReferenceData.period,
-        value: projectedReferenceData.value * averagePercent
+    return projectedReferenceData.map((period) => ({
+        cik: period.cik,
+        announcedDate: period.announcedDate,
+        period: period.period,
+        value: period.value * percentValue
     }));
 }
