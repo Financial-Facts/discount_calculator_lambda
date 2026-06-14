@@ -18,7 +18,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
                 const body = JSON.parse(record.body) as { cik: string };
                 const cik = removeS3KeySuffix(body.cik);
                 console.log(`In price check consumer, processing: ${cik}`);
-                return discountManager.processDiscountCheck(cik);
+                await discountManager.processDiscountCheck(cik);
             }
         } catch (err: any) {
             if (err instanceof SyntaxError) {
